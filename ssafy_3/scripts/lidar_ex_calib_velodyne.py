@@ -94,11 +94,13 @@ def getLiDARTOCameraTransformMat(camRPY, camPosition, lidarRPY, lidarPosition):
     # Tip : getSensorToVehicleMat, inv 사용 필요
     # inv : matrix^-1
 
+    # lidar = np.array([1.58,-0.01,1.07,1])
     Tr_lidar_to_vehicle = getSensorToVehicleMat(lidarRPY, lidarPosition)
+    # print("lidar X Tr_lidar_to_vehicle",lidar.dot(Tr_lidar_to_vehicle))
     Tr_cam_to_vehicle = getSensorToVehicleMat(camRPY, camPosition)
     Tr_vehicle_to_cam = inv(Tr_cam_to_vehicle)
     Tr_lidar_to_cam = Tr_lidar_to_vehicle.dot(Tr_vehicle_to_cam)
-    # Tr_lidar_to_cam = Tr_vehicle_to_cam.dot(Tr_lidar_to_vehicle)
+    # Tr_lidar_to_cam = np.cross(Tr_lidar_to_vehicle,Tr_vehicle_to_cam)
  
     return Tr_lidar_to_cam
 
@@ -145,9 +147,13 @@ def getCameraMat(params_cam):
     # 초점거리(focal length)를 계산합니다.
     focal_length_x = (camera_width / 2) / np.tan(fov_x / 2)
     focal_length_y = (camera_height / 2) / np.tan(fov_y / 2)
-    
-    # camera_size = (camera_height**2 + camera_width**2)**0.5
-    # focal_length = (camera_size/2)*np.tan(fov_rad/2)
+    print("fov x",focal_length_x)
+    print("fov y",focal_length_y)
+    print("prin x",principal_x)
+    print("prin y",principal_y)
+    camera_size = (camera_height**2 + camera_width**2)**0.5
+    # focal_length_x= (camera_size/2)*np.tan(fov_x/2)
+    # focal_length_y=(camera_size/2)*np.tan(fov_y/2)
     # print(focal_length)
     # Camera Matrix를 생성합니다.
     # [ fx  0   cx ]
@@ -200,9 +206,13 @@ class LiDARToCameraTransform:
     # Tip : for clear data use filtering
     def transformCameraToImage(self, pc_camera):
         pc_proj_to_img = self.CameraMat.dot(pc_camera)
-        
+        print("after intrinsic",pc_proj_to_img)
+        print(np.size[pc_proj_to_img])
         pc_proj_to_img = np.delete(pc_proj_to_img,np.where(pc_proj_to_img[2,:]<0),axis=1)
         pc_proj_to_img /= pc_proj_to_img[2,:]
+        print("after intrinsic",pc_proj_to_img[0])
+        print(np.size[pc_proj_to_img[0]])
+        exit(1)
         # pc_proj_to_img *= 0.9
         # pc_proj_to_img-=15
         pc_proj_to_img = np.delete(pc_proj_to_img,np.where(pc_proj_to_img[0,:]>self.width),axis=1)
