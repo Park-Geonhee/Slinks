@@ -71,7 +71,7 @@ class dijkstra_path_pub :
         self.global_planner=Dijkstra(self.nodes,self.links)
 
         #TODO: (2) 시작 Node 와 종료 Node 정의
-        '''
+        
         # Dijkstra Path 를 만들기 위한 출발 Node 와 도착 Node의 Idx 를 지정합니다.
         # MGeo 데이터는 Json 파일로 Idx 정보를 확인 할 수 있지만 시뮬레이터를 통해 직접 확인 가능합니다.
         # F8 키보드 입력 또는 시뮬레이터에서 화면 좌측 상단에 View --> MGeo Viewer 를 클릭합니다.
@@ -79,10 +79,8 @@ class dijkstra_path_pub :
         # 해당 기능을 이용하여 원하는 시작 위치와 종료 위치의 Node 이름을 알아낸 뒤 아래 변수에 입력하세요.
         
         self.start_node = 'A119BS010184'
-        self.end_node = 'A119BS010148'
-
-        '''
-
+        self.end_node = 'A119BS010185'
+        
         self.global_path_msg = Path()
         self.global_path_msg.header.frame_id = '/map'
 
@@ -91,11 +89,10 @@ class dijkstra_path_pub :
         rate = rospy.Rate(10) # 10hz
         while not rospy.is_shutdown():
             #TODO: (11) dijkstra 이용해 만든 Global Path 정보 Publish
-            '''
-            # dijkstra 이용해 만든 Global Path 메세지 를 전송하는 publisher 를 만든다.
-            self.global_path_pub.
             
-            '''
+            # dijkstra 이용해 만든 Global Path 메세지 를 전송하는 publisher 를 만든다.
+            self.global_path_pub.publish(self.global_path_msg)
+        
             rate.sleep()
 
     def calc_dijkstra_path_node(self, start_node, end_node):
@@ -107,8 +104,23 @@ class dijkstra_path_pub :
         out_path.header.frame_id = '/map'
         '''
         # dijkstra 경로 데이터 중 Point 정보를 이용하여 Path 데이터를 만들어 줍니다.
-
         '''
+        print("node list")
+        for node in path['node_path']:
+            print(node)
+
+        print("link likst")
+        for link in path['link_path']:
+            print(link)
+            
+
+        for point in path['point_path']:
+            read_pose = PoseStamped()
+            read_pose.pose.position.x = float(point[0])
+            read_pose.pose.position.y = float(point[1])
+            read_pose.pose.position.z = float(point[2])
+            read_pose.pose.orientation.w = 1
+            out_path.poses.append(read_pose)
 
         return out_path
 
@@ -157,12 +169,20 @@ class Dijkstra:
     def find_shortest_link_leading_to_node(self, from_node,to_node):
         """현재 노드에서 to_node로 연결되어 있는 링크를 찾고, 그 중에서 가장 빠른 링크를 찾아준다"""
         #TODO: (3) weight 값 계산
-        '''
+        
         # 최단거리 Link 인 shortest_link 변수와
         # shortest_link 의 min_cost 를 계산 합니다.
-
-        '''
-
+        connected_links = from_node.get_to_links()
+        shortest_link = None
+        min_cost = 10000
+        for link in connected_links:
+            if link.to_node != to_node : continue
+            #if link.idx.find('-') != -1 : continue
+            #if len(link.points) < min_cost:
+            if link.cost < min_cost:
+                #min_cost = len(link.points)
+                min_cost = link.cost
+                shortest_link = link
         return shortest_link, min_cost
         
     def find_nearest_node_idx(self, distance, s):        
@@ -238,7 +258,24 @@ class Dijkstra:
 
         #TODO: (9) point path 생성
         point_path = []        
-        for link_id in link_path:
+        for i, link_id in enumerate(link_path):
+            
+            '''
+            차선이 2개 이상인 경우 묶음으로서의 링크도 존재한다.
+            ex)
+            1차로 : link 101
+            2차로 : link 102
+            3차로 : link 103
+            인 경우, 3개의 링크는 각자 존재하고, 3개가 묶인 링크가 하나 더 존재한다.
+            1~3차로 : link 101-103
+            이러한 경우 해당 링크의 points는 시작점과 끝점만 가지고 있기 때문에 이를 바로 global path data로 넣지 않고,
+            이전 링크와 연결된 링크를 골라 global path에 추가해야 포인트들을 모두 넣을 수 있다.
+            '''
+            if link_id.find('-') != -1: #링크 묶음인 경우 idx에 '-'를 포함하고 있음 ex) A219BS010403-A219BS010405
+                links_sharing_from_node = self.links[link_id].get_from_node_sharing_links()
+                for link_sharing_from_node in links_sharing_from_node:
+                    if link_sharing_from_node.idx.find('-') != -1: continue
+                    link_id = link_sharing_from_node.idx
             link = self.links[link_id]
             for point in link.points:
                 point_path.append([point[0], point[1], 0])
