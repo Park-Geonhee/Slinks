@@ -56,12 +56,12 @@ class lc_path_pub :
         # lane_change_path 는 차선변경 예제에서 활용할 지역경로(Loacl Path)이다.
         # lane_change_path 의 Topic 이름은 '/lane_change_path' 이고
         # ROS 메시지 형식은 Path 이다.
-        rospy.Subscriber( "odom" )
-        self.global_path_pub = 
-        self.local_path_pub = 
-
         '''
-
+        rospy.Subscriber(object_topic_name, ObjectStatusList, self.object_info_callback)
+        rospy.Subscriber( "odom", Odometry, self.odom_callback)
+        self.global_path_pub = rospy.Publisher('/global_path', Path, queue_size=1)
+        self.local_path_pub = rospy.Publisher('/lane_change_path', Path, queue_size = 1)
+       
         self.lc_1=Path()
         self.lc_1.header.frame_id='/map'
         self.lc_2=Path()
@@ -69,19 +69,34 @@ class lc_path_pub :
 
         #TODO: (2) 두개의 차선 경로 의 텍스트파일을 읽기 모드로 열기
         rospack=rospkg.RosPack()
-        pkg_path=rospack.get_path('ssafy_3')
-        '''
+        pkg_path=rospack.get_path('ssafy_ad')
+
         lc_1 = pkg_path + '/path' + '/lc_1.txt'
+        print(lc_1)
         self.f=open(lc_1,'r')
-
+        lines = self.f.readlines()
+        for line in lines :
+            tmp = line.split()
+            read_pose = PoseStamped()
+            read_pose.pose.position.x = float(tmp[0])
+            read_pose.pose.position.y = float(tmp[1])
+            read_pose.pose.position.z = float(tmp[2])
+            read_pose.pose.orientation.w = 1
+            self.lc_1.poses.append(read_pose) 
         self.f.close()
-
+        
         lc_2 = pkg_path + '/path' + '/lc_2.txt'
         self.f=open(lc_2,'r')
-
+        lines = self.f.readlines()
+        for line in lines :
+            tmp = line.split()
+            read_pose = PoseStamped()
+            read_pose.pose.position.x = float(tmp[0])
+            read_pose.pose.position.y = float(tmp[1])
+            read_pose.pose.position.z = float(tmp[2])
+            read_pose.pose.orientation.w = 1
+            self.lc_2.poses.append(read_pose) 
         self.f.close()
-
-        '''
 
         self.is_object_info = False
         self.is_odom = False
@@ -94,9 +109,9 @@ class lc_path_pub :
         #TODO: (3) 읽어 온 경로 데이터를 Global Path 로 지정
         '''
         # 읽어 온 Path 데이터 중 Ego 차량의 시작 경로를 지정합니다.
-        global_path = self.lc_1
-
         '''
+        print(len(self.lc_1.poses))
+        global_path = self.lc_1
 
         rate = rospy.Rate(10) # 10hz
         while not rospy.is_shutdown():
@@ -115,10 +130,9 @@ class lc_path_pub :
                 #TODO: (7) 경로 데이터 Publish
                 '''
                 # 경로 데이터 메세지 를 전송하는 publisher 를 만든다.
-                self.local_path_pub.
-                self.global_path_pub.
-                
                 '''
+                self.local_path_pub.publish(self.local_path_msg)
+                self.global_path_pub.publish(global_path)
 
             rate.sleep()
 
@@ -133,6 +147,10 @@ class lc_path_pub :
 
         self.is_odom = True
 
+    def global_path_callback(self, msg):
+        self.is_path = True
+        self.global_path_msg = msg
+        
     def object_info_callback(self,data): ## Object information Subscriber
         self.is_object_info = True
         self.object_data = data 
@@ -269,19 +287,20 @@ class lc_path_pub :
         # 아래 예제는 주행 경로에서 Object 까지의 거리를 파악하여 
         # 경로를 기준으로 2.5 m 안쪽에 있다면 주행 경로 내 장애물이 있다고 판단 합니다.
         # 주행 경로 상 장애물이 여러게 있는 경우 가장 가까이 있는 장애물 정보를 가지도록 합니다.
-
+        '''
         if len(global_vaild_object) >0  :
             min_rel_distance = float('inf')
             for i in range(len(global_vaild_object)):
                 for path in ref_path.poses :   
-                    if global_vaild_object[i][0]==1 or global_vaild_object[i][0]==2 :  
-                        dis = 
-                        if dis<2.5:
-                            rel_distance=                         
+                    if global_vaild_object[i][0]==1 or global_vaild_object[i][0]==2 : 
+                        dis = sqrt(pow(local_vaild_object[i][1],2)+pow(local_vaild_object[i][2],2))
+                        
+                        if dis<30 and abs(local_vaild_object[i][2]) < 0.5:
+                            rel_distance= dis                     
                             if rel_distance < min_rel_distance:
-                                min_rel_distance = 
+                                min_rel_distance = rel_distance 
+                                print(min_rel_distance)
                                 self.object=[True,i]
-        '''
 
     def getLaneChangePath(self,ego_path,lc_path,start_point,end_point,start_next_point, end_waypoint_idx): ## 
         out_path=Path()  
@@ -295,24 +314,25 @@ class lc_path_pub :
         # Point 의 개수와 간격을 알기 때문에 좌표 변환 행렬을 이용하여
         # 시작 Point 좌표에서 끝 Point 좌표 사이에 Point 좌표를 계산하여 ros path 메시지 형식 데이터 생성합니다.
         # 
+        '''
 
         point_to_point_distance = 0.5
-        start_path_distance = 
+        start_path_distance = sqrt(pow(start_point.pose.position.x - end_point.pose.position.x) + pow(start_point.pose.position.y - end_point.pose.position.y))
         start_path_repeat = int(start_path_distance/point_to_point_distance)
 
-        theta = 
+        theta = atan2(start_point.pose.position.y-start_point.pose.position.y,end_point.pose.position.x-end_point.pose.position.x)
 
-        ratation_matric_1 = np.array([  [   cos(    ), -sin(    )  ],
-                                        [   sin(    ),  cos(    )  ]    ])
+        ratation_matric_1 = np.array([  [   cos(theta), -sin(theta)  ],
+                                        [   sin(theta),  cos(theta)  ]    ])
 
         for k in range(0,start_path_repeat+1):
             ratation_matric_2 = np.array([  [ k*point_to_point_distance ],  
                                             [ 0                         ]   ])
             roation_matric_calc = np.matmul(ratation_matric_1,ratation_matric_2)
             read_pose=PoseStamped()
-            read_pose.pose.position.x = 
-            read_pose.pose.position.y = 
-            read_pose.pose.position.z = 0.
+            read_pose.pose.position.x = roation_matric_calc[0][0]
+            read_pose.pose.position.y = roation_matric_calc[0][1]
+            read_pose.pose.position.z = 0
             read_pose.pose.orientation.x = 0
             read_pose.pose.orientation.y = 0
             read_pose.pose.orientation.z = 0
@@ -334,7 +354,6 @@ class lc_path_pub :
             read_pose.pose.orientation.w=1
             out_path.poses.append(read_pose)
 
-        '''
 
         return out_path
 
