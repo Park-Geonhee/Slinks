@@ -27,9 +27,8 @@ class IMGParser:
         이미지의 좌표를 직접 지정해도 되고,
         이미지의 비율로 정의해도 됩니다.
         np.array 사용
-        self.crop_pts =
-
         '''
+        self.crop_pts = [[0,480][280,200],[380,200][640,480]]
 
     def callback(self, msg):
         # uint8 : unsined integer 0~255 로 만들기 위함입니다.
@@ -59,16 +58,11 @@ class IMGParser:
 
             c = img.shape[2]
             mask = np.zeros((h, w, c), dtype=np.uint8)
-
             mask_value = (255, 255, 255)
-
         # grayscale image일 경우. (시뮬레이터에서 주는 이미지는 항상 3차원이기 때문에 예외를 위해서 만들어 놓은 부분 입니다.)
         else:
-
             mask = np.zeros((h, w), dtype=np.uint8)
-
             mask_value = (255)
-        
         # TODO (1) 에서 마스킹 영역을 만들었고, 관심 있는 부분만을 이미지 원본으로 하고 나머지는 255(검은색)로 반환 해 주는
         #내용이 들어가야 합니다.
         #마스킹 영역을 만들기 위해서 다양한 방법을 사용할 수 있습니다만, 코드에서 이미 까만 이미지를 생성했습니다.
@@ -80,13 +74,15 @@ class IMGParser:
         찾습니다.
         cv2.
         '''
-
+        cv2.fillPoly(mask, self.crop_pts, mask_value)
+        
         #TODO : (3)
         '''
         # 다음으로 RGB 이미지를 마스킹 하는 opencv 함수를 이용합니다. 비트연산을 하는 함수이며, 0,1을 이용하는 연산으로
         두 이미지의 동일한 위치에 대한 연산을 진행합니다.
         mask = cv2.
         '''
+        mask = cv2.bitwise_and(mask, img)
         
         return mask
 
