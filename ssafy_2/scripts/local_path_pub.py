@@ -31,6 +31,8 @@ class local_path_pub :
         rospy.Subscriber( global path 메세지 콜백 완성하기 )
 
         '''
+        rospy.Subscriber("odom", Odometry, self.odom_callback)
+        rospy.Subscriber("global_path", Path, self.global_path_callback)
 
         #TODO: (2) Local Path publisher 선언
         '''
@@ -40,8 +42,10 @@ class local_path_pub :
         '''
         
         # 초기화
-        self.is_odom = False
-        self.is_path = False
+        self.local_path_pub = rospy.Publisher('local_path', Path, queue_size=1)
+        
+        self.is_odom = False # Odometry 데이터가 수신되었는지 확인하기 위한 flag (수신이 되었을 때 True로 바뀐다)
+        self.is_path = False # Global path 데이터가 수신되었는지 확인하기 위한 flag (수신이 되었을 때 True로 바뀐다)
 
         #TODO: (3) Local Path 의 Size 결정
         '''
@@ -51,6 +55,7 @@ class local_path_pub :
         self.local_path_size = 
 
         '''
+        self.local_path_size = 100  # Can be adjusted based on your specific needs
         rate = rospy.Rate(20) # 20hz
         while not rospy.is_shutdown():
    
@@ -72,6 +77,13 @@ class local_path_pub :
                 for  in  :
 
                 '''
+                min_dis = float('inf')
+                current_waypoint = -1
+                for i, pose in enumerate(self.global_path_msg.poses):
+                    distance = sqrt(pow((pose.pose.position.x - x), 2) + pow((pose.pose.position.y - y), 2))
+                    if distance < min_dis:
+                        min_dis = distance
+                        current_waypoint = i
                 
                 #TODO: (6) 가장 가까운 포인트(current Waypoint) 위치부터 Local Path 생성 및 예외 처리
                 '''
@@ -83,6 +95,16 @@ class local_path_pub :
                     else :
 
                 '''
+                if current_waypoint != -1:
+                    
+                    if current_waypoint + self.local_path_size < len(self.global_path_msg.poses):
+                        local_path_msg.poses = self.global_path_msg.poses[current_waypoint:current_waypoint+self.local_path_size]
+                    else:
+                        local_path_msg.poses = self.global_path_msg.poses[current_waypoint:]
+
+                if local_path_msg.poses:
+                    rospy.loginfo("Local path message is not empty.")
+                
 
                 print(x,y)
                 #TODO: (7) Local Path 메세지 Publish
@@ -91,6 +113,7 @@ class local_path_pub :
                 self.local_path_pub.
                 
                 '''
+                self.local_path_pub.publish(local_path_msg)
 
             rate.sleep()
 
@@ -105,6 +128,8 @@ class local_path_pub :
         self.y = 물체의 y 좌표
 
         '''
+        self.x = msg.pose.pose.position.x
+        self.y = msg.pose.pose.position.y
 
     def global_path_callback(self,msg):
         self.is_path = True
