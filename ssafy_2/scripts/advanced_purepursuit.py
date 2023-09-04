@@ -9,6 +9,8 @@ from nav_msgs.msg import Odometry,Path
 from morai_msgs.msg import CtrlCmd,EgoVehicleStatus
 import numpy as np
 import tf
+import math
+import sys
 from tf.transformations import euler_from_quaternion,quaternion_from_euler
 
 # advanced_purepursuit 은 차량의 차량의 종 횡 방향 제어 예제입니다.
@@ -42,6 +44,13 @@ class pure_pursuit :
     def __init__(self):
         rospy.init_node('pure_pursuit', anonymous=True)
 
+        arg = rospy.myargv(argv=sys.argv)
+        local_path_name = arg[1]
+
+        rospy.Subscriber(local_path_name, Path, self.path_callback)
+
+
+
         #TODO: (1) subscriber, publisher 선언
         
         # Local/Gloabl Path 와 Odometry Ego Status 데이터를 수신 할 Subscriber 를 만들고 
@@ -49,11 +58,13 @@ class pure_pursuit :
         # CtrlCmd 은 1장을 참고 한다.
         # Ego topic 데이터는 차량의 현재 속도를 알기 위해 사용한다.
         # Gloabl Path 데이터는 경로의 곡률을 이용한 속도 계획을 위해 사용한다.
-        rospy.Subscriber("/global_path" )
-        rospy.Subscriber("local_path" )
-        rospy.Subscriber("odom" )
-        rospy.Subscriber("/Ego_topic" )
+        rospy.Subscriber("/global_path", Path, self.global_path_callback)
+        #rospy.Subscriber("lane_path", Path, self.path_callback)
+        rospy.Subscriber("odom", Odometry, self.odom_callback)
+        rospy.Subscriber("/Ego_topic", EgoVehicleStatus, self.status_callback)
         self.ctrl_cmd_pub = rospy.Publisher('/ctrl_cmd', CtrlCmd, queue_size = 1)
+
+     
 
         self.ctrl_cmd_msg = CtrlCmd()
         self.ctrl_cmd_msg.longlCmdType = 1
@@ -70,7 +81,7 @@ class pure_pursuit :
 
         self.vehicle_length = 2.6
         self.lfd = 8
-        self.min_lfd = 5
+        self.min_lfd = 3
         self.max_lfd = 30
         self.lfd_gain = 0.78
         self.target_velocity = 60
@@ -111,7 +122,7 @@ class pure_pursuit :
                 #TODO: (8) 제어입력 메세지 Publish
 
                 # 제어입력 메세지 를 전송하는 publisher 를 만든다.
-                self.ctrl_cmd_pub.publish(ctrl_cmd_msg)
+                self.ctrl_cmd_pub.publish(self.ctrl_cmd_msg)
                 
             rate.sleep()
 
@@ -157,12 +168,13 @@ class pure_pursuit :
         # 최소 최대 전방주시거리(Look Forward Distance) 값과 속도에 비례한 lfd_gain 값을 직접 변경해 볼 수 있습니다.
         # 초기 정의한 변수 들의 값을 변경하며 속도에 비례해서 전방주시거리 가 변하는 advanced_purepursuit 예제를 완성하세요.
         # status_msg.velocity.x : 차량의 속력 (단위 : m/s)
-        self.lfd = self.lfd_gain * self.status_msg.velocity.x
+        self.lfd = self.lfd_gain * self.status_msg.velocity.x 
         if self.lfd < self.min_lfd :
             self.lfd = self.min_lfd
         if self.lfd > self.max_lfd:
             self.lfd = self.max_lfd
         rospy.loginfo(self.lfd)
+        
         
         vehicle_position=self.current_postion
         self.is_look_forward_point= False
@@ -196,6 +208,7 @@ class pure_pursuit :
         
         # self.ego_status = EgoVehicleStatus()
         beta = self.status_msg.heading
+        print("beta : ", beta)
         beta = beta * pi / 180
         trans_matrix = np.array([   [cos(beta), -sin(beta), translation[0]],
                                     [sin(beta),  cos(beta), translation[1]],
@@ -206,7 +219,7 @@ class pure_pursuit :
         for num,i in enumerate(self.path.poses) :
             path_point = i
 
-            global_path_point = [ path_point[0], path_point[1], 1]
+            global_path_point = [ path_point.pose.position.x, path_point.pose.position.y, 1]
             local_path_point = det_trans_matrix.dot(global_path_point)    
 
             if local_path_point[0]>0 :
@@ -221,10 +234,17 @@ class pure_pursuit :
         # 제어 입력을 위한 Steering 각도를 계산 합니다.
         # theta 는 전방주시거리(Look Forward Distance) 와 가장 가까운 Path Point 좌표의 각도를 계산 합니다.
         # Steering 각도는 Pure Pursuit 알고리즘의 각도 계산 수식을 적용하여 조향 각도를 계산합니다.
-        sin_alpha = -self.forward_point[1]/sqrt(self.forward_point[0]*self.forward_point[0] + self.forward_point[1]*self.forward_point[1])
+        sin_alpha = self.forward_point[1]/sqrt(self.forward_point[0]*self.forward_point[0] + self.forward_point[1]*self.forward_point[1])
         theta = atan2( 2 * self.vehicle_length*sin_alpha ,self.lfd)
-        steering = theta 
-
+        steering = theta
+        '''
+        if steering > 33.2299 :
+            steering = 33.2299
+        elif steering < -33.2299:
+            steering = -33.2299
+        steering = steering / 33.2299
+        '''
+        print("steering : ", steering)
         return steering
 
 class pidControl:
@@ -280,14 +300,14 @@ class velocityPlanning:
             # 도로의 곡률 반경을 계산하기 위한 수식입니다.
             # Path 데이터의 좌표를 이용해서 곡선의 곡률을 구하기 위한 수식을 작성합니다.
 
-			aMat = np.array(x_list)
-			bMat = np.array(y_list) 
+            aMat = np.array(x_list)
+            bMat = np.array(y_list) 
 
             # 원의 좌표를 구하는 행렬 계산식, 최소 자승법을 이용하는 방식 등 곡률 반지름을 구하기 위한 식을 적용 합니다.
             
-			aMatTrans = np.transpose(aMat)
-			resMat = np.linalg.inv(aMatTrans.dot(aMat)).dot(aMatTrans).dot(bMat)
-
+            aMatTrans = np.transpose(aMat)
+            resMat = np.linalg.inv(aMatTrans.dot(aMat)).dot(aMatTrans).dot(bMat)
+            #resMat = np.linalg.inv(((aMatTrans.dot(aMat)).dot(aMatTrans)).dot(bMat))
 			# 적용한 수식을 통해 곡률 반지름 "r" 을 계산합니다.
 
             r = math.sqrt(resMat[0]*resMat[0] + resMat[1]*resMat[1] - resMat[2])
@@ -297,7 +317,7 @@ class velocityPlanning:
             # 계산 한 곡률 반경을 이용하여 최고 속도를 계산합니다.
             # 평평한 도로인 경우 최대 속도를 계산합니다. 
             # 곡률 반경 x 중력가속도 x 도로의 마찰 계수 계산 값의 제곱근이 됩니다.
-            v_max = math.sqrt(r * 9.81 * self.raod_friction )
+            v_max = math.sqrt(r * 9.81 * self.road_friction )
 
             if v_max > self.car_max_speed:
                 v_max = self.car_max_speed
