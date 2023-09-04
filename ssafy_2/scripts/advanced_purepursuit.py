@@ -9,7 +9,6 @@ from nav_msgs.msg import Odometry,Path
 from morai_msgs.msg import CtrlCmd,EgoVehicleStatus
 import numpy as np
 import tf
-import math
 import sys
 from tf.transformations import euler_from_quaternion,quaternion_from_euler
 
@@ -48,8 +47,6 @@ class pure_pursuit :
         local_path_name = arg[1]
 
         rospy.Subscriber(local_path_name, Path, self.path_callback)
-
-
 
         #TODO: (1) subscriber, publisher 선언
         
@@ -206,9 +203,8 @@ class pure_pursuit :
         # rad to deg : * 180 / pi
         # deg to rad : * pi / 180
         
-        # self.ego_status = EgoVehicleStatus()
         beta = self.status_msg.heading
-        print("beta : ", beta)
+        
         beta = beta * pi / 180
         trans_matrix = np.array([   [cos(beta), -sin(beta), translation[0]],
                                     [sin(beta),  cos(beta), translation[1]],
@@ -237,14 +233,7 @@ class pure_pursuit :
         sin_alpha = self.forward_point[1]/sqrt(self.forward_point[0]*self.forward_point[0] + self.forward_point[1]*self.forward_point[1])
         theta = atan2( 2 * self.vehicle_length*sin_alpha ,self.lfd)
         steering = theta
-        '''
-        if steering > 33.2299 :
-            steering = 33.2299
-        elif steering < -33.2299:
-            steering = -33.2299
-        steering = steering / 33.2299
-        '''
-        print("steering : ", steering)
+
         return steering
 
 class pidControl:
@@ -310,14 +299,14 @@ class velocityPlanning:
             #resMat = np.linalg.inv(((aMatTrans.dot(aMat)).dot(aMatTrans)).dot(bMat))
 			# 적용한 수식을 통해 곡률 반지름 "r" 을 계산합니다.
 
-            r = math.sqrt(resMat[0]*resMat[0] + resMat[1]*resMat[1] - resMat[2])
+            r = sqrt(resMat[0]*resMat[0] + resMat[1]*resMat[1] - resMat[2])
 
 
             #TODO: (7) 곡률 기반 속도 계획
             # 계산 한 곡률 반경을 이용하여 최고 속도를 계산합니다.
             # 평평한 도로인 경우 최대 속도를 계산합니다. 
             # 곡률 반경 x 중력가속도 x 도로의 마찰 계수 계산 값의 제곱근이 됩니다.
-            v_max = math.sqrt(r * 9.81 * self.road_friction )
+            v_max = sqrt(r * 9.81 * self.road_friction )
 
             if v_max > self.car_max_speed:
                 v_max = self.car_max_speed
