@@ -26,10 +26,12 @@ def warp_image(img, source_prop):
 
     x = img.shape[1]
     y = img.shape[0]
-    
+    destination_points = np.float32([[0,480][280,200],[380,200][640,480]])
+    source_points = source_prop * np.float32([[x, y]]* 4)
+
     #TODO: (2) 원본 이미지 내 Warping 영역과 매칭 될 목적지 지점 정의
     '''
-    destination_points = np.float32(
+    destination_points = np.float32()
     
     source_points = source_prop * np.float32([[x, y]]* 4)
     '''
@@ -44,11 +46,14 @@ def warp_image(img, source_prop):
     perspective_transform = cv2.
 
     '''
+    
     #TODO: (4) 이후 원근 맵 행렬에 대한 기하학적 변환을 진행합니다.
     '''
     warped_img = cv2.
 
     '''
+    perspective_transform = cv2.getPerspectiveTransform(source_points,destination_points)
+    warped_img = cv2.warpPerspective(img, perspective_transform)
 
     return warped_img
 
@@ -64,6 +69,7 @@ class IMGParser:
         Bird's eye view 를 하기 위한 영역을 지정해야 합니다. 이지미 warping을 위해 영역을 비율로 만들어줘야 합니다.
         self.source_prop = np.float32(
         '''
+        self.source_prop = np.float32([])
 
     def callback(self, msg):
         try:

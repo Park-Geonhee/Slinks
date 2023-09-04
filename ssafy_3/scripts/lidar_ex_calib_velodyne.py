@@ -20,7 +20,7 @@ parameters_cam ={
     "YAW": np.radians(0), # radian
     "PITCH": np.radians(0),
     "ROLL": np.radians(0)
-}
+} 
 parameters_lidar = {
     "X": 1.58, # meter
     "Y": -0.01,
@@ -181,24 +181,25 @@ class LiDARToCameraTransform:
         for point in pc2.read_points(msg, skip_nans=True):
             point_list.append((point[0], point[1], point[2], 1))
         self.pc_np = np.array(point_list, np.float32)
+        print(self.pc_np)
 
-    #TODO : (5.1) LiDAR Pointcloud to Camera Frame
-    # Input
-        # pc_lidar : pointcloud data w.r.t. lidar frame
-    # Output
-        # pc_wrt_cam : pointcloud data w.r.t. camera frame
     def transformLiDARToCamera(self, pc_lidar):
+        #TODO : (5.1) LiDAR Pointcloud to Camera Frame
+        # Input
+        # pc_lidar : pointcloud data w.r.t. lidar frame
+        # Output
+        # pc_wrt_cam : pointcloud data w.r.t. camera frame
         pc_wrt_cam = self.TransformMat.dot(pc_lidar)
         pc_wrt_cam = np.delete(pc_wrt_cam, 3, axis=0)
         return pc_wrt_cam
 
-    #TODO : (5.2) Camera Frame PointCloud to Image Plane with Filtering
-    # Input
-        # pc_camera : pointcloud data w.r.t. camera frame
-    # Output
-        # pc_proj_to_img : projection lidar data to image plane
-    # Tip : for clear data use filtering
     def transformCameraToImage(self, pc_camera):
+        #TODO : (5.2) Camera Frame PointCloud to Image Plane with Filtering
+        # Input
+        # pc_camera : pointcloud data w.r.t. camera frame
+        # Output
+        # pc_proj_to_img : projection lidar data to image plane
+        # Tip : for clear data use filtering
         pc_proj_to_img = self.CameraMat.dot(pc_camera)
         
         pc_proj_to_img = np.delete(pc_proj_to_img,np.where(pc_proj_to_img[2,:]<0),axis=1)
