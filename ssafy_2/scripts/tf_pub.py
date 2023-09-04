@@ -13,7 +13,9 @@ from nav_msgs.msg import Odometry
 
 class Ego_listener():
     def __init__(self):
-        rospy.init_node('status_listener', anonymous=True)
+        rospy.init_node('tf_publisher', anonymous=True)
+
+        self.br = tf.TransformBroadcaster()
         
         rospy.Subscriber("odom", Odometry, self.odom_callback)
         rospy.spin()
@@ -35,6 +37,14 @@ class Ego_listener():
         self.orientation_w = 물체의 quaternion ㅈ 값
 
         '''
+        self.x = msg.pose.pose.position.x
+        self.y = msg.pose.pose.position.y
+        self.z = msg.pose.pose.position.z
+
+        self.orientation_x = msg.pose.pose.orientation.x
+        self.orientation_y = msg.pose.pose.orientation.y
+        self.orientation_z = msg.pose.pose.orientation.z
+        self.orientation_w = msg.pose.pose.orientation.w
 
         #TODO: (2) 브로드캐스터 생성 및 Ego 상태 tf 브로드캐스팅
         '''
@@ -49,6 +59,11 @@ class Ego_listener():
                         "map")
 
         '''
+        self.br.sendTransform((self.x, self.y, self.z),
+                              (self.orientation_x, self.orientation_y, self.orientation_z, self.orientation_w),
+                              rospy.Time.now(),
+                              "Ego",
+                              "map")
 
 if __name__ == '__main__':
     try:

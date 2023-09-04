@@ -43,7 +43,7 @@ class pure_pursuit :
         rospy.init_node('pure_pursuit', anonymous=True)
 
         #TODO: (1) subscriber, publisher 선언
-        '''
+        
         # Local/Gloabl Path 와 Odometry Ego Status 데이터를 수신 할 Subscriber 를 만들고 
         # CtrlCmd 를 시뮬레이터로 전송 할 publisher 변수를 만든다.
         # CtrlCmd 은 1장을 참고 한다.
@@ -53,9 +53,7 @@ class pure_pursuit :
         rospy.Subscriber("local_path" )
         rospy.Subscriber("odom" )
         rospy.Subscriber("/Ego_topic" )
-        self.ctrl_cmd_pub = 
-
-        '''
+        self.ctrl_cmd_pub = rospy.Publisher('/ctrl_cmd', CtrlCmd, queue_size = 1)
 
         self.ctrl_cmd_msg = CtrlCmd()
         self.ctrl_cmd_msg.longlCmdType = 1
@@ -111,11 +109,9 @@ class pure_pursuit :
                     self.ctrl_cmd_msg.brake = -output
 
                 #TODO: (8) 제어입력 메세지 Publish
-                '''
+
                 # 제어입력 메세지 를 전송하는 publisher 를 만든다.
-                self.ctrl_cmd_pub.
-                
-                '''
+                self.ctrl_cmd_pub.publish(ctrl_cmd_msg)
                 
             rate.sleep()
 
@@ -154,18 +150,19 @@ class pure_pursuit :
     def calc_pure_pursuit(self,):
 
         #TODO: (2) 속도 비례 Look Ahead Distance 값 설정
-        '''
+        
         # 차량 속도에 비례하여 전방주시거리(Look Forward Distance) 가 변하는 수식을 구현 합니다.
         # 이때 'self.lfd' 값은 최소와 최대 값을 넘어서는 안됩니다.
         # "self.min_lfd","self.max_lfd", "self.lfd_gain" 을 미리 정의합니다.
         # 최소 최대 전방주시거리(Look Forward Distance) 값과 속도에 비례한 lfd_gain 값을 직접 변경해 볼 수 있습니다.
         # 초기 정의한 변수 들의 값을 변경하며 속도에 비례해서 전방주시거리 가 변하는 advanced_purepursuit 예제를 완성하세요.
-        # 
-        self.lfd = 
-
+        # status_msg.velocity.x : 차량의 속력 (단위 : m/s)
+        self.lfd = self.lfd_gain * self.status_msg.velocity.x
+        if self.lfd < self.min_lfd :
+            self.lfd = self.min_lfd
+        if self.lfd > self.max_lfd:
+            self.lfd = self.max_lfd
         rospy.loginfo(self.lfd)
-
-        '''
         
         vehicle_position=self.current_postion
         self.is_look_forward_point= False
@@ -173,7 +170,7 @@ class pure_pursuit :
         translation = [vehicle_position.x, vehicle_position.y]
 
         #TODO: (3) 좌표 변환 행렬 생성
-        '''
+
         # Pure Pursuit 알고리즘을 실행 하기 위해서 차량 기준의 좌표계가 필요합니다.
         # Path 데이터를 현재 차량 기준 좌표계로 좌표 변환이 필요합니다.
         # 좌표 변환을 위한 좌표 변환 행렬을 작성합니다.
@@ -181,36 +178,52 @@ class pure_pursuit :
         # 전방주시거리(Look Forward Distance) 와 가장 가까운 Path Point 를 이용하여 조향 각도를 계산하게 됩니다.
         # 좌표 변환 행렬을 이용해 Path 데이터를 차량 기준 좌표 계로 바꾸는 반복 문을 작성 한 뒤
         # 전방주시거리(Look Forward Distance) 와 가장 가까운 Path Point 를 계산하는 로직을 작성 하세요.
+        
+        # 변환 행렬 계산: 두 좌표계 간의 변환 행렬을 계산해야 합니다. 이 행렬은 회전, 이동 및 크기 조절 변환을 포함합니다. 주어진 정보에 따라 이 행렬을 결정할 수 있습니다.
 
-        trans_matrix = np.array([   [                       ,                       ,               ],
-                                    [                       ,                       ,               ],
-                                    [0                      ,0                      ,1              ]])
+        # 변환 공식 적용: 변환 행렬을 사용하여 원래 좌표를 새 좌표계로 변환합니다. 일반적으로 행렬과 좌표를 행렬-벡터 곱셈으로 곱하는 방식을 사용합니다.
+        
+        # | x' |   | cos(θ) -sin(θ) tx |   | x |
+        # | y' | = | sin(θ)  cos(θ) ty | * | y |
+        # | 1  |   |   0       0    1  |   | 1 |
+        
+        # 여기서 (x, y)는 원래 좌표이고, (x', y')는 새 좌표계로 변환된 좌표입니다. θ는 회전 각도이며, tx와 ty는 이동 변환입니다.
+
+        # /Ego_topic 토픽의 heading 값(deg)
+        # math method ~ angle : radian
+        # rad to deg : * 180 / pi
+        # deg to rad : * pi / 180
+        
+        # self.ego_status = EgoVehicleStatus()
+        beta = self.status_msg.heading
+        beta = beta * pi / 180
+        trans_matrix = np.array([   [cos(beta), -sin(beta), translation[0]],
+                                    [sin(beta),  cos(beta), translation[1]],
+                                    [ 0       , 0         , 1             ]])
 
         det_trans_matrix = np.linalg.inv(trans_matrix)
 
         for num,i in enumerate(self.path.poses) :
-            path_point = 
+            path_point = i
 
-            global_path_point = [ , , 1]
+            global_path_point = [ path_point[0], path_point[1], 1]
             local_path_point = det_trans_matrix.dot(global_path_point)    
 
             if local_path_point[0]>0 :
-                dis = 
+                dis = sqrt(local_path_point[0]*local_path_point[0] + local_path_point[1]*local_path_point[1])
                 if dis >= self.lfd :
-                    self.forward_point = 
+                    self.forward_point = local_path_point
                     self.is_look_forward_point = True
                     break
-
-        '''
+        
         #TODO: (4) Steering 각도 계산
-        '''
+
         # 제어 입력을 위한 Steering 각도를 계산 합니다.
         # theta 는 전방주시거리(Look Forward Distance) 와 가장 가까운 Path Point 좌표의 각도를 계산 합니다.
         # Steering 각도는 Pure Pursuit 알고리즘의 각도 계산 수식을 적용하여 조향 각도를 계산합니다.
-        theta = 
-        steering = 
-
-        '''
+        sin_alpha = -self.forward_point[1]/sqrt(self.forward_point[0]*self.forward_point[0] + self.forward_point[1]*self.forward_point[1])
+        theta = atan2( 2 * self.vehicle_length*sin_alpha ,self.lfd)
+        steering = theta 
 
         return steering
 
@@ -227,19 +240,19 @@ class pidControl:
         error = target_vel - current_vel
 
         #TODO: (5) PID 제어 생성
-        '''
+        
         # 종방향 제어를 위한 PID 제어기는 현재 속도와 목표 속도 간 차이를 측정하여 Accel/Brake 값을 결정 합니다.
         # 각 PID 제어를 위한 Gain 값은 "class pidContorl" 에 정의 되어 있습니다.
         # 각 PID Gain 값을 직접 튜닝하고 아래 수식을 채워 넣어 P I D 제어기를 완성하세요.
 
-        p_control = 
-        self.i_control += 
-        d_control = 
+        p_control = self.p_gain * error
+        self.i_control += self.i_gain * error * self.controlTime
+        d_control = self.d_gain * (error - self.prev_error) / self.controlTime
 
-        output = 
-        self.prev_error = 
+        pidValue = p_control + self.i_control + d_control
 
-        '''
+        output = pidValue / abs(pidValue)
+        self.prev_error = error
 
         return output
 
@@ -264,24 +277,27 @@ class velocityPlanning:
                 y_list.append((-x*x) - (y*y))
 
             #TODO: (6) 도로의 곡률 계산
-            '''
             # 도로의 곡률 반경을 계산하기 위한 수식입니다.
             # Path 데이터의 좌표를 이용해서 곡선의 곡률을 구하기 위한 수식을 작성합니다.
+
+			aMat = np.array(x_list)
+			bMat = np.array(y_list) 
+
             # 원의 좌표를 구하는 행렬 계산식, 최소 자승법을 이용하는 방식 등 곡률 반지름을 구하기 위한 식을 적용 합니다.
-            # 적용한 수식을 통해 곡률 반지름 "r" 을 계산합니다.
+            
+			aMatTrans = np.transpose(aMat)
+			resMat = np.linalg.inv(aMatTrans.dot(aMat)).dot(aMatTrans).dot(bMat)
 
-            r = 
+			# 적용한 수식을 통해 곡률 반지름 "r" 을 계산합니다.
 
-            '''
+            r = math.sqrt(resMat[0]*resMat[0] + resMat[1]*resMat[1] - resMat[2])
+
 
             #TODO: (7) 곡률 기반 속도 계획
-            '''
             # 계산 한 곡률 반경을 이용하여 최고 속도를 계산합니다.
             # 평평한 도로인 경우 최대 속도를 계산합니다. 
             # 곡률 반경 x 중력가속도 x 도로의 마찰 계수 계산 값의 제곱근이 됩니다.
-            v_max = 
-
-            '''
+            v_max = math.sqrt(r * 9.81 * self.raod_friction )
 
             if v_max > self.car_max_speed:
                 v_max = self.car_max_speed

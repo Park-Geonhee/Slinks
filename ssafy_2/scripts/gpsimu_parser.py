@@ -43,6 +43,7 @@ class GPSIMUParser:
         self.proj_UTM = Proj( 좌표 변환을 위한 변수 입력 )
 
         '''
+        self.proj_UTM = Proj(proj='utm', zone=52, ellps='WGS84', preserve_units=True)
 
         #TODO: (2) 송신 될 Odometry 메세지 변수 생성
         '''
@@ -55,6 +56,10 @@ class GPSIMUParser:
         self.odom_msg.child_frame_id = 
 
         '''
+        self.odom_msg = Odometry()
+        self.odom_msg.header.frame_id = '/odom'
+        self.odom_msg.child_frame_id = '/base_link'
+
 
         rate = rospy.Rate(30) # 30hz
         while not rospy.is_shutdown():
@@ -67,6 +72,7 @@ class GPSIMUParser:
                 self.odom_pub.
                 
                 '''
+                self.odom_pub.publish(self.odom_msg)
 
                 os.system('clear')
                 print(" ROS Odometry Msgs Pose ")
@@ -103,6 +109,14 @@ class GPSIMUParser:
             self.y = xy_zone[1] - self.n_o
 
         '''
+        xy_zone = self.proj_UTM(self.lon, self.lat)
+        
+        if self.lon == 0 and self.lat == 0:
+            self.x = 0.0
+            self.y = 0.0
+        else:
+            self.x = xy_zone[0] - self.e_o
+            self.y = xy_zone[1] - self.n_o
 
         #TODO: (4) Odometry 메세지 변수에 차량의 위치 및 상태 데이터 담기
         '''
@@ -113,6 +127,10 @@ class GPSIMUParser:
         self.odom_msg.pose.pose.position.z =
 
         '''
+        self.odom_msg.header.stamp = rospy.get_rostime()
+        self.odom_msg.pose.pose.position.x = self.x
+        self.odom_msg.pose.pose.position.y = self.y
+        self.odom_msg.pose.pose.position.z = 0.0
 
     def imu_callback(self, data):
 
@@ -132,6 +150,17 @@ class GPSIMUParser:
             self.odom_msg.pose.pose.orientation.w = data.orientation.w
 
         '''
+        if data.orientation.w == 0:
+            self.odom_msg.pose.pose.orientation.x = 0.0
+            self.odom_msg.pose.pose.orientation.y = 0.0
+            self.odom_msg.pose.pose.orientation.z = 0.0
+            self.odom_msg.pose.pose.orientation.w = 1.0
+        else:
+            self.odom_msg.pose.pose.orientation.x = data.orientation.x
+            self.odom_msg.pose.pose.orientation.y = data.orientation.y
+            self.odom_msg.pose.pose.orientation.z = data.orientation.z
+            self.odom_msg.pose.pose.orientation.w = data.orientation.w
+            
         self.is_imu=True
 
 if __name__ == '__main__':
