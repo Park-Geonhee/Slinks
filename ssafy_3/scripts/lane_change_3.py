@@ -292,7 +292,7 @@ class lc_path_pub :
 
         # 지역 좌표계로 변환
         #TODO: (6) 좌표 변환 행렬 생성
-        '''
+        
         # 좌표 변환 행렬을 만듭니다.
         # 차선 변경 경로를 만들기 위해서 차선변경을 시작하는 Point 좌표에서 
         # 차선 변경이 끝나는 Point 좌표의 상대 위치를 계산해야 합니다.
@@ -301,13 +301,11 @@ class lc_path_pub :
         translation = [start_point.pose.position.x, start_point.pose.position.y]
         theta       = atan2(start_next_point.pose.position.y-start_point.pose.position.y,start_next_point.pose.position.x-start_point.pose.position.x)
 
-        trans_matrix = np.array([   [           ,              ,               ],
-                                    [           ,              ,               ],
+        trans_matrix = np.array([   [ cos(theta), -sin(theta), translation[0]],
+                                    [ sin(theta),  cos(theta), translation[1]],
                                     [          0,             0,              1] ])
 
         det_trans_matrix = np.linalg.inv(trans_matrix)
-
-        '''
 
         world_end_point=np.array([[end_point.pose.position.x],[end_point.pose.position.y],[1]])
         local_end_point=det_trans_matrix.dot(world_end_point)
@@ -328,7 +326,7 @@ class lc_path_pub :
             waypoints_x.append(i*x_interval)
 
         #TODO: (7) 3차 곡선을 이용한 주행 경로 생성
-        '''
+        
         # 3 차 방정식을 이용하여 부드러운 차량 거동을 위한 차선변경 경로를 만듭니다.
         # 시작 위치와 목표 위치 사이 부드러운 곡선 경로를 주행하도록 합니다.
         # 차량이 차선 변경 시 알맞을 조향 각도를 조절하여 차선을 변경합니다.
@@ -342,19 +340,20 @@ class lc_path_pub :
         # 
         # 위에 예시로 작성한 3차 방정식을 아래 예제에 작성 한다.
 
-        d = 
-        c = 
-        b = 
-        a = 
+        d = 0
+        c = 0
+        b = 3 * y_end / pow(x_end, 2)
+        a = -2 * y_end / pow(x_end, 3)
 
         for i in waypoints_x:
-            result = # 3 차 방정식 수식을 작성한다. (f(x) = a*x^3 + b*x^2 + c*x + d)
+            # 3 차 방정식 수식을 작성한다. (f(x) = a*x^3 + b*x^2 + c*x + d)
+            result = a * pow(i, 3) + b * pow(i,2) + c * i + d
             waypoints_y.append(result)
 
-        '''
+        
 
         #TODO: (8) ros path 메시지 형식 경로 데이터 생성
-        '''
+        
         # out_path 변수에 정의한 ros path 데이터 형식에 맞춰 경로 데이터를 만든다.
         # Local Result 는 차선 변경 시작 위치 기준 좌표의 Point 정보이고
         # Global Result 는 map 기준 좌표의 Point 좌표 이다.
@@ -363,11 +362,11 @@ class lc_path_pub :
 
         for i in range(0,len(waypoints_y)) :
             local_result = np.array([[waypoints_x[i]],[waypoints_y[i]],[1]])
-            global_result = 
+            global_result = trans_matrix.dot(local_result)
 
             read_pose=PoseStamped()
-            read_pose.pose.position.x = 
-            read_pose.pose.position.y = 
+            read_pose.pose.position.x = global_result[0][0]
+            read_pose.pose.position.y = global_result[1][0]
             read_pose.pose.position.z = 0.
             read_pose.pose.orientation.x = 0
             read_pose.pose.orientation.y = 0
@@ -389,9 +388,6 @@ class lc_path_pub :
             read_pose.pose.orientation.z = 0
             read_pose.pose.orientation.w = 1
             out_path.poses.append(read_pose)
-
-
-        '''
 
         return out_path
 
