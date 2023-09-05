@@ -17,18 +17,11 @@ class IMGParser:
     def __init__(self):
         self.image_sub = rospy.Subscriber("/image_jpeg/compressed", CompressedImage, self.callback)
         
-        # image_size
         x = 640
         y = 480
 
-        #TODO: (1) 관심있는 영역만 지정.
-        '''
-        4개의 포인트를 지정
-        이미지의 좌표를 직접 지정해도 되고,
-        이미지의 비율로 정의해도 됩니다.
-        np.array 사용
-        '''
-        self.crop_pts = [[0,480][280,200],[380,200][640,480]]
+        self.crop_pts = np.array([[[0,480],[280,200],[360,200],[640,480]]])
+        # self.crop_pts = np.array([[[100,480],[280,200],[360,200],[500,480]]])
 
     def callback(self, msg):
         # uint8 : unsined integer 0~255 로 만들기 위함입니다.
@@ -52,10 +45,10 @@ class IMGParser:
 
         h = img.shape[0]
         w = img.shape[1]
-        
+        print(img.shape)
+
         # img.shape == [H,W,C]의 3차원이고 C RGB를 갖는 3채널입니다. RGB 이미지 입니다.
         if len(img.shape)==3:
-
             c = img.shape[2]
             mask = np.zeros((h, w, c), dtype=np.uint8)
             mask_value = (255, 255, 255)
@@ -63,29 +56,27 @@ class IMGParser:
         else:
             mask = np.zeros((h, w), dtype=np.uint8)
             mask_value = (255)
-        # TODO (1) 에서 마스킹 영역을 만들었고, 관심 있는 부분만을 이미지 원본으로 하고 나머지는 255(검은색)로 반환 해 주는
-        #내용이 들어가야 합니다.
-        #마스킹 영역을 만들기 위해서 다양한 방법을 사용할 수 있습니다만, 코드에서 이미 까만 이미지를 생성했습니다.
-        #이를 이용하는 방법을 찾아야 합니다.
         
-        #TODO: (2) 
-        '''
-        먼저 원하는 만큼의 좌표 점들을 선으로 긋고, 시작점과 끝점을 자동으로 연결하여 다각형을 그리는 함수를 opencv 함수를
-        찾습니다.
-        cv2.
-        '''
+        print(type(mask))
+        print(type(self.crop_pts))
+        print(type(mask_value))
+
+
         cv2.fillPoly(mask, self.crop_pts, mask_value)
-        
-        #TODO : (3)
-        '''
-        # 다음으로 RGB 이미지를 마스킹 하는 opencv 함수를 이용합니다. 비트연산을 하는 함수이며, 0,1을 이용하는 연산으로
-        두 이미지의 동일한 위치에 대한 연산을 진행합니다.
-        mask = cv2.
-        '''
         mask = cv2.bitwise_and(mask, img)
         
         return mask
 
+        # mask = np.zeros((h, w, c), dtype=np.uint8)
+
+        # if len(img.shape)==3:
+        #     mask_value = (255, 255, 255)
+        # else:
+        #     mask_value = (255)
+
+        # cv2.fillPoly(mask, self.crop_pts, mask_value)
+        # mask = cv2.bitwise_and(mask, img)
+        # return mask
 
 if __name__ == '__main__':
 
