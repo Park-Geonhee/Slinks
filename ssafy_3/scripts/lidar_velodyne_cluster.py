@@ -29,12 +29,12 @@ class SCANCluster:
         self.pc_np = None
 
         #TODO: (1) DBSCAN Parameter 입력
-        '''
+        
         # DBSCAN의 Parameter를 결정하는 영역입니다.
         # sklearn.cluster의 DBSCAN에 대해 조사하여 적절한 Parameter를 입력하기 바랍니다.
-
-        self.dbscan = DBSCAN( , , ...)
-        '''
+        # epsilon, min_samples, metric='euclidean', metric_params=None, algorithm='auto', leaf_size=30, p=None, n_jobs=None
+        self.dbscan = DBSCAN(eps=0.5, min_samples=5) 
+        
     
     def callback(self, msg):    
         self.pc_np = self.pointcloud2_to_xyz(msg)
@@ -43,7 +43,7 @@ class SCANCluster:
             cluster_msg = PoseArray()
 
         else:
-            pc_xy = self.pc_np[:, :2]
+            pc_xy = self.pc_np[:, :2] # all rows, 0~1 col
 
             db = self.dbscan.fit_predict(pc_xy)
 

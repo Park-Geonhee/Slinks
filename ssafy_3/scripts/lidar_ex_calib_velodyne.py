@@ -13,10 +13,10 @@ from numpy.linalg import inv
 parameters_cam ={
     "WIDTH": 640, #image width
     "HEIGHT": 480, #image height
-    "FOV": 90, # Field of view
+    "FOV": 90, # Field of views
     "X": 3.67, # meter
-    "Y": -0.16,
-    "Z": 0.49,
+    "Y": -0.01,
+    "Z": 0.51,
     "YAW": np.radians(0), # radian
     "PITCH": np.radians(0),
     "ROLL": np.radians(0)
@@ -65,15 +65,24 @@ def getRotMat(RPY):
 
 def getSensorToVehicleMat(sensorRPY, sensorPosition): # 4x4
     # Sensor To Vehicle Transformation Matrix를 계산하는 영역입니다.
-    sensorRotationMat = getRotMat(sensorRPY)
-    insert_col = [sensorPosition[0], sensorPosition[1], sensorPosition[2], 1]
-    
-    Tr_sensor_to_vehicle = np.zeros((4, 4))
-    Tr_sensor_to_vehicle[:3, :3] = sensorRotationMat
+    sensorRotationMat = np.zeros((4, 4))
+    sensorRotationMat[:3, :3] = getRotMat(sensorRPY)
+    sensorRotationMat[3, 3] = 1
+
+    sensorTranslationMat = np.zeros((4, 4))
+    insert_col = [sensorPosition[0], sensorPosition[1], sensorPosition[2]]
+    sensorTranslationMat[:3,3] = insert_col
     for i in range(4):
-        Tr_sensor_to_vehicle[i, 3] = insert_col[i]
-    Tr_sensor_to_vehicle[3, 3] = 1
+        sensorTranslationMat[i, i] = 1
+    print("Rot",sensorRotationMat)
+    print("Tr",sensorTranslationMat)
+    Tr_sensor_to_vehicle = sensorTranslationMat.dot(sensorRotationMat)
+    # sensorRotationMat = getRotMat(sensorRPY)
+    # sensorTranslationMat = np.array([sensorPosition])
+    # Tr_sensor_to_vehicle = np.concatenate((sensorRotationMat,sensorTranslationMat.T),axis = 1)
+    # Tr_sensor_to_vehicle = np.insert(Tr_sensor_to_vehicle, 3, values=[0,0,0,1],axis = 0)
     
+    print("sensorToveh",Tr_sensor_to_vehicle)
     return Tr_sensor_to_vehicle
 
 def getLiDARTOCameraTransformMat(camRPY, camPosition, lidarRPY, lidarPosition):
@@ -99,7 +108,7 @@ def getLiDARTOCameraTransformMat(camRPY, camPosition, lidarRPY, lidarPosition):
     # print("lidar X Tr_lidar_to_vehicle",lidar.dot(Tr_lidar_to_vehicle))
     Tr_cam_to_vehicle = getSensorToVehicleMat(camRPY, camPosition)
     Tr_vehicle_to_cam = inv(Tr_cam_to_vehicle)
-    Tr_lidar_to_cam = Tr_lidar_to_vehicle.dot(Tr_vehicle_to_cam)
+    Tr_lidar_to_cam = Tr_vehicle_to_cam.dot(Tr_lidar_to_vehicle)
     # Tr_lidar_to_cam = np.cross(Tr_lidar_to_vehicle,Tr_vehicle_to_cam)
  
     return Tr_lidar_to_cam
@@ -115,7 +124,7 @@ def getTransformMat(params_cam, params_lidar):
     camPosition = np.array([params_cam.get(i) for i in (["X","Y","Z"])]) + camPositionOffset    
     camRPY = np.array([params_cam.get(i) for i in (["ROLL","PITCH","YAW"])]) + np.array([-90*math.pi/180,0,-90*math.pi/180])
     lidarPosition = np.array([params_lidar.get(i) for i in (["X","Y","Z"])]) + lidarPositionOffset
-    lidarRPY = np.array([params_lidar.get(i) for i in (["ROLL","PITCH","YAW"])])    
+    lidarRPY = np.array([params_lidar.get(i) for i in (["ROLL","PITCH","YAW"])]) + np.array([0,0,0])   
     Tr_lidar_to_cam = getLiDARTOCameraTransformMat(camRPY, camPosition, lidarRPY, lidarPosition)
     return Tr_lidar_to_cam
 
@@ -139,19 +148,23 @@ def getCameraMat(params_cam):
     fov_rad = np.radians(fov)
     fov_x = np.radians(fov)
     fov_y = np.radians(fov * (float(camera_height) / camera_width)) # 480/640 *90 -> (3/4)*90 
+    print("fov x", fov_x)
+    print("fov_y", fov_y)
 
-    # 이미지 중심을 기준으로한 principal point를 계산
-    principal_x = camera_width / 2
-    principal_y = camera_height / 2
 
     # 초점거리(focal length)를 계산합니다.
     focal_length_x = (camera_width / 2) / np.tan(fov_x / 2)
+    print(np.tan(fov_x / 2))
     focal_length_y = (camera_height / 2) / np.tan(fov_y / 2)
-    print("fov x",focal_length_x)
-    print("fov y",focal_length_y)
+    print(np.tan(fov_y / 2))
+    print("focal x",focal_length_x)
+    print("focal y",focal_length_y)
+
+    # 이미지 중심을 기준으로한 principal point를 계산
+    principal_x = np.tan(fov_x / 2)*focal_length_x
+    principal_y = np.tan(fov_y / 2)*focal_length_y
     print("prin x",principal_x)
     print("prin y",principal_y)
-    camera_size = (camera_height**2 + camera_width**2)**0.5
     # focal_length_x= (camera_size/2)*np.tan(fov_x/2)
     # focal_length_y=(camera_size/2)*np.tan(fov_y/2)
     # print(focal_length)
@@ -160,7 +173,7 @@ def getCameraMat(params_cam):
     # [ 0   fy  cy ]
     # [ 0   0   1  ]
     CameraMat = np.array([[focal_length_x, 0, principal_x],
-                          [0, focal_length_y, principal_y],
+                          [0, focal_length_x, principal_y],
                           [0, 0, 1]])
     
     return CameraMat
@@ -206,13 +219,17 @@ class LiDARToCameraTransform:
     # Tip : for clear data use filtering
     def transformCameraToImage(self, pc_camera):
         pc_proj_to_img = self.CameraMat.dot(pc_camera)
-        print("after intrinsic",pc_proj_to_img)
-        print(np.size[pc_proj_to_img])
+        # print("after intrinsic[0]",pc_proj_to_img[0][0]) 
+        # print("after intrinsic[1]",pc_proj_to_img[1][0])
+        # print("after intrinsic[2]",pc_proj_to_img[2][0])
+        # print(len(pc_proj_to_img)) # 3
         pc_proj_to_img = np.delete(pc_proj_to_img,np.where(pc_proj_to_img[2,:]<0),axis=1)
-        pc_proj_to_img /= pc_proj_to_img[2,:]
-        print("after intrinsic",pc_proj_to_img[0])
-        print(np.size[pc_proj_to_img[0]])
-        exit(1)
+        pc_proj_to_img /= (pc_proj_to_img[2,:])
+        # print("after intrinsic[0]",pc_proj_to_img[0][0])
+        # print("after intrinsic[1]",pc_proj_to_img[1][0])
+        # print("after intrinsic[2]",pc_proj_to_img[2][0])
+        # print(len(pc_proj_to_img[0])) #5367
+  
         # pc_proj_to_img *= 0.9
         # pc_proj_to_img-=15
         pc_proj_to_img = np.delete(pc_proj_to_img,np.where(pc_proj_to_img[0,:]>self.width),axis=1)
