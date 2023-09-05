@@ -213,18 +213,49 @@ class latticePlanner:
             for end_point in local_lattice_points :
 
             '''
-            #for end_point in local_lattice_points :
-                
+            for idx, end_point in enumerate(local_lattice_points) :
+                waypoints_x = []
+                waypoints_y = []
+                x_interval = 0.5
+                x_start, x_end = 0, end_point[0]
+                y_start, y_end = 0, end_point[1]
+
+                x_num = x_end / x_interval
+
+                for i in range(x_start, int(x_num)):
+                    waypoints_x.append(i * x_interval)
+                a, b = -2 * y_end / pow(x_end, 3), 3 * y_end / pow(x_end, 2)
+
+                for i in waypoints_x:
+                    result = a * pow(i,3) + b * pow(i,2)
+                    waypoints_y.append(result)
+                    
+                for i in range(0,len(waypoints_y)) :
+                    local_result = np.array([[waypoints_x[i]],[waypoints_y[i]],[1]])
+                    global_result = trans_matrix.dot(local_result)
+
+                    read_pose=PoseStamped()
+                    read_pose.pose.position.x = global_result[0][0]
+                    read_pose.pose.position.y = global_result[1][0]
+                    read_pose.pose.position.z = 0.
+                    read_pose.pose.orientation.x = 0
+                    read_pose.pose.orientation.y = 0
+                    read_pose.pose.orientation.z = 0
+                    read_pose.pose.orientation.w = 1
+                    out_path.poses.append(read_pose)
 
             # Add_point            
             # 3 차 곡선 경로가 모두 만들어 졌다면 이후 주행 경로를 추가 합니다.
             add_point_size = min(int(vehicle_velocity * 2), len(ref_path.poses) )           
             
-            for i in range(look_distance*2,add_point_size):
+            for i in range(look_distance * 2, add_point_size):
                 if i+1 < len(ref_path.poses):
-                    tmp_theta = atan2(ref_path.poses[i + 1].pose.position.y - ref_path.poses[i].pose.position.y,ref_path.poses[i + 1].pose.position.x - ref_path.poses[i].pose.position.x)                    
-                    tmp_translation = [ref_path.poses[i].pose.position.x,ref_path.poses[i].pose.position.y]
-                    tmp_t = np.array([[cos(tmp_theta), -sin(tmp_theta), tmp_translation[0]], [sin(tmp_theta), cos(tmp_theta), tmp_translation[1]], [0, 0, 1]])
+                    tmp_theta = atan2(ref_path.poses[i + 1].pose.position.y - ref_path.poses[i].pose.position.y,
+                                      ref_path.poses[i + 1].pose.position.x - ref_path.poses[i].pose.position.x)                    
+                    tmp_translation = [ref_path.poses[i].pose.position.x, ref_path.poses[i].pose.position.y]
+                    tmp_t = np.array([[cos(tmp_theta), -sin(tmp_theta), tmp_translation[0]],
+                                      [sin(tmp_theta), cos(tmp_theta), tmp_translation[1]],
+                                      [0, 0, 1]])
 
                     for lane_num in range(len(lane_off_set)) :
                         local_result = np.array([[0], [lane_off_set[lane_num]], [1]])
