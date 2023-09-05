@@ -229,7 +229,7 @@ class latticePlanner:
                 for i in waypoints_x:
                     result = a * pow(i,3) + b * pow(i,2)
                     waypoints_y.append(result)
-                    
+
                 for i in range(0,len(waypoints_y)) :
                     local_result = np.array([[waypoints_x[i]],[waypoints_y[i]],[1]])
                     global_result = trans_matrix.dot(local_result)
@@ -242,7 +242,7 @@ class latticePlanner:
                     read_pose.pose.orientation.y = 0
                     read_pose.pose.orientation.z = 0
                     read_pose.pose.orientation.w = 1
-                    out_path.poses.append(read_pose)
+                    out_path[idx].poses.append(read_pose)
 
             # Add_point            
             # 3 차 곡선 경로가 모두 만들어 졌다면 이후 주행 경로를 추가 합니다.
