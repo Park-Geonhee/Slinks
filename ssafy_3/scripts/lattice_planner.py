@@ -219,7 +219,7 @@ class latticePlanner:
                 x_interval = 0.5
                 x_start, x_end = 0, end_point[0]
                 y_start, y_end = 0, end_point[1]
-                temp_out_path = []
+                temp_out_path = Path()
                 x_num = x_end / x_interval
 
                 for i in range(x_start, int(x_num)):
