@@ -32,7 +32,7 @@ class IMGParser:
 
         # 특정 색상 영역을 검출하기 위해 범위를 지정합니다.
         # 하한 값 행렬과 상한 값 행렬을 정해 그 사이의 값 만을 출력 하도록 합니다.
-        # 이번 예제에서는 흰색 영역을 검출합니다.s
+        # 이번 예제에서는 흰색 영역을 검출합니다.
 
         lower_wlane = np.array([0,0,205])
         upper_wlane = np.array([30,60,255])
@@ -42,10 +42,8 @@ class IMGParser:
         # 함수의 첫번째 변수에는 이미지 정보를 두번째는 하한 값 세번째는 상한 값 행렬식을 넣습니다.
 
         img_wlane = cv2.inRange(img_hsv,lower_wlane,upper_wlane)
-
-        img_wlane = cv2.cvtColor(img_wlane,cv2.COLOR_BGR2HSV)
-        
-        img_concat = np.concatenate([img_bgr,img_wlane],axis=1)
+        img_result = cv2.bitwise_and(img_bgr,img_bgr, mask=img_wlane)
+        img_concat = np.concatenate([img_bgr,img_result],axis=1)
 
         cv2.imshow("Image window", img_concat)
         cv2.waitKey(1) 
