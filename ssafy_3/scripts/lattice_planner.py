@@ -213,13 +213,13 @@ class latticePlanner:
             for end_point in local_lattice_points :
 
             '''
-            for idx, end_point in enumerate(local_lattice_points) :
+            for end_point in local_lattice_points :
                 waypoints_x = []
                 waypoints_y = []
                 x_interval = 0.5
                 x_start, x_end = 0, end_point[0]
                 y_start, y_end = 0, end_point[1]
-
+                temp_out_path = []
                 x_num = x_end / x_interval
 
                 for i in range(x_start, int(x_num)):
@@ -242,7 +242,8 @@ class latticePlanner:
                     read_pose.pose.orientation.y = 0
                     read_pose.pose.orientation.z = 0
                     read_pose.pose.orientation.w = 1
-                    out_path[idx].poses.append(read_pose)
+                    temp_out_path.poses.append(read_pose)
+                out_path.append(temp_out_path)
 
             # Add_point            
             # 3 차 곡선 경로가 모두 만들어 졌다면 이후 주행 경로를 추가 합니다.
