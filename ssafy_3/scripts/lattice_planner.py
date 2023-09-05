@@ -65,6 +65,14 @@ class latticePlanner:
 
 
         '''
+        self.local_path_sub = rospy.Subscriber("/local_path", Path, self.path_callback)
+        self.ego_status_sub = rospy.Subscriber("/Ego_topic", EgoVehicleStatus, self.status_callback)
+        self.lattice_path_pub = rospy.Publisher('/lattice_path', Path, queue_size=10)
+
+        self.ref_path = Path()  # Reference path
+        self.ego_status = EgoVehicleStatus()  # Ego vehicle's current status
+        
+        rospy.spin()
 
         self.is_path = False
         self.is_status = False
@@ -100,6 +108,14 @@ class latticePlanner:
                     break
 
         '''
+        is_crash = False
+        for obstacle in self.ego_status.obstacle_list:  # 가정: EgoVehicleStatus에 obstacle_list가 있다고 가정
+            for path in self.ref_path.poses:
+                dis = ((obstacle.position.x - path.pose.position.x) ** 2 + (obstacle.position.y - path.pose.position.y) ** 2) ** 0.5
+                if dis < 2.35: # 장애물의 좌표값이 지역 경로 상의 좌표값과의 직선거리가 2.35 미만일때 충돌이라 판단.
+                        is_crash = True
+                        break
+
 
         return is_crash
 
@@ -197,6 +213,8 @@ class latticePlanner:
             for end_point in local_lattice_points :
 
             '''
+            #for end_point in local_lattice_points :
+                
 
             # Add_point            
             # 3 차 곡선 경로가 모두 만들어 졌다면 이후 주행 경로를 추가 합니다.
@@ -232,6 +250,12 @@ class latticePlanner:
                 globals()['lattice_pub_{}'.format(i+1)].publish(out_path[i])
 
             '''
+            for i in range(len(out_path)):          
+                # 동적으로 Publisher 객체 생성
+                globals()['lattice_pub_{}'.format(i+1)] = rospy.Publisher('/lattice_path_{}'.format(i+1), Path, queue_size=1)
+
+                # 해당 경로를 발행
+                globals()['lattice_pub_{}'.format(i+1)].publish(out_path[i])
         return out_path
 
 if __name__ == '__main__':
