@@ -10,6 +10,7 @@ import numpy as np
 from geometry_msgs.msg import Point32,PoseStamped
 from nav_msgs.msg import Odometry,Path
 from morai_msgs.msg import ObjectStatus, ObjectStatusList, EgoVehicleStatus
+import time
 
 # lane_change 는 차량의 차선변경 예제입니다.
 # 차량 경로상의 장애물을 탐색하여 경로 상에 장애물이 있다면 차선 변경으로 회피 기동을 합니다.
@@ -102,6 +103,8 @@ class lc_path_pub :
             self.lc_2.poses.append(read_pose) 
 
         self.f.close()
+
+        self.prev_millis = time.time() * 1000
 
         self.is_object_info = False
         self.is_odom = False
@@ -293,10 +296,11 @@ class lc_path_pub :
                     if global_vaild_object[i][0]==1 or global_vaild_object[i][0]==2 :  
                         dis = sqrt(pow(local_vaild_object[i][1],2) + pow(local_vaild_object[i][2], 2))
                         if dis < 30 and abs(local_vaild_object[i][2]) < 0.5:
+                            self.cur_millis = time.time()*1000
                             rel_distance = dis                        
-                            if rel_distance < min_rel_distance:
+                            if (rel_distance < min_rel_distance) and (self.cur_millis - self.prev_millis > 1000):
                                 min_rel_distance = rel_distance
-                                # self.prev_mills = self.cur_mills
+                                self.prev_mills = self.cur_mills
                                 self.object=[True,i]
         
 
