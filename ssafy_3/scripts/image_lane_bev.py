@@ -17,9 +17,9 @@ def warp_image(img, source_prop):
     x = img.shape[1]
     y = img.shape[0]
     l_t = [280,240]
-    l_b = [0,350]
+    l_b = [20,350]
     r_t = [360,240]
-    r_b = [640,350]
+    r_b = [620,350]
     ## left top->letf bottom->right top -> right bottom
     source_points = np.float32([l_t,l_b,r_t,r_b])
     destination_points = np.float32([[0,0],[0,480],[640,0],[640,480]])
