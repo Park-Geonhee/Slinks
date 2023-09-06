@@ -32,7 +32,6 @@ class GPSIMUParser:
         self.is_gps=False
 
         #TODO: (1) 변환 하고자 하는 좌표계를 선언
-        '''
         # GPS 센서에서 수신되는 위도, 경도 데이터를 UTM 좌표료 변환 하기 위한 예제이다.
         # 해당 예제는 WGS84 좌표계에서 UTM 좌표계로의 변환을 진행한다.
         # 시뮬레이터 K-City Map 의 경우 UTM 좌표계를 사용하며 실제 지도 상 위치는 UTM 좌표계의 52 Zone 에 존제한다.
@@ -40,9 +39,8 @@ class GPSIMUParser:
         # 아래 주소의 링크를 클릭하여 Ptoj 의 사용 방법을 확인한다.
         # https://pyproj4.github.io/pyproj/stable/api/proj.html
         # " proj= , zone= , ellps =  , preserve_units = "
-        self.proj_UTM = Proj( 좌표 변환을 위한 변수 입력 )
+        # self.proj_UTM = Proj( 좌표 변환을 위한 변수 입력 )
 
-        '''
         self.proj_UTM = Proj(proj='utm', zone=52, ellps='WGS84', preserve_units=True)
 
         #TODO: (2) 송신 될 Odometry 메세지 변수 생성

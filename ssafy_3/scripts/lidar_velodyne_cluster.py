@@ -4,6 +4,7 @@
 import rospy
 import cv2
 import numpy as np
+import math
 
 from sensor_msgs.msg import PointCloud2
 import sensor_msgs.point_cloud2 as pc2
@@ -21,11 +22,8 @@ from sklearn.cluster import DBSCAN
 
 class SCANCluster:
     def __init__(self):
-
-        self.scan_sub = rospy.Subscriber("/velodyne_points", PointCloud2, self.callback)
-
-        self.cluster_pub = rospy.Publisher("clusters", PoseArray, queue_size=10)
-
+        self.scan_sub = rospy.Subscriber("/lidar3D", PointCloud2, self.callback)
+        self.cluster_pub = rospy.Publisher("clusters", PoseArray, queue_size=10) 
         self.pc_np = None
 
         #TODO: (1) DBSCAN Parameter 입력
@@ -39,34 +37,40 @@ class SCANCluster:
     def callback(self, msg):    
         self.pc_np = self.pointcloud2_to_xyz(msg)
         if len(self.pc_np) == 0:
-
-            cluster_msg = PoseArray()
+            cluster_msg = PoseArray() # header, poses[]
 
         else:
-            pc_xy = self.pc_np[:, :2] # all rows, 0~1 col
-
-            db = self.dbscan.fit_predict(pc_xy)
-
-            n_cluster = np.max(db) + 1
-
-            cluster_msg = PoseArray()
-
+            pc_xy = self.pc_np[:, :2] # all rows, 0~1 col -> each point's coordinate
+            print("pc_xy",pc_xy)
+            db = self.dbscan.fit_predict(pc_xy) # each point's cluster group 
+            print("db",db)
+           
+            n_cluster = np.max(db) + 1 # cluster group cnt
+           
+            cluster_msg = PoseArray() # header, poses[]
             cluster_list = []
 
             
             for cluster in range(n_cluster):
                 #TODO: (2) 각 Cluster를 대표하는 위치 값 계산                
-                '''
+                cluster_points = pc_xy[db==cluster]
+                
+                cluster_center_x = np.mean(cluster_points[:,0])
+                cluster_center_y = np.mean(cluster_points[:,1])
                 # DBSCAN으로 Clustering 된 각 Cluster의 위치 값을 계산하는 영역입니다.
                 # Cluster에 해당하는 Point들을 활용하여 Cluster를 대표할 수 있는 위치 값을 계산합니다.
                 # 계산된 위치 값을 ROS geometry_msgs/Pose type으로 입력합니다.
                 # Input : cluster
                 # Output : cluster position x,y   
 
-                tmp_pose=Pose()
-                #tmp_pose.position.x = 
-                #tmp_pose.position.y = 
-                '''
+                tmp_pose=Pose() # Point position (x,y,z), Quaternion orientation(x,y,z,w)
+                tmp_pose.position.x = cluster_center_x
+                tmp_pose.position.y = cluster_center_y
+
+                print("cluster",cluster)
+                print("x",cluster_center_x)
+                print("y",cluster_center_y)
+                # print(f'cluster_{cluster}_y {cluster_center_y}')
                 cluster_msg.poses.append(tmp_pose)
                 
         self.cluster_pub.publish(cluster_msg)
@@ -75,18 +79,19 @@ class SCANCluster:
 
         point_list = []
         
-        for point in pc2.read_points(cloud_msg, skip_nans=True):
+        for point in pc2.read_points(cloud_msg, skip_nans=True): 
+            # point : 'x', 'y', 'z', "intensity"
             #TODO: (3) PointCloud Data로부터 Distance, Angle 값 계산
-            '''
+            
             # LiDAR의 PointCloud Data로부터 Distance와 Angle 값을 계산하는 영역입니다.
             # 각 Point의 XYZ 값을 활용하여 Distance와 Yaw Angle을 계산합니다.
-            # Input : point (X, Y, Z, Intensity)            
+            # Input : point (X, Y, Z, Intensity)     
+            xy_dist = (point[0]**2+point[1]**2)**0.5
+            dist = (xy_dist**2+point[2]**2)**0.5
+            angle = math.atan(point[1]/point[0])
             
-            dist = 
-            angle = 
-            '''
             
-            if point[0] > 0 and 1.50 > point[2] > -1.25 and dist < 50:
+            if point[0] > 0 and 1.50 > point[2] > -1.25 and dist < 50: # 
                 point_list.append((point[0], point[1], point[2], point[3], dist, angle))
 
         point_np = np.array(point_list, np.float32)
