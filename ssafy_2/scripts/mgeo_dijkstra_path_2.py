@@ -76,6 +76,7 @@ class dijkstra_path_pub :
 
         self.is_goal_pose = False
         self.is_init_pose = False
+        self.reset_flag = 0
 
         while True:
             if self.is_goal_pose == True and self.is_init_pose == True:
@@ -97,14 +98,14 @@ class dijkstra_path_pub :
             # dijkstra 이용해 만든 Global Path 메세지 를 전송하는 publisher 를 만든다.
             '''
             self.global_path_pub.publish(self.global_path_msg)
-            
-            
+
+
+            #self.global_path_msg = self.calc_dijkstra_path_node(self.start_node, self.end_node)
 
 
             rate.sleep()
     
     def init_callback(self,msg):
-
         #TODO: (2) 시작 Node 와 종료 Node 정의
         # 시작 Node 는 Rviz 기능을 이용해 지정한 위치에서 가장 가까이 있는 Node 로 한다.
         '''
@@ -145,6 +146,8 @@ class dijkstra_path_pub :
                 min_dist = dist
                 self.end_node = node_idx
         self.is_goal_pose = True
+        self.global_path_msg = self.calc_dijkstra_path_node(self.start_node, self.end_node)
+
 
     def calc_dijkstra_path_node(self, start_node, end_node):
 
@@ -304,6 +307,7 @@ class Dijkstra:
             shortest_link, min_cost = self.find_shortest_link_leading_to_node(from_node,to_node)
             link_path.append(shortest_link.idx)
 
+        '''
         #TODO: (8) Result 판별
         if len(link_path) == 0:
             return False, {'node_path': node_path, 'link_path':link_path, 'point_path':[]}
@@ -311,6 +315,32 @@ class Dijkstra:
         #TODO: (9) point path 생성
         point_path = []        
         for link_id in link_path:
+            link = self.links[link_id]
+            for point in link.points:
+                point_path.append([point[0], point[1], 0])
+
+        return True, {'node_path': node_path, 'link_path':link_path, 'point_path':point_path}
+        '''
+        #TODO: (9) point path 생성
+        point_path = []        
+        for i, link_id in enumerate(link_path):
+            
+            '''
+            차선이 2개 이상인 경우 묶음으로서의 링크도 존재한다.
+            ex)
+            1차로 : link 101
+            2차로 : link 102
+            3차로 : link 103
+            인 경우, 3개의 링크는 각자 존재하고, 3개가 묶인 링크가 하나 더 존재한다.
+            1~3차로 : link 101-103
+            이러한 경우 해당 링크의 points는 시작점과 끝점만 가지고 있기 때문에 이를 바로 global path data로 넣지 않고,
+            이전 링크와 연결된 링크를 골라 global path에 추가해야 포인트들을 모두 넣을 수 있다.
+            '''
+            if link_id.find('-') != -1: #링크 묶음인 경우 idx에 '-'를 포함하고 있음 ex) A219BS010403-A219BS010405
+                links_sharing_from_node = self.links[link_id].get_from_node_sharing_links()
+                for link_sharing_from_node in links_sharing_from_node:
+                    if link_sharing_from_node.idx.find('-') != -1: continue
+                    link_id = link_sharing_from_node.idx
             link = self.links[link_id]
             for point in link.points:
                 point_path.append([point[0], point[1], 0])
