@@ -303,10 +303,10 @@ class velocityPlanning:
 
 
             #TODO: (7) 곡률 기반 속도 계획
-            # 계산 한 곡률 반경을 이용하여 최고 속도를 계산합니다.
+            # 계산 한 곡률 반경을 이용하여 최고 속도를획 계산합니다.
             # 평평한 도로인 경우 최대 속도를 계산합니다. 
             # 곡률 반경 x 중력가속도 x 도로의 마찰 계수 계산 값의 제곱근이 됩니다.
-            v_max = sqrt(r * 9.81 * self.road_friction )
+            v_max = sqrt(r * 9.81 * self.road_friction ) + 3
 
             if v_max > self.car_max_speed:
                 v_max = self.car_max_speed

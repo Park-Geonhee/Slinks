@@ -95,12 +95,16 @@ class dijkstra_path_pub :
             #TODO: (11) dijkstra 이용해 만든 Global Path 정보 Publish
             '''
             # dijkstra 이용해 만든 Global Path 메세지 를 전송하는 publisher 를 만든다.
-            self.global_path_pub.
-            
             '''
+            self.global_path_pub.publish(self.global_path_msg)
+            
+            
+
+
             rate.sleep()
     
     def init_callback(self,msg):
+
         #TODO: (2) 시작 Node 와 종료 Node 정의
         # 시작 Node 는 Rviz 기능을 이용해 지정한 위치에서 가장 가까이 있는 Node 로 한다.
         '''
@@ -110,11 +114,15 @@ class dijkstra_path_pub :
         # PoseWithCovarianceStamped 형식의 ROS 메세지를 Publish 합니다.
         # 해당 형식의 메세지를 Subscribe 해서  2D Pose Estimate 로 지정한 위치와 가장 가까운 노드를 탐색하는 합니다.
         # 가장 가까운 Node 가 탐색 된다면 이를 "self.start_node" 변수에 해당 Node Idx 를 지정합니다.
-
         self.start_node = node_idx
-
         '''
-
+        min_dist = 21e8
+        for node_idx, node in self.nodes.items():
+            #node = node.item_prop()
+            dist = pow(msg.pose.pose.position.x - node.point[0], 2) + pow(msg.pose.pose.position.y - node.point[1], 2)
+            if dist < min_dist:
+                min_dist = dist
+                self.start_node = node_idx
         self.is_init_pose = True
 
     def goal_callback(self,msg):
@@ -127,11 +135,15 @@ class dijkstra_path_pub :
         # PoseStamped 형식의 ROS 메세지를 Publish 합니다.
         # 해당 형식의 메세지를 Subscribe 해서  2D Nav Goal 로 지정한 위치와 가장 가까운 노드를 탐색하는 합니다.
         # 가장 가까운 Node 가 탐색 된다면 이를 "self.start_node" 변수에 해당 Node Idx 를 지정합니다.
-
         self.end_node = node_idx
-
         '''
-
+        min_dist = 21e8
+        for node_idx, node in self.nodes.items():
+            #node = node.item_prop()
+            dist = pow(msg.pose.position.x - node.point[0], 2) + pow(msg.pose.position.y - node.point[1], 2)
+            if dist < min_dist:
+                min_dist = dist
+                self.end_node = node_idx
         self.is_goal_pose = True
 
     def calc_dijkstra_path_node(self, start_node, end_node):
@@ -143,8 +155,23 @@ class dijkstra_path_pub :
         out_path.header.frame_id = '/map'
         '''
         # dijkstra 경로 데이터 중 Point 정보를 이용하여 Path 데이터를 만들어 줍니다.
-
         '''
+        print("node list")
+        for node in path['node_path']:
+            print(node)
+
+        print("link likst")
+        for link in path['link_path']:
+            print(link)
+            
+
+        for point in path['point_path']:
+            read_pose = PoseStamped()
+            read_pose.pose.position.x = float(point[0])
+            read_pose.pose.position.y = float(point[1])
+            read_pose.pose.position.z = float(point[2])
+            read_pose.pose.orientation.w = 1
+            out_path.poses.append(read_pose)
 
         return out_path
 
@@ -195,8 +222,18 @@ class Dijkstra:
         '''
         # 최단거리 Link 인 shortest_link 변수와
         # shortest_link 의 min_cost 를 계산 합니다.
-
         '''
+        connected_links = from_node.get_to_links()
+        shortest_link = None
+        min_cost = 10000
+        for link in connected_links:
+            if link.to_node != to_node : continue
+            #if link.idx.find('-') != -1 : continue
+            #if len(link.points) < min_cost:
+            if link.cost < min_cost:
+                #min_cost = len(link.points)
+                min_cost = link.cost
+                shortest_link = link
 
         return shortest_link, min_cost
         

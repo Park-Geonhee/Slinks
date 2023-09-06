@@ -2,7 +2,7 @@
     <node pkg="ssafy_ad" type="mgeo_pub.py" name="mgeo_pub"  />
     <node pkg="ssafy_ad" type="gpsimu_parser.py" name="gpsimu_parser" />
     <!-- <node pkg="ssafy_ad" type="global_path_pub.py" name="global_path_pub"  /> -->
-    <node pkg="ssafy_ad" type="mgeo_dijkstra_path_1.py" name="global_path_pub"  />
+    <node pkg="ssafy_ad" type="mgeo_dijkstra_path_2.py" name="global_path_pub"  />
     <node pkg="ssafy_ad" type="local_path_pub.py" name="local_path_pub" />    
     <node pkg="ssafy_ad" type="tf_pub.py" name="tf"  />
     <node pkg="ssafy_ad" type="lattice_planner.py" name="lattice_planner" output="screen" args="/Object_topic" />
