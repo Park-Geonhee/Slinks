@@ -24,8 +24,7 @@ from cv_bridge import CvBridgeError
 
 def non_maximum_supression(bboxes, threshold=0.3):
     
-    bboxes = sorted(bboxes, key=lambda detections: detections[3],
-            reverse=True)
+    bboxes = sorted(bboxes, key=lambda detections: detections[3],reverse=True)
     new_bboxes=[]
     
     new_bboxes.append(bboxes[0])

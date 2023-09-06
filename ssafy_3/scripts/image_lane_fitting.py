@@ -23,6 +23,7 @@ class IMGParser:
     def __init__(self, pkg_name='ssafy_ad'):
 
         self.image_sub = rospy.Subscriber("/image_jpeg/compressed", CompressedImage, self.callback)
+        # self.ego_sub = rospy.Subscriber("/Ego_topic", EgoVehicleStatus, self.ego_callback)
         rospy.Subscriber("/odom", Odometry, self.odom_callback)
         self.path_pub = rospy.Publisher('/lane_path', Path, queue_size=30)
 
@@ -30,7 +31,7 @@ class IMGParser:
         self.img_lane = None
         self.edges = None
         self.is_status = False
-
+        
         self.lower_wlane = np.array([0, 0, 205])
         self.upper_wlane = np.array([30, 60, 255])
         self.lower_ylane = np.array([0, 70, 120])
@@ -46,24 +47,19 @@ class IMGParser:
 
         params_cam = sensor_params["params_cam"]
         bev_op = BEVTransform(params_cam=params_cam)
-        curve_learner = CURVEFit(order=3, lane_width=5, dx=0.2, y_margin=0.8, x_range=8, min_pts=3)
+        curve_learner = CURVEFit(order=4, lane_width=5, dx=0.2, y_margin=0.8, x_range=8, min_pts=5)
         rate = rospy.Rate(10)
 
         while not rospy.is_shutdown():
             if self.img_bgr is not None and self.is_status == True:
-                cv2.imwrite('origin.jpg',self.img_bgr)
                 img_crop = self.mask_roi(self.img_bgr)
-                cv2.imwrite('mask.jpg',img_crop)
                 img_warp = bev_op.warp_bev_img(img_crop)
-                cv2.imwrite('bev.jpg',img_warp)
                 img_lane = self.binarize(img_warp)
-                cv2.imwrite('binarize.jpg',img_lane)
                 img_f = bev_op.warp_inv_img(img_lane)
-                cv2.imwrite('inv.jpg',img_f)
                 lane_pts = bev_op.recon_lane_pts(img_f)
 
                 try:
-                    x_pred, y_pred_l, y_pred_r = curve_learner.fit_curve(lane_pts)
+                    x_pred, y_pred_l, y_pred_r,self.edges = curve_learner.fit_curve(lane_pts)
                     curve_learner.set_vehicle_status(self.status_msg)
                     lane_path = curve_learner.write_path_msg(x_pred, y_pred_l, y_pred_r)
                     xyl, xyr = bev_op.project_lane2img(x_pred, y_pred_l, y_pred_r)
@@ -71,6 +67,18 @@ class IMGParser:
                                                xyl[:, 1].astype(np.int32),
                                                xyr[:, 0].astype(np.int32),
                                                xyr[:, 1].astype(np.int32))
+                    
+                    if self.edges:
+                        print("Lane DEPATURE!!")
+                        font = cv2.FONT_HERSHEY_SIMPLEX  # 폰트 선택
+                        font_scale = 0.5  # 폰트 크기
+                        font_color = (0, 0, 255)  # 폰트 색상 (BGR 포맷, 초록색)
+                        font_thickness = 2  # 폰트 두께
+
+                        # 이미지에 텍스트 작성
+                        text = "Lane Department"  # 작성할 텍스트 내용
+                        position = (200, 300)  # 텍스트를 작성할 위치 (x, y 좌표)
+                        cv2.putText(img_f, text, position, font, font_scale, font_color, font_thickness)
                 except:
                     continue
                 self.path_pub.publish(lane_path)
@@ -83,6 +91,9 @@ class IMGParser:
     def odom_callback(self, msg):  ## Vehicl Status Subscriber
         self.status_msg = msg
         self.is_status = True
+
+    def ego_callback(self,msg):
+        print(msg)
 
     def callback(self, msg):
         try:
@@ -138,7 +149,7 @@ class BEVTransform:
     def __init__(self, params_cam, xb=10.0, zb=10.0):
         self.xb = xb
         self.zb = zb
-
+        self.prev_xyz=None
         # Camera Parmas
         self.theta = np.deg2rad(params_cam["PITCH"])
         self.width = params_cam["WIDTH"]
@@ -243,6 +254,7 @@ class BEVTransform:
 
         else:
             xyz_g = np.zeros((4, 10))
+
 
         return xyz_g
 
@@ -378,13 +390,24 @@ class CURVEFit:
         # RANSAC의 개념 및 아래 링크를 참고하여 적절한 Parameter를 입력하기 바랍니다.
         # https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.RANSACRegressor.html
         '''
-        self.ransac_left = linear_model.RANSACRegressor(base_estimator=linear_model.LassoCV(alphas=[0.1,0.01,0.5,1],cv=3),
+        # self.ransac_left = linear_model.RANSACRegressor(base_estimator=linear_model.LassoCV(alphas=[1,0.1,0.01,0.5],cv=5),
+        #                                                 max_trials=10000000000000,
+        #                                                 loss='absolute_loss',
+        #                                                 min_samples=self.min_pts,
+        #                                                 residual_threshold=self.y_margin)
+
+        # self.ransac_right = linear_model.RANSACRegressor(base_estimator=linear_model.LassoCV(alphas=[1,0.1,0.01,0.5],cv=5),
+        #                                                  max_trials=10000000000000,
+        #                                                  loss='absolute_loss',
+        #                                                  min_samples=self.min_pts,
+        #                                                  residual_threshold=self.y_margin)
+        self.ransac_left = linear_model.RANSACRegressor(base_estimator=linear_model.Lasso(alpha=1),
                                                         max_trials=10000000000000,
                                                         loss='absolute_loss',
                                                         min_samples=self.min_pts,
                                                         residual_threshold=self.y_margin)
 
-        self.ransac_right = linear_model.RANSACRegressor(base_estimator=linear_model.LassoCV(alphas=[0.1,0.01,0.5,1],cv=3),
+        self.ransac_right = linear_model.RANSACRegressor(base_estimator=linear_model.Lasso(alpha=1),
                                                          max_trials=10000000000000,
                                                          loss='absolute_loss',
                                                          min_samples=self.min_pts,
@@ -453,37 +476,40 @@ class CURVEFit:
         except:
             return
 
+        if len(y_left)==0 and len(y_right)==0:
+            edge=True
+        else:
+            edge=False
+
         if len(y_left) == 0 or len(y_right) == 0:
             self._init_model()
             x_left, y_left, x_right, y_right = self.preprocess_pts(lane_pts)
 
-        X_left = np.stack([x_left ** i for i in reversed(range(1, self.order + 1))]).T
-        X_right = np.stack([x_right ** i for i in reversed(range(1, self.order + 1))]).T
-
+        # Weakness model
         if y_left.shape[0] >= self.ransac_left.min_samples:
+            X_left = np.stack([x_left ** i for i in reversed(range(1, self.order + 1))]).T
             self.ransac_left.fit(X_left, y_left)
 
+        # Weakness model
         if y_right.shape[0] >= self.ransac_right.min_samples:
+            X_right = np.stack([x_right ** i for i in reversed(range(1, self.order + 1))]).T
             self.ransac_right.fit(X_right, y_right)
             
         x_pred = np.arange(0, self.x_range, self.dx).astype(np.float32)
         X_pred = np.stack([x_pred ** i for i in reversed(range(1, self.order + 1))]).T
 
         y_pred_l = self.ransac_left.predict(X_pred)
-        y_pred_r = self.ransac_right.predict(X_pred)
-        
-        # print("Left Lane Model Accuracy:")
-        # print(self.ransac_left.score(X_left,y_left))
-        # print("Right Lane Model Accuracy:")
-        # print(self.ransac_right.score(X_right,y_right))
+        y_pred_r = self.ransac_right.predict(X_pred)   
 
-        # Update lane_width
+        # Good model, update lane width
         if y_left.shape[0] >= self.ransac_left.min_samples and y_right.shape[0] >= self.ransac_right.min_samples:
             self.update_lane_width(y_pred_l, y_pred_r)
 
+        # left model is weak
         if y_left.shape[0] < self.ransac_left.min_samples:
             y_pred_l = y_pred_r + self.lane_width
 
+        # right model is weak
         if y_right.shape[0] < self.ransac_right.min_samples:
             y_pred_r = y_pred_l - self.lane_width
 
@@ -497,7 +523,8 @@ class CURVEFit:
                 pass
         else:
             pass
-        return x_pred, y_pred_l, y_pred_r
+
+        return x_pred, y_pred_l, y_pred_r, edge
 
     # finish
     def update_lane_width(self, y_pred_l, y_pred_r):
@@ -515,10 +542,12 @@ class CURVEFit:
             [0, 0, 1]])
 
         self.lane_path.header.frame_id = frame_id
-
+        # print(y_pred_l) 
+        # print(y_pred_r)
         for i in range(len(x_pred)):
             local_result = np.array([[x_pred[i]], [(0.5) * (y_pred_l[i] + y_pred_r[i])], [1]])
             global_result = trans_matrix.dot(local_result)
+            #print("Center Point : ("+str(global_result[0])+","+str(global_result[1])+")")
             tmp_pose = PoseStamped()
             tmp_pose.pose.position.x = global_result[0][0]
             tmp_pose.pose.position.y = global_result[1][0]
