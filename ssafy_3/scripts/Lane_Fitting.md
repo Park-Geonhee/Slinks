@@ -23,7 +23,6 @@
 	def maskroi	           : 이미지 내 특정 영역 선택
 	def draw_lane_img	   : 이미지 내 검출된 차선 표시
 
----
 ## Class BEVTransform
 	theta 		 : cam Pitch radian
 	width 		 : cam width
@@ -50,8 +49,7 @@
 	def translationMtx    : x,y,z 이동 매트릭스
 	def rotationMtx       : y,p,r 회전 매트릭스
 
----
-## Class CURVEFit:
+## Class CURVEFit
 	order		  : 다항식 차수, 높으면 오버피팅 가능성 높다
 	lane_width	  : 가상 차선의 너비, 계속 업데이트
 	y_margin	  : 예측 차선 노이즈 범위
