@@ -5,6 +5,7 @@ import os, sys
 import rospy
 import rospkg
 import tf
+import time
 from math import cos,sin,pi,sqrt,pow,atan2
 import numpy as np
 from geometry_msgs.msg import Point32,PoseStamped
@@ -106,6 +107,7 @@ class lc_path_pub :
         self.lane_change = False        
         self.current_lane = 1
 
+        self.prev_mills = 0
         #TODO: (3) 읽어 온 경로 데이터를 Global Path 로 지정
         '''
         # 읽어 온 Path 데이터 중 Ego 차량의 시작 경로를 지정합니다.
@@ -123,9 +125,9 @@ class lc_path_pub :
 
                 self.local_path_make(global_path)
 
-                currnet_waypoint = self.get_current_waypoint(self.x,self.y,global_path)
+                current_waypoint = self.get_current_waypoint(self.x,self.y,global_path)
 
-                global_path = self.lc_planning(global_npc_info,local_npc_info,currnet_waypoint,global_path)
+                global_path = self.lc_planning(global_npc_info,local_npc_info,current_waypoint,global_path)
 
                 #TODO: (7) 경로 데이터 Publish
                 '''
@@ -157,7 +159,7 @@ class lc_path_pub :
     
     def get_current_waypoint(self,x,y,global_path):
         min_dist = float('inf')        
-        currnet_waypoint = -1
+        current_waypoint = -1
         for i,pose in enumerate(global_path.poses):
             dx = x - pose.pose.position.x
             dy = y - pose.pose.position.y
@@ -165,8 +167,8 @@ class lc_path_pub :
             dist = sqrt(pow(dx,2)+pow(dy,2))
             if min_dist > dist :
                 min_dist = dist
-                currnet_waypoint = i
-        return currnet_waypoint
+                current_waypoint = i
+        return current_waypoint
     
     def local_path_make(self,global_path):
                 
@@ -233,19 +235,19 @@ class lc_path_pub :
 
         return global_npc_info, local_npc_info
 
-    def lc_planning(self,global_obj,local_obj,currnet_waypoint,global_path):
+    def lc_planning(self,global_obj,local_obj,current_waypoint,global_path):
         #TODO: (5) 장애물이 있다면 주행 경로를 변경 하도록 로직 작성
         '''
         # 전방에 장애물이 있다면 차선 변경을 시작하는 로직을 작성합니다.
         # 차선 변경을 시작하면 차선 변경을 위한 경로를 생성합니다.
         # 차선 변경을 위한 경로를 주행 중 경로 끝에 도달하면 차선 변경을 한 차선으로 경로를 변경합니다. 
         # 차선변경을 시작하면 경로 상 장애물은 체크 하지 않도록 합니다.
-
         '''
         lane_change_distance = 30 * 2 # (point-to-point distance 0.5m)
+        print(self.current_lane)
 
         if self.lane_change == True:
-            if currnet_waypoint + self.local_path_size > len(global_path.poses):
+            if current_waypoint + self.local_path_size > len(global_path.poses):
                 self.lane_change = False
                 if self.current_lane == 1:
                     global_path = self.lc_1
@@ -254,22 +256,23 @@ class lc_path_pub :
         else:
             self.check_object(self.local_path_msg,global_obj,local_obj)
         
+
         if self.object[0] == True:
             if self.current_lane != 1:
                 self.current_lane = 1
-                start_point         = self.lc_2.poses[currnet_waypoint]  
-                end_waypoint_idx    = self.get_current_waypoint(self.lc_1.poses[currnet_waypoint+lane_change_distance].pose.position.x,self.lc_1.poses[currnet_waypoint+lane_change_distance].pose.position.y,self.lc_1)
+                start_point         = self.lc_2.poses[current_waypoint]  
+                end_waypoint_idx    = self.get_current_waypoint(self.lc_1.poses[current_waypoint+lane_change_distance].pose.position.x,self.lc_1.poses[current_waypoint+lane_change_distance].pose.position.y,self.lc_1)
                 end_point           = self.lc_1.poses[end_waypoint_idx]
-                start_next_point    = self.lc_2.poses[currnet_waypoint+5]  
+                start_next_point    = self.lc_2.poses[current_waypoint+5]  
                 global_path = self.getLaneChangePath(self.lc_2,self.lc_1,start_point,end_point,start_next_point, end_waypoint_idx)
                 self.lane_change = True
                 self.object=[False,0]
             else:
                 self.current_lane = 2
-                start_point         = self.lc_1.poses[currnet_waypoint]  
-                end_waypoint_idx = self.get_current_waypoint(self.lc_2.poses[currnet_waypoint+lane_change_distance].pose.position.x,self.lc_2.poses[currnet_waypoint+lane_change_distance].pose.position.y,self.lc_2)
+                start_point         = self.lc_1.poses[current_waypoint]  
+                end_waypoint_idx = self.get_current_waypoint(self.lc_2.poses[current_waypoint+lane_change_distance].pose.position.x,self.lc_2.poses[current_waypoint+lane_change_distance].pose.position.y,self.lc_2)
                 end_point           = self.lc_2.poses[end_waypoint_idx]
-                start_next_point    = self.lc_1.poses[currnet_waypoint+5]  
+                start_next_point    = self.lc_1.poses[current_waypoint+5]  
                 global_path = self.getLaneChangePath(self.lc_1,self.lc_2,start_point,end_point,start_next_point, end_waypoint_idx)
                 self.lane_change = True
                 self.object=[False,0]
@@ -296,9 +299,12 @@ class lc_path_pub :
                         dis = sqrt(pow(local_vaild_object[i][1],2)+pow(local_vaild_object[i][2],2))
                         
                         if dis<30 and abs(local_vaild_object[i][2]) < 0.5:
+                            self.cur_millis = time.time()*1000
                             rel_distance= dis                     
-                            if rel_distance < min_rel_distance:
+                            if (rel_distance < min_rel_distance) and (self.cur_millis - self.prev_mills > 1000):
                                 min_rel_distance = rel_distance 
+                                print(self.cur_millis - self.prev_mills)
+                                self.prev_mills = self.cur_millis
                                 print(min_rel_distance)
                                 self.object=[True,i]
 
@@ -317,10 +323,10 @@ class lc_path_pub :
         '''
 
         point_to_point_distance = 0.5
-        start_path_distance = sqrt(pow(start_point.pose.position.x - end_point.pose.position.x) + pow(start_point.pose.position.y - end_point.pose.position.y))
+        start_path_distance = sqrt(pow(start_point.pose.position.x - end_point.pose.position.x, 2) + pow(start_point.pose.position.y - end_point.pose.position.y, 2))
         start_path_repeat = int(start_path_distance/point_to_point_distance)
 
-        theta = atan2(start_point.pose.position.y-start_point.pose.position.y,end_point.pose.position.x-end_point.pose.position.x)
+        theta = atan2(start_point.pose.position.y-end_point.pose.position.y,start_point.pose.position.x-end_point.pose.position.x)
 
         ratation_matric_1 = np.array([  [   cos(theta), -sin(theta)  ],
                                         [   sin(theta),  cos(theta)  ]    ])
@@ -331,7 +337,7 @@ class lc_path_pub :
             roation_matric_calc = np.matmul(ratation_matric_1,ratation_matric_2)
             read_pose=PoseStamped()
             read_pose.pose.position.x = roation_matric_calc[0][0]
-            read_pose.pose.position.y = roation_matric_calc[0][1]
+            read_pose.pose.position.y = roation_matric_calc[1][0]
             read_pose.pose.position.z = 0
             read_pose.pose.orientation.x = 0
             read_pose.pose.orientation.y = 0
