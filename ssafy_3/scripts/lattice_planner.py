@@ -111,7 +111,7 @@ class latticePlanner:
         for obstacle in object_data.obstacle_list:  # 가정: EgoVehicleStatus에 obstacle_list가 있다고 가정
             for path in ref_path.poses:
                 dis = ((obstacle.position.x - path.pose.position.x) ** 2 + (obstacle.position.y - path.pose.position.y) ** 2) ** 0.5
-                if dis < 10: # 장애물의 좌표값이 지역 경로 상의 좌표값과의 직선거리가 2.35 미만일때 충돌이라 판단.
+                if dis < 2.35: # 장애물의 좌표값이 지역 경로 상의 좌표값과의 직선거리가 2.35 미만일때 충돌이라 판단.
                         is_crash = True
                         break
 
@@ -137,7 +137,7 @@ class latticePlanner:
             for path_num in range(len(out_path)) :                    
                 for path_pos in out_path[path_num].poses :                                
                     dis = sqrt(pow(obstacle.position.x - path_pos.pose.position.x, 2) + pow(obstacle.position.y - path_pos.pose.position.y, 2))
-                    if dis < 10:
+                    if dis < 1.5:
                         lane_weight[path_num] = lane_weight[path_num] + 100
 
         selected_lane = lane_weight.index(min(lane_weight))                    
@@ -196,7 +196,7 @@ class latticePlanner:
             local_end_point = det_trans_matrix.dot(world_end_point)
             world_ego_vehicle_position = np.array([[vehicle_pose_x], [vehicle_pose_y], [1]])
             local_ego_vehicle_position = det_trans_matrix.dot(world_ego_vehicle_position)
-            lane_off_set = [-4.5, -3.0, -1.5, 1.5, 3.0, 4.5]
+            lane_off_set = [-10.5, -7.0, -3.5, 3.5, 7.0, 10.5]
             local_lattice_points = []
             
             for i in range(len(lane_off_set)):
