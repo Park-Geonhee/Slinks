@@ -36,7 +36,7 @@ class IMGParser:
         self.lower_ylane = np.array([0, 70, 120])
         self.upper_ylane = np.array([40, 195, 230])
         #self.crop_pts = np.array([[[100, 480], [0, 350], [280, 200], [360, 200], [640, 350], [500, 480]]])
-        self.crop_pts = np.array([[[0,480],[0,350],[280,200],[360,200],[640,350],[640,480]]])
+        self.crop_pts = np.array([[[0,350],[280,200],[360,200],[640,350]]])
 
         rospack = rospkg.RosPack()
         currentPath = rospack.get_path(pkg_name)
@@ -46,15 +46,20 @@ class IMGParser:
 
         params_cam = sensor_params["params_cam"]
         bev_op = BEVTransform(params_cam=params_cam)
-        curve_learner = CURVEFit(order=4, lane_width=5, dx=0.2, y_margin=0.8, x_range=8, min_pts=3)
+        curve_learner = CURVEFit(order=3, lane_width=5, dx=0.2, y_margin=0.8, x_range=8, min_pts=3)
         rate = rospy.Rate(10)
 
         while not rospy.is_shutdown():
             if self.img_bgr is not None and self.is_status == True:
+                cv2.imwrite('origin.jpg',self.img_bgr)
                 img_crop = self.mask_roi(self.img_bgr)
+                cv2.imwrite('mask.jpg',img_crop)
                 img_warp = bev_op.warp_bev_img(img_crop)
+                cv2.imwrite('bev.jpg',img_warp)
                 img_lane = self.binarize(img_warp)
+                cv2.imwrite('binarize.jpg',img_lane)
                 img_f = bev_op.warp_inv_img(img_lane)
+                cv2.imwrite('inv.jpg',img_f)
                 lane_pts = bev_op.recon_lane_pts(img_f)
 
                 try:
@@ -69,6 +74,7 @@ class IMGParser:
                 except:
                     continue
                 self.path_pub.publish(lane_path)
+                cv2.imwrite("result.jpg",img_f)
                 cv2.imshow("Received Image", img_f)
                 cv2.waitKey(1)
 
