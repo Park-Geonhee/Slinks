@@ -418,7 +418,7 @@ class AdaptiveCruiseControl:
         # 장애물의 대한 정보는 List 형식으로 self.object 변수의 두번째 값으로 둡니다.
         # 장애물의 유무 판단은 주행 할 경로에서 얼마나 떨어져 있는지를 보고 판단 합니다.
         # 아래 예제는 주행 경로에서 Object 까지의 거리를 파악하여 
-        # 경로를 기준으로 2.5 m -> 10m 안쪽에 있다면 주행 경로 내 장애물이 있다고 판단 합니다.
+        # 경로를 기준으로 2.5 m 안쪽에 있다면 주행 경로 내 장애물이 있다고 판단 합니다.
         # 주행 경로 상 장애물이 여러게 있는 경우 가장 가까이 있는 장애물 정보를 가지도록 합니다.
         
         # 주행 경로 상 보행자 유무 파악
@@ -427,9 +427,9 @@ class AdaptiveCruiseControl:
             for i in range(len(global_ped_info)):
                 for path in ref_path.poses :      
                     if global_ped_info[i][0] == 0 : # type=0 [pedestrian]                    
-                        dis = sqrt(pow(local_ped_info[i][1], 2) + pow(local_ped_info[i][2], 2))
-                        if dis < 20 and abs(local_ped_info[i][2]) < 0.5:                            
-                            rel_distance = dis
+                        dis = sqrt(pow(global_ped_info[i][1] - path.pose.position.x, 2) + pow(global_ped_info[i][2] - path.pose.position.y, 2))
+                        if dis < 2.5:                            
+                            rel_distance = sqrt(pow(local_ped_info[i][1], 2) + pow(local_ped_info[i][2], 2))
                             if rel_distance < min_rel_distance:
                                 min_rel_distance = rel_distance
                                 self.Person=[True,i]        
@@ -440,9 +440,9 @@ class AdaptiveCruiseControl:
             for i in range(len(global_npc_info)):
                 for path in ref_path.poses :      
                     if global_npc_info[i][0] == 1 : # type=1 [npc_vehicle] 
-                        dis = sqrt(pow(local_npc_info[i][1], 2) + pow(local_npc_info[i][2], 2))
-                        if dis < 20 and abs(local_npc_info[i][2]) < 0.5:
-                            rel_distance = dis
+                        dis = sqrt(pow(global_npc_info[i][1] - path.pose.position.x, 2) + pow(global_npc_info[i][2] - path.pose.position.y, 2))
+                        if dis < 2.5:
+                            rel_distance = sqrt(pow(local_npc_info[i][1], 2) + pow(local_npc_info[i][2], 2))
                             if rel_distance < min_rel_distance:
                                 min_rel_distance = rel_distance
                                 self.npc_vehicle=[True,i]
@@ -457,12 +457,12 @@ class AdaptiveCruiseControl:
             for i in range(len(global_obs_info)):
                 for path in ref_path.poses :      
                     if global_obs_info[i][0] == 2 : # type=1 [obstacle] 
-                        dis = sqrt(pow(local_obs_info[i][1], 2) + pow(local_obs_info[i][2], 2))
-                        if dis < 20 and abs(local_obs_info[i][2]) < 0.5:
-                            rel_distance = dis                
+                        dis = sqrt(pow(global_obs_info[i][1] - path.pose.position.x, 2) + pow(global_obs_info[i][2] - path.pose.position.y, 2))
+                        if dis < 2.5:
+                            rel_distance = sqrt(pow(local_obs_info[i][1], 2) + pow(local_obs_info[i][2], 2))               
                             if rel_distance < min_rel_distance:
                                 min_rel_distance = rel_distance
-                                # self.object=[True,i] 
+                                self.object=[True,i] 
 
         
     def get_target_velocity(self, local_npc_info, local_ped_info, local_obs_info, ego_vel, target_vel): 
@@ -506,7 +506,10 @@ class AdaptiveCruiseControl:
 
             out_vel = ego_vel + acceleration           
 
-        return min(out_vel ,target_vel) * 3.6
+        out_vel = min(out_vel, target_vel) * 3.6
+        print("now Target_vel = ", out_vel)
+
+        return out_vel
 
 
 if __name__ == '__main__':
