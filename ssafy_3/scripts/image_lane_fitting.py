@@ -133,7 +133,7 @@ class IMGParser:
         \n leftx, lefty, rightx, righty : curve fitting result
         '''
         point_np = cv2.cvtColor(np.copy(img), cv2.COLOR_GRAY2BGR)
-
+        print(leftx)
         # Left Lane
         for ctr in zip(leftx, lefty):
             point_np = cv2.circle(point_np, ctr, 2, (255, 0, 0), -1)
@@ -546,8 +546,10 @@ class CURVEFit:
         # print(y_pred_r)
         for i in range(len(x_pred)):
             local_result = np.array([[x_pred[i]], [(0.5) * (y_pred_l[i] + y_pred_r[i])], [1]])
+            print(x_pred[i],y_pred_l[i])
+            print(x_pred[i],y_pred_r[i])
             global_result = trans_matrix.dot(local_result)
-            #print("Center Point : ("+str(global_result[0])+","+str(global_result[1])+")")
+            print("Center Point : ("+str(global_result[0])+","+str(global_result[1])+")")
             tmp_pose = PoseStamped()
             tmp_pose.pose.position.x = global_result[0][0]
             tmp_pose.pose.position.y = global_result[1][0]
