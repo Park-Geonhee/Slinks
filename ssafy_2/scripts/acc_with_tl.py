@@ -11,6 +11,7 @@ import numpy as np
 import tf
 import sys
 import os
+import time
 from tf.transformations import euler_from_quaternion,quaternion_from_euler
 from lib.mgeo.class_defs import *
 current_path = os.path.dirname(os.path.realpath(__file__))
@@ -175,6 +176,7 @@ class pure_pursuit :
 
     def traffic_light_callback(self,msg):
         self.traffic_light_info = msg
+        print(msg.trafficLightIndex, " : ", msg.trafficLightStatus, time.time())
         self.is_traffic_light_info = True
 
     def get_current_waypoint(self,ego_status,global_path):
@@ -503,19 +505,16 @@ class AdaptiveCruiseControl:
                                 self.object=[True,i] 
 
         # 주행 경로 상 Traffic Light 유무 파악
-        if global_tl_info:            
-            for path in ref_path.poses :      
+        if global_tl_info:     
+            for path in ref_path.poses :        
                 dis = sqrt(pow(global_tl_info[0][0] - path.pose.position.x, 2) + pow(global_tl_info[0][1] - path.pose.position.y, 2))
                 if dis < 2.5:
-                    rel_distance = sqrt(pow(local_tl_info[0][0], 2) + pow(local_tl_info[0][1], 2))               
+                    rel_distance = sqrt(pow(local_tl_info[0][0], 2) + pow(local_tl_info[0][1], 2))           
                     if rel_distance < min_rel_distance:
                         min_rel_distance = rel_distance
-                        #print(global_tl_info)
-                        if global_tl_info[2] == 1 : 
-                            self.tl=[True,0] 
-                            print(global_tl_info)
-                        else:
-                            self.tl=[False,0]
+                        #print(global_tl_info)               
+                        self.tl=[True,0]
+
         
     def get_target_velocity(self, local_npc_info, local_ped_info, local_obs_info, local_tl_info, ego_vel, target_vel): 
         #TODO: (9) 장애물과의 속도와 거리 차이를 이용하여 ACC 를 진행 목표 속도를 설정
@@ -560,17 +559,20 @@ class AdaptiveCruiseControl:
 
         
         if self.tl[0]: #ACC ON_traffic_light
-            print("ACC ON Traffic light")
-            dis_safe = ego_vel * time_gap + default_space + 6
-            dis_rel = sqrt(pow(local_tl_info[0][0],2) + pow(local_tl_info[0][1],2))            
-            vel_rel=(0 - ego_vel)                        
-            acceleration = vel_rel * v_gain * 3 - x_errgain * (dis_safe - dis_rel)
-            out_vel = ego_vel + acceleration
+            #print("ACC ON Traffic light")
 
+            if (local_tl_info[2] == 1 or (local_tl_info[2]== 33)) and local_tl_info[0][0]>0 : 
+                dis_safe = ego_vel * time_gap + default_space + 6
+                dis_rel = sqrt(pow(local_tl_info[0][0],2) + pow(local_tl_info[0][1],2))            
+                vel_rel=(0 - ego_vel)                        
+                acceleration = vel_rel * v_gain * 3 - x_errgain * (dis_safe - dis_rel) *5
+                out_vel = ego_vel + acceleration
+
+            
 
         out_vel = min(out_vel, target_vel) * 3.6
 
-        print("now Target_vel = ", out_vel)
+        #print("now Target_vel = ", out_vel)
 
         return out_vel
 
