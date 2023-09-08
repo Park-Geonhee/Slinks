@@ -418,7 +418,7 @@ class velocityPlanning:
             # 계산 한 곡률 반경을 이용하여 최고 속도를 계산합니다.
             # 평평한 도로인 경우 최대 속도를 계산합니다. 
             # 곡률 반경 x 중력가속도 x 도로의 마찰 계수 계산 값의 제곱근이 됩니다.
-            v_max =sqrt(r * 9.81 * self.road_friction )
+            v_max =sqrt(r * 9.81 * self.road_friction ) + 1.5
 
             if v_max > self.car_max_speed:
                 v_max = self.car_max_speed
@@ -561,11 +561,11 @@ class AdaptiveCruiseControl:
         if self.tl[0]: #ACC ON_traffic_light
             #print("ACC ON Traffic light")
 
-            if (local_tl_info[2] == 1 or (local_tl_info[2]== 33)) and local_tl_info[0][0]>0 : 
-                dis_safe = ego_vel * time_gap + default_space + 6
+            if (local_tl_info[2] == 1 or (local_tl_info[2]== 33) or (local_tl_info[2]== 5)) and local_tl_info[0][0]>0 : 
+                dis_safe = ego_vel * time_gap*0.25 + default_space + 6
                 dis_rel = sqrt(pow(local_tl_info[0][0],2) + pow(local_tl_info[0][1],2))            
                 vel_rel=(0 - ego_vel)                        
-                acceleration = vel_rel * v_gain * 3 - x_errgain * (dis_safe - dis_rel) *5
+                acceleration = vel_rel * v_gain - x_errgain * (dis_safe - dis_rel)
                 out_vel = ego_vel + acceleration
 
             
