@@ -19,7 +19,14 @@ from sklearn.cluster import DBSCAN
 # 1. DBSCAN Parameter 입력
 # 2. 각 Cluster를 대표하는 위치 값 계산
 # 3. PointCloud Data로부터 Distance, Angle 값 계산
-
+parameters_lidar = {
+    "X": 1.58, # meter
+    "Y": -0.01,
+    "Z": 1.07,
+    "YAW": np.radians(0), # radian
+    "PITCH": np.radians(0),
+    "ROLL": np.radians(0)
+}
 class SCANCluster:
     def __init__(self):
         self.scan_sub = rospy.Subscriber("/lidar3D", PointCloud2, self.callback)
@@ -32,49 +39,66 @@ class SCANCluster:
         # sklearn.cluster의 DBSCAN에 대해 조사하여 적절한 Parameter를 입력하기 바랍니다.
         # epsilon, min_samples, metric='euclidean', metric_params=None, algorithm='auto', leaf_size=30, p=None, n_jobs=None
         self.dbscan = DBSCAN(eps=0.5, min_samples=5) 
-        
-    
+        cosY = math.cos(parameters_lidar["YAW"])
+        sinY = math.sin(parameters_lidar["YAW"])
+        posX = parameters_lidar['X']
+        posY = parameters_lidar['Y']
+        posZ = parameters_lidar['Z']
+        # self.trans_matrix = np.array([
+        #             [1, 0, parameters_lidar['X']],
+        #             [0, 1, parameters_lidar['Y']],
+        #             [0, 0, 1]
+        #         ])
+        self.trans_matrix = np.array([
+            [cosY, -sinY, 0, posX],
+            [sinY, cosY, 0, posY],
+            [0, 0, 1, posZ],
+            [0, 0, 0, 1]
+        ])
     def callback(self, msg):    
         self.pc_np = self.pointcloud2_to_xyz(msg)
+        # print("pc_np",self.pc_np)
         if len(self.pc_np) == 0:
             cluster_msg = PoseArray() # header, poses[]
 
         else:
-            pc_xy = self.pc_np[:, :2] # all rows, 0~1 col -> each point's coordinate
-            print("pc_xy",pc_xy)
-            db = self.dbscan.fit_predict(pc_xy) # each point's cluster group 
-            print("db",db)
+            pc_xyz = self.pc_np[:, :3] # all rows, 0~1 col -> each point's coordinate
+            # print("pc_xy",pc_xy)
+            db = self.dbscan.fit_predict(pc_xyz[:, :2]) # each point's cluster group 
+            # print("db",db)
            
             n_cluster = np.max(db) + 1 # cluster group cnt
            
             cluster_msg = PoseArray() # header, poses[]
             cluster_list = []
 
-            
+            print('start')
             for cluster in range(n_cluster):
                 #TODO: (2) 각 Cluster를 대표하는 위치 값 계산                
-                cluster_points = pc_xy[db==cluster]
+                cluster_points = pc_xyz[db==cluster]
                 
                 cluster_center_x = np.mean(cluster_points[:,0])
                 cluster_center_y = np.mean(cluster_points[:,1])
+                cluster_center_z = np.mean(cluster_points[:,2])
+                # print("center_z",cluster_center_z)
                 # DBSCAN으로 Clustering 된 각 Cluster의 위치 값을 계산하는 영역입니다.
                 # Cluster에 해당하는 Point들을 활용하여 Cluster를 대표할 수 있는 위치 값을 계산합니다.
                 # 계산된 위치 값을 ROS geometry_msgs/Pose type으로 입력합니다.
                 # Input : cluster
                 # Output : cluster position x,y   
-
+                local_result = np.array([[cluster_center_x],[cluster_center_y],[cluster_center_z],[1]])
+                local_result = self.trans_matrix.dot(local_result) # local coordi to clusters msg
+               
+                # print('cluster', cluster_center_x, ', ',cluster_center_y)
                 tmp_pose=Pose() # Point position (x,y,z), Quaternion orientation(x,y,z,w)
-                tmp_pose.position.x = cluster_center_x
-                tmp_pose.position.y = cluster_center_y
+                tmp_pose.position.x = local_result[0][0]
+                tmp_pose.position.y = local_result[1][0]
+                tmp_pose.position.z = local_result[2][0]
+                print(tmp_pose)
 
-                print("cluster",cluster)
-                print("x",cluster_center_x)
-                print("y",cluster_center_y)
-                # print(f'cluster_{cluster}_y {cluster_center_y}')
-                cluster_msg.poses.append(tmp_pose)
-                
-        self.cluster_pub.publish(cluster_msg)
-
+                cluster_msg.poses.append(tmp_pose)  
+        self.cluster_pub.publish(cluster_msg)  
+        
     def pointcloud2_to_xyz(self, cloud_msg):
 
         point_list = []
@@ -91,7 +115,7 @@ class SCANCluster:
             angle = math.atan(point[1]/point[0])
             
             
-            if point[0] > 0 and 1.50 > point[2] > -1.25 and dist < 50: # 
+            if point[0] > 0 and 2 > point[2] > -1.25 and dist < 50: # 
                 point_list.append((point[0], point[1], point[2], point[3], dist, angle))
 
         point_np = np.array(point_list, np.float32)

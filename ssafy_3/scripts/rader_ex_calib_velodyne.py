@@ -1,12 +1,23 @@
 #!/usr/bin/env python
 #-*- coding:utf-8 -*-
 
+# rader extrinsic cal to camera
+'''
+RaderDetections.msg
+
+Header header
+RadarDetectionp[] RadarDetections
+'''
+'''
+
+'''
 import rospy
 import cv2
 import numpy as np
 import math
 import time
-from sensor_msgs.msg import PointCloud2, CompressedImage, PointCloud
+from sensor_msgs.msg import PointCloud2, CompressedImage
+from morai_msgs.msg import RadarDetections
 import sensor_msgs.point_cloud2 as pc2
 from numpy.linalg import inv
 
@@ -22,9 +33,9 @@ parameters_cam ={
     "ROLL": np.radians(0)
 }
 parameters_lidar = {
-    "X": 1.58, # meter
-    "Y": -0.01,
-    "Z": 1.07,
+    "X": 3.68, # meter
+    "Y": -0.14,
+    "Z": 0.51,
     "YAW": np.radians(0), # radian
     "PITCH": np.radians(0),
     "ROLL": np.radians(0)
@@ -65,24 +76,12 @@ def getRotMat(RPY):
 
 def getSensorToVehicleMat(sensorRPY, sensorPosition): # 4x4
     # Sensor To Vehicle Transformation Matrix를 계산하는 영역입니다.
-    sensorRotationMat = np.zeros((4, 4))
-    sensorRotationMat[:3, :3] = getRotMat(sensorRPY)
-    sensorRotationMat[3, 3] = 1
-
-    sensorTranslationMat = np.zeros((4, 4))
-    insert_col = [sensorPosition[0], sensorPosition[1], sensorPosition[2]]
-    sensorTranslationMat[:3,3] = insert_col
-    for i in range(4):
-        sensorTranslationMat[i, i] = 1
-    # print("Rot",sensorRotationMat)
-    # print("Tr",sensorTranslationMat)
-    Tr_sensor_to_vehicle = sensorTranslationMat.dot(sensorRotationMat)
-    # sensorRotationMat = getRotMat(sensorRPY)
-    # sensorTranslationMat = np.array([sensorPosition])
-    # Tr_sensor_to_vehicle = np.concatenate((sensorRotationMat,sensorTranslationMat.T),axis = 1)
-    # Tr_sensor_to_vehicle = np.insert(Tr_sensor_to_vehicle, 3, values=[0,0,0,1],axis = 0)
+    sensorRotationMat = getRotMat(sensorRPY)
+    sensorTranslationMat = np.array([sensorPosition])
+    Tr_sensor_to_vehicle = np.concatenate((sensorRotationMat,sensorTranslationMat.T),axis = 1)
+    Tr_sensor_to_vehicle = np.insert(Tr_sensor_to_vehicle, 3, values=[0,0,0,1],axis = 0)
     
-    # print("sensorToveh",Tr_sensor_to_vehicle)
+    print("sensorToveh",Tr_sensor_to_vehicle)
     return Tr_sensor_to_vehicle
 
 def getLiDARTOCameraTransformMat(camRPY, camPosition, lidarRPY, lidarPosition):
@@ -148,63 +147,56 @@ def getCameraMat(params_cam):
     fov_rad = np.radians(fov)
     fov_x = np.radians(fov)
     fov_y = np.radians(fov * (float(camera_height) / camera_width)) # 480/640 *90 -> (3/4)*90 
+
     # 초점거리(focal length)를 계산합니다.
-    focal_length = (camera_width / 2) / np.tan(fov_x / 2)
+    focal_length_x = (camera_width / 2) / np.tan(fov_x / 2)
+    focal_length_y = (camera_height / 2) / np.tan(fov_y / 2)
+
 
     # 이미지 중심을 기준으로한 principal point를 계산
-    principal_x = camera_width/2
-    principal_y = camera_height/2
+    principal_x = np.tan(fov_x / 2)*focal_length_x
+    principal_y = np.tan(fov_y / 2)*focal_length_y
 
 
-    CameraMat = np.array([[focal_length, 0, principal_x],
-                          [0, focal_length, principal_y],
+    CameraMat = np.array([[focal_length_x, 0, principal_x],
+                          [0, focal_length_x, principal_y],
                           [0, 0, 1]])
     
     return CameraMat
     
-def getVehicleToCameraMat(params_sensor):
-    camPositionOffset = np.array([0.1085, 0, 0])  # Camera Offset  x,y,z
-    sensorPosition = np.array([params_sensor.get(i) for i in (["X","Y","Z"])]) + camPositionOffset  
-    sensorRPY = np.array([params_sensor.get(i) for i in (["ROLL","PITCH","YAW"])]) + np.array([-90*math.pi/180,0,-90*math.pi/180])
-    mat = getSensorToVehicleMat(sensorRPY, sensorPosition)
-    mat = inv(mat)
 
-    return mat
-class LiDARToCameraTransform:
-    def __init__(self, params_cam, params_lidar): 
-        self.scan_sub = rospy.Subscriber("/lidar3D", PointCloud2, self.scan_callback)
+class RadarToCameraTransform:
+    def __init__(self, params_cam, params_radar): 
+        self.radar_sub = rospy.Subscriber('/radar', RadarDetections, self.scan_callback)
         self.image_sub = rospy.Subscriber("/image_jpeg/compressed", CompressedImage, self.img_callback)
-        self.obj_sub = rospy.Subscriber("/object_pc", PointCloud, self.obj_pc_callback)
         self.pc_np = None
-        self.obj_pc = None
         self.img = None
         self.width = params_cam["WIDTH"]
         self.height = params_cam["HEIGHT"]
-        self.TransformMat = getTransformMat(params_cam, params_lidar)
-        self.vehicleToCameraMat = getVehicleToCameraMat(params_cam)
+        self.TransformMat = getTransformMat(params_cam, params_radar)
         self.CameraMat = getCameraMat(params_cam)
-        
         print("init")
 
     def img_callback(self, msg):
         np_arr = np.frombuffer(msg.data, np.uint8)
         self.img = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
 
-    def scan_callback(self, msg):
+    def scan_callback(self, msg): #RaderDetection[] RadarDetections
+        ''' RaderDetection
+        uint16 detection_id
+        geometry_msgs/Point Position
+        float32 azimuth
+        float32 rangerate
+        float32 amplitude
+        '''
+        # print(msg)
         point_list = []
-        for point in pc2.read_points(msg, skip_nans=True):
-            point_list.append((point[0], point[1], point[2], 1))
+        for point in msg.detections :
+            print("test",point.position)
+            point_list.append((point.position[0],point.position[1],point.position[2],1))
         self.pc_np = np.array(point_list, np.float32)
-
-    def obj_pc_callback(self, msg):
-        point_list = []
-        for point in msg.points:
-            point_list.append((point.x, point.y, point.z, 1))
-        self.obj_pc = np.array(point_list, np.float32)
-
     #TODO : (5.1) LiDAR Pointcloud to Camera Frame
-    # Input
-        # pc_lidar : pointcloud data w.r.t. lidar frame
+    # Inputframe
     # Output
         # pc_wrt_cam : pointcloud data w.r.t. camera frame
     def transformLiDARToCamera(self, pc_lidar):
@@ -220,18 +212,13 @@ class LiDARToCameraTransform:
     # Tip : for clear data use filtering
     def transformCameraToImage(self, pc_camera):
         pc_proj_to_img = self.CameraMat.dot(pc_camera)
-
-        print("img after transform",pc_proj_to_img) # 3
         pc_proj_to_img = np.delete(pc_proj_to_img,np.where(pc_proj_to_img[2,:]<0),axis=1)
         pc_proj_to_img /= (pc_proj_to_img[2,:])
-        # print(len(pc_proj_to_img[0])) #5367
-        print("img after transform2",pc_proj_to_img) # 3
         pc_proj_to_img = np.delete(pc_proj_to_img,np.where(pc_proj_to_img[0,:]>self.width),axis=1)
         pc_proj_to_img = np.delete(pc_proj_to_img,np.where(pc_proj_to_img[1,:]>self.height),axis=1)
-        print("img after transform3",pc_proj_to_img) # 3
+ 
         return pc_proj_to_img
 
-    
 def draw_pts_img(img, xi, yi):
     point_np = img
 
@@ -240,37 +227,33 @@ def draw_pts_img(img, xi, yi):
     return point_np
 
 if __name__ == '__main__':
-    rospy.init_node('ex_calib', anonymous=True)
-    Transformer = LiDARToCameraTransform(parameters_cam, parameters_lidar)
+    rospy.init_node('ex_calib_rader', anonymous=True)
+    Transformer = RadarToCameraTransform(parameters_cam, parameters_lidar)
     time.sleep(1)
     rate = rospy.Rate(10)
-
+    
     while not rospy.is_shutdown():
-
         xyz_p = Transformer.pc_np[:, 0:3] # for all rows, 0~2 col datas -> create new array
-        print("xyz_p",type(xyz_p))
         xyz_p = np.insert(xyz_p,3,1,axis=1).T # insert value 1 to col 3
         xyz_p = np.delete(xyz_p,np.where(xyz_p[0,:]<0),axis=1) # for all points, x < 0 -> delete behind vehicle
+        # print(xyz_p)
+        #xyz_p = np.delete(xyz_p,np.where(xyz_p[0,:]>10),axis=1)
+        #xyz_p = np.delete(xyz_p,np.where(xyz_p[2,:]<-1.2),axis=1) #Ground Filter
+        #print(xyz_p[0])
 
-        # xyz_c = Transformer.transformLiDARToCamera(xyz_p)
-        # xy_i = Transformer.transformCameraToImage(xyz_c)
+        xyz_c = Transformer.transformLiDARToCamera(xyz_p)
+        # print(xyz_c)
+        #print(np.size(xyz_c[0]))
 
+        xy_i = Transformer.transformCameraToImage(xyz_c)
+        # #print(np.size(xy_i[0]))
+        # xy_i = np.delete(xy_i, np.where(xy_i[0,:]>400),axis=1)
+        # xy_i = np.delete(xy_i, np.where(xy_i[1,:]>300),axis=1)
+        # print(xy_i)
         #TODO: (6) PointCloud가 Image에 투영된 Processed Image 시각화
-        # xy_i = xy_i.astype(np.int32)
-        # projectionImage = draw_pts_img(Transformer.img, xy_i[0,:], xy_i[1,:])   
-        obj_p = Transformer.obj_pc[:, 0:3]
-
-        obj_p = np.insert(obj_p,3,1,axis=1).T
-        print("obj_p type",type(obj_p))
-        obj_p = Transformer.vehicleToCameraMat.dot(obj_p) # 4x4
-        print("obj_p type",type(obj_p))
-        obj_p = np.delete(obj_p, 3, axis=0)
-        # print("obj_p",obj_p)
-
-        obj_xy = Transformer.transformCameraToImage(obj_p)
-        print("obj_image_xy",obj_xy)
-        obj_xy = obj_xy.astype(np.int32)
-        projectionImage = draw_pts_img(Transformer.img, obj_xy[0,:], obj_xy[1,:])
+        xy_i = xy_i.astype(np.int32)
+        projectionImage = draw_pts_img(Transformer.img, xy_i[0,:], xy_i[1,:])   
+    
         cv2.imshow("LidartoCameraProjection", projectionImage)
         cv2.waitKey(1)
 
