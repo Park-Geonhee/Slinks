@@ -32,12 +32,12 @@ class IMGParser:
         self.edges = None
         self.is_status = False
         
-        self.lower_wlane = np.array([0, 0, 205])
-        self.upper_wlane = np.array([30, 60, 255])
+        self.lower_wlane = np.array([250, 250, 250])
+        self.upper_wlane = np.array([255, 255, 255])
         self.lower_ylane = np.array([0, 70, 120])
-        self.upper_ylane = np.array([40, 195, 230])
-        #self.crop_pts = np.array([[[100, 480], [0, 350], [280, 200], [360, 200], [640, 350], [500, 480]]])
-        self.crop_pts = np.array([[[0,350],[280,200],[360,200],[640,350]]])
+        self.upper_ylane = np.array([40, 255, 255])
+        self.crop_pts = np.array([[[0, 480], [0, 350], [280, 200], [360, 200], [640, 350], [640, 480]]])
+        #self.crop_pts = np.array([[[0,350],[280,200],[360,200],[640,350]]])
 
         rospack = rospkg.RosPack()
         currentPath = rospack.get_path(pkg_name)
@@ -57,7 +57,6 @@ class IMGParser:
                 img_lane = self.binarize(img_warp)
                 img_f = bev_op.warp_inv_img(img_lane)
                 lane_pts = bev_op.recon_lane_pts(img_f)
-                print("finish img preprocess")
                 try:
                     x_pred, y_pred_l, y_pred_r,self.edges = curve_learner.fit_curve(lane_pts)
                     curve_learner.set_vehicle_status(self.status_msg)
@@ -67,7 +66,6 @@ class IMGParser:
                                                xyl[:, 1].astype(np.int32),
                                                xyr[:, 0].astype(np.int32),
                                                xyr[:, 1].astype(np.int32))
-                    print("finish recon lane")
                     
                     if self.edges:
                         print("Lane DEPATURE!!")
@@ -90,7 +88,6 @@ class IMGParser:
                 rate.sleep()
 
     def odom_callback(self, msg):  ## Vehicl Status Subscriber
-        # print("get odom")
         self.status_msg = msg
         self.is_status = True
 
@@ -98,7 +95,6 @@ class IMGParser:
         print(msg)
 
     def callback(self, msg):
-        # print("getcam")
         try:
             np_arr = np.fromstring(msg.data, np.uint8)
             self.img_bgr = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
@@ -106,10 +102,14 @@ class IMGParser:
             print(e)
 
     def binarize(self, img):
-        img_hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+        # intensity Camera
+        # img_hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+        # img_wlane = cv2.inRange(img_hsv, self.lower_wlane, self.upper_wlane)
+        # img_ylane = cv2.inRange(img_hsv, self.lower_ylane, self.upper_ylane)
 
-        img_wlane = cv2.inRange(img_hsv, self.lower_wlane, self.upper_wlane)
-        img_ylane = cv2.inRange(img_hsv, self.lower_ylane, self.upper_ylane)
+        # sementic  Camera
+        img_wlane = cv2.inRange(img, self.lower_wlane, self.upper_wlane)
+        img_ylane = cv2.inRange(img, self.lower_ylane, self.upper_ylane)
 
         self.img_lane = cv2.bitwise_or(img_wlane, img_ylane)
 
@@ -530,8 +530,6 @@ class CURVEFit:
 
     # finish
     def update_lane_width(self, y_pred_l, y_pred_r):
-        # if y_l - y_r < 3.5 -> 3.5
-        # else if y_l - y_r > 5 -> 5
         self.lane_width = np.clip(np.max(y_pred_l - y_pred_r), 3.5, 5)
 
     # finish
@@ -544,8 +542,6 @@ class CURVEFit:
             [0, 0, 1]])
 
         self.lane_path.header.frame_id = frame_id
-        # print(y_pred_l) 
-        # print(y_pred_r)
         for i in range(len(x_pred)):
             local_result = np.array([[x_pred[i]], [(0.5) * (y_pred_l[i] + y_pred_r[i])], [1]])
             local_result_l=np.array([[x_pred[i]], [y_pred_l[i]], [1]])
@@ -554,9 +550,9 @@ class CURVEFit:
             global_result_l = trans_matrix.dot(local_result_l)
             global_result_r = trans_matrix.dot(local_result_r)
             
-            print("UTM left lane : (" + str(global_result_l[0])+","+str(global_result_l[1])+")")
-            print("UTM right lane : (" + str(global_result_r[0])+","+str(global_result_r[1])+")")
-            print("UTM center lane : ("+str(global_result[0])+","+str(global_result[1])+")")
+            # print("UTM left lane : (" + str(global_result_l[0])+","+str(global_result_l[1])+")")
+            # print("UTM right lane : (" + str(global_result_r[0])+","+str(global_result_r[1])+")")
+            # print("UTM center lane : ("+str(global_result[0])+","+str(global_result[1])+")")
             tmp_pose = PoseStamped()
             tmp_pose.pose.position.x = global_result[0][0]
             tmp_pose.pose.position.y = global_result[1][0]
