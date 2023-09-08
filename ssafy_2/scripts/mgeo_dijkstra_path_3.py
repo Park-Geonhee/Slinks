@@ -12,6 +12,7 @@ import json
 from math import cos,sin,sqrt,pow,atan2,pi
 from geometry_msgs.msg import Point32,PoseStamped, PoseWithCovarianceStamped
 from nav_msgs.msg import Odometry,Path
+from std_msgs.msg import Float64MultiArray
 
 current_path = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(current_path)
@@ -53,14 +54,20 @@ from lib.mgeo.class_defs import *
 # 
 
 '''
+
+#경유지 리스트
+stopover_list = [[],[]]
+
 class dijkstra_path_pub :
     def __init__(self):
         rospy.init_node('dijkstra_path_pub', anonymous=True)
 
         self.global_path_pub = rospy.Publisher('/global_path',Path, queue_size = 1)
 
-        rospy.Subscriber('/move_base_simple/goal', PoseStamped, self.goal_callback)
-        rospy.Subscriber('/initialpose', PoseWithCovarianceStamped, self.init_callback)
+        rospy.Subscriber('/pinpoint_utm_list', Float64MultiArray, self.pinpoint_list_callback)
+
+        #rospy.Subscriber('/move_base_simple/goal', PoseStamped, self.goal_callback)
+        #rospy.Subscriber('/initialpose', PoseWithCovarianceStamped, self.init_callback)
 
         #TODO: (1) Mgeo data 읽어온 후 데이터 확인
         load_path = os.path.normpath(os.path.join(current_path, 'lib/mgeo_data/R_KR_PG_K-City'))
@@ -89,7 +96,11 @@ class dijkstra_path_pub :
         self.global_path_msg = Path()
         self.global_path_msg.header.frame_id = '/map'
 
-        self.global_path_msg = self.calc_dijkstra_path_node(self.start_node, self.end_node)
+        if self.is_node_list:
+            for i in range(len(self.target_node_list)-1):
+                now_path = Path()
+                now_path = self.calc_dijkstra_path_node(self.target_node_list[i], self.target_node_list[i+1])
+                self.global_path_msg.poses.extend(now_path.poses)
 
         rate = rospy.Rate(10) # 10hz
         while not rospy.is_shutdown():
@@ -98,8 +109,6 @@ class dijkstra_path_pub :
             # dijkstra 이용해 만든 Global Path 메세지 를 전송하는 publisher 를 만든다.
             '''
             self.global_path_pub.publish(self.global_path_msg)
-
-
             #self.global_path_msg = self.calc_dijkstra_path_node(self.start_node, self.end_node)
 
 
@@ -147,6 +156,22 @@ class dijkstra_path_pub :
                 self.end_node = node_idx
         self.is_goal_pose = True
         self.global_path_msg = self.calc_dijkstra_path_node(self.start_node, self.end_node)
+
+    def pinpoint_list_callback(self, msg):
+        self.target_node_list = []
+        pinpoint_list = msg
+        #각각의 핀포인트(출발지,경유지,도착지)마다 가장 가까운 노드를 담는 리스트를 만든다.
+        for pinpoint in pinpoint_list:
+            min_dist = 21e8
+            nearest_node = None
+            for node_idx, node in self.nodes.items():
+                dist = pow(pinpoint[0] - node.point[0], 2) + pow(pinpoint[1] - node.point[1], 2)
+                if dist < min_dist:
+                    min_dist = dist
+                    nearest_node = node_idx
+            self.target_node_list.append(nearest_node)
+            self.is_node_list = True
+
 
     def calc_dijkstra_path_node(self, start_node, end_node):
 
