@@ -91,7 +91,7 @@ class latticePlanner:
                     self.lattice_path_pub.publish(self.local_path)
             rate.sleep()
 
-    def checkObject(self, ref_path, object_data):
+    def checkObject(self, ref_path, object_data, status_msg):
         #TODO: (2) 경로상의 장애물 탐색
         '''
         # 경로 상에 존재하는 장애물을 탐색합니다.
@@ -107,10 +107,32 @@ class latticePlanner:
                     break
 
         '''
+        '''
+        you have to change object_data's Dir. ( Relative -> Absolute )
+        To do this, you must receive EgoVehicle Data.
+        '''
+        
+        # TODO : Relative Dir -> Absolute Dir
+        ego_pose_x = status_msg[0]
+        ego_pose_y = status_msg[1]
+        ego_heading = status_msg[2]
+
+        trans_matrix = np.array(
+            [[cos(ego_heading), -sin(ego_heading), ego_pose_x],
+             [sin(ego_heading),  cos(ego_heading), ego_pose_y],
+             [               0,                 0,          1]])
+        abs_obstacle_list = []
+        for rel_obs in object_data.obstacle_list:
+            obs_mat = np.array([[rel_obs.position.x],
+                                [rel_obs.position.y],
+                                [1]])
+            abs_obs = trans_matrix.dot(obs_mat)
+            abs_obstacle_list.append(abs_obs)
+        
         is_crash = False
-        for obstacle in object_data.obstacle_list:  # 가정: EgoVehicleStatus에 obstacle_list가 있다고 가정
+        for obstacle in abs_obstacle_list:  # 가정: EgoVehicleStatus에 obstacle_list가 있다고 가정
             for path in ref_path.poses:
-                dis = ((obstacle.position.x - path.pose.position.x) ** 2 + (obstacle.position.y - path.pose.position.y) ** 2) ** 0.5
+                dis = sqrt(pow(obstacle[0] - path.pose.position.x, 2) + pow(obstacle[1] - path.pose.position.y, 2))
                 if dis < 2.35: # 장애물의 좌표값이 지역 경로 상의 좌표값과의 직선거리가 2.35 미만일때 충돌이라 판단.
                         is_crash = True
                         break
