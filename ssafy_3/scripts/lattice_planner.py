@@ -132,7 +132,7 @@ class latticePlanner:
         is_crash = False
         for obstacle in abs_obstacle_list:  # 가정: EgoVehicleStatus에 obstacle_list가 있다고 가정
             for path in ref_path.poses:
-                dis = sqrt(pow(obstacle[0] - path.pose.position.x, 2) + pow(obstacle[1] - path.pose.position.y, 2))
+                dis = sqrt(pow(obstacle[0][0] - path.pose.position.x, 2) + pow(obstacle[1][0] - path.pose.position.y, 2))
                 if dis < 2.35: # 장애물의 좌표값이 지역 경로 상의 좌표값과의 직선거리가 2.35 미만일때 충돌이라 판단.
                         is_crash = True
                         break
@@ -180,7 +180,7 @@ class latticePlanner:
         for obstacle in abs_obstacle_list:                        
             for path_num in range(len(out_path)) :                    
                 for path_pos in out_path[path_num].poses :                                
-                    dis = sqrt(pow(obstacle[0] - path_pos.pose.position.x, 2) + pow(obstacle[1] - path_pos.pose.position.y, 2))
+                    dis = sqrt(pow(obstacle[0][0] - path_pos.pose.position.x, 2) + pow(obstacle[1][0] - path_pos.pose.position.y, 2))
                     if dis < 1.5:
                         lane_weight[path_num] = lane_weight[path_num] + 100
 
