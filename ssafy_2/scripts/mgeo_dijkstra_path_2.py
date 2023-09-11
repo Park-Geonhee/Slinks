@@ -76,6 +76,7 @@ class dijkstra_path_pub :
 
         self.is_goal_pose = False
         self.is_init_pose = False
+        self.reset_flag = 0
 
         while True:
             if self.is_goal_pose == True and self.is_init_pose == True:
@@ -95,9 +96,13 @@ class dijkstra_path_pub :
             #TODO: (11) dijkstra 이용해 만든 Global Path 정보 Publish
             '''
             # dijkstra 이용해 만든 Global Path 메세지 를 전송하는 publisher 를 만든다.
-            self.global_path_pub.
-            
             '''
+            self.global_path_pub.publish(self.global_path_msg)
+
+
+            #self.global_path_msg = self.calc_dijkstra_path_node(self.start_node, self.end_node)
+
+
             rate.sleep()
     
     def init_callback(self,msg):
@@ -110,11 +115,15 @@ class dijkstra_path_pub :
         # PoseWithCovarianceStamped 형식의 ROS 메세지를 Publish 합니다.
         # 해당 형식의 메세지를 Subscribe 해서  2D Pose Estimate 로 지정한 위치와 가장 가까운 노드를 탐색하는 합니다.
         # 가장 가까운 Node 가 탐색 된다면 이를 "self.start_node" 변수에 해당 Node Idx 를 지정합니다.
-
         self.start_node = node_idx
-
         '''
-
+        min_dist = 21e8
+        for node_idx, node in self.nodes.items():
+            #node = node.item_prop()
+            dist = pow(msg.pose.pose.position.x - node.point[0], 2) + pow(msg.pose.pose.position.y - node.point[1], 2)
+            if dist < min_dist:
+                min_dist = dist
+                self.start_node = node_idx
         self.is_init_pose = True
 
     def goal_callback(self,msg):
@@ -127,12 +136,17 @@ class dijkstra_path_pub :
         # PoseStamped 형식의 ROS 메세지를 Publish 합니다.
         # 해당 형식의 메세지를 Subscribe 해서  2D Nav Goal 로 지정한 위치와 가장 가까운 노드를 탐색하는 합니다.
         # 가장 가까운 Node 가 탐색 된다면 이를 "self.start_node" 변수에 해당 Node Idx 를 지정합니다.
-
         self.end_node = node_idx
-
         '''
-
+        min_dist = 21e8
+        for node_idx, node in self.nodes.items():
+            #node = node.item_prop()
+            dist = pow(msg.pose.position.x - node.point[0], 2) + pow(msg.pose.position.y - node.point[1], 2)
+            if dist < min_dist:
+                min_dist = dist
+                self.end_node = node_idx
         self.is_goal_pose = True
+        self.global_path_msg = self.calc_dijkstra_path_node(self.start_node, self.end_node)
 
     def calc_dijkstra_path_node(self, start_node, end_node):
 
@@ -143,8 +157,23 @@ class dijkstra_path_pub :
         out_path.header.frame_id = '/map'
         '''
         # dijkstra 경로 데이터 중 Point 정보를 이용하여 Path 데이터를 만들어 줍니다.
-
         '''
+        print("node list")
+        for node in path['node_path']:
+            print(node)
+
+        print("link likst")
+        for link in path['link_path']:
+            print(link)
+            
+
+        for point in path['point_path']:
+            read_pose = PoseStamped()
+            read_pose.pose.position.x = float(point[0])
+            read_pose.pose.position.y = float(point[1])
+            read_pose.pose.position.z = float(point[2])
+            read_pose.pose.orientation.w = 1
+            out_path.poses.append(read_pose)
 
         return out_path
 
@@ -195,8 +224,18 @@ class Dijkstra:
         '''
         # 최단거리 Link 인 shortest_link 변수와
         # shortest_link 의 min_cost 를 계산 합니다.
-
         '''
+        connected_links = from_node.get_to_links()
+        shortest_link = None
+        min_cost = 10000
+        for link in connected_links:
+            if link.to_node != to_node : continue
+            #if link.idx.find('-') != -1 : continue
+            #if len(link.points) < min_cost:
+            if link.cost < min_cost:
+                #min_cost = len(link.points)
+                min_cost = link.cost
+                shortest_link = link
 
         return shortest_link, min_cost
         
@@ -267,6 +306,7 @@ class Dijkstra:
             shortest_link, min_cost = self.find_shortest_link_leading_to_node(from_node,to_node)
             link_path.append(shortest_link.idx)
 
+        '''
         #TODO: (8) Result 판별
         if len(link_path) == 0:
             return False, {'node_path': node_path, 'link_path':link_path, 'point_path':[]}
@@ -274,6 +314,32 @@ class Dijkstra:
         #TODO: (9) point path 생성
         point_path = []        
         for link_id in link_path:
+            link = self.links[link_id]
+            for point in link.points:
+                point_path.append([point[0], point[1], 0])
+
+        return True, {'node_path': node_path, 'link_path':link_path, 'point_path':point_path}
+        '''
+        #TODO: (9) point path 생성
+        point_path = []        
+        for i, link_id in enumerate(link_path):
+            
+            '''
+            차선이 2개 이상인 경우 묶음으로서의 링크도 존재한다.
+            ex)
+            1차로 : link 101
+            2차로 : link 102
+            3차로 : link 103
+            인 경우, 3개의 링크는 각자 존재하고, 3개가 묶인 링크가 하나 더 존재한다.
+            1~3차로 : link 101-103
+            이러한 경우 해당 링크의 points는 시작점과 끝점만 가지고 있기 때문에 이를 바로 global path data로 넣지 않고,
+            이전 링크와 연결된 링크를 골라 global path에 추가해야 포인트들을 모두 넣을 수 있다.
+            '''
+            if link_id.find('-') != -1: #링크 묶음인 경우 idx에 '-'를 포함하고 있음 ex) A219BS010403-A219BS010405
+                links_sharing_from_node = self.links[link_id].get_from_node_sharing_links()
+                for link_sharing_from_node in links_sharing_from_node:
+                    if link_sharing_from_node.idx.find('-') != -1: continue
+                    link_id = link_sharing_from_node.idx
             link = self.links[link_id]
             for point in link.points:
                 point_path.append([point[0], point[1], 0])

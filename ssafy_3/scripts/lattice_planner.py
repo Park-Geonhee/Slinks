@@ -65,6 +65,13 @@ class latticePlanner:
 
 
         '''
+        self.local_path_sub = rospy.Subscriber("/local_path", Path, self.path_callback)
+        self.ego_status_sub = rospy.Subscriber("/Ego_topic", EgoVehicleStatus, self.status_callback)
+        self.lattice_path_pub = rospy.Publisher('/lattice_path', Path, queue_size=10)
+
+        self.ref_path = Path()  # Reference path
+        self.ego_status = EgoVehicleStatus()  # Ego vehicle's current status
+        
 
         self.is_path = False
         self.is_status = False
@@ -100,6 +107,14 @@ class latticePlanner:
                     break
 
         '''
+        is_crash = False
+        for obstacle in object_data.obstacle_list:  # 가정: EgoVehicleStatus에 obstacle_list가 있다고 가정
+            for path in ref_path.poses:
+                dis = ((obstacle.position.x - path.pose.position.x) ** 2 + (obstacle.position.y - path.pose.position.y) ** 2) ** 0.5
+                if dis < 2.35: # 장애물의 좌표값이 지역 경로 상의 좌표값과의 직선거리가 2.35 미만일때 충돌이라 판단.
+                        is_crash = True
+                        break
+
 
         return is_crash
 
@@ -181,7 +196,7 @@ class latticePlanner:
             local_end_point = det_trans_matrix.dot(world_end_point)
             world_ego_vehicle_position = np.array([[vehicle_pose_x], [vehicle_pose_y], [1]])
             local_ego_vehicle_position = det_trans_matrix.dot(world_ego_vehicle_position)
-            lane_off_set = [-3.0, -1.75, -1, 1, 1.75, 3.0]
+            lane_off_set = [-10.5, -7.0, -3.5, 3.5, 7.0, 10.5]
             local_lattice_points = []
             
             for i in range(len(lane_off_set)):
@@ -197,16 +212,50 @@ class latticePlanner:
             for end_point in local_lattice_points :
 
             '''
+            for end_point in local_lattice_points :
+                waypoints_x = []
+                waypoints_y = []
+                x_interval = 0.5
+                x_start, x_end = 0, end_point[0]
+                y_start, y_end = 0, end_point[1]
+                temp_out_path = Path()
+                x_num = x_end / x_interval
+
+                for i in range(x_start, int(x_num)):
+                    waypoints_x.append(i * x_interval)
+                a, b = -2 * y_end / pow(x_end, 3), 3 * y_end / pow(x_end, 2)
+
+                for i in waypoints_x:
+                    result = a * pow(i,3) + b * pow(i,2)
+                    waypoints_y.append(result)
+
+                for i in range(0,len(waypoints_y)) :
+                    local_result = np.array([[waypoints_x[i]],[waypoints_y[i]],[1]])
+                    global_result = trans_matrix.dot(local_result)
+
+                    read_pose=PoseStamped()
+                    read_pose.pose.position.x = global_result[0][0]
+                    read_pose.pose.position.y = global_result[1][0]
+                    read_pose.pose.position.z = 0.
+                    read_pose.pose.orientation.x = 0
+                    read_pose.pose.orientation.y = 0
+                    read_pose.pose.orientation.z = 0
+                    read_pose.pose.orientation.w = 1
+                    temp_out_path.poses.append(read_pose)
+                out_path.append(temp_out_path)
 
             # Add_point            
             # 3 차 곡선 경로가 모두 만들어 졌다면 이후 주행 경로를 추가 합니다.
             add_point_size = min(int(vehicle_velocity * 2), len(ref_path.poses) )           
             
-            for i in range(look_distance*2,add_point_size):
+            for i in range(look_distance * 2, add_point_size):
                 if i+1 < len(ref_path.poses):
-                    tmp_theta = atan2(ref_path.poses[i + 1].pose.position.y - ref_path.poses[i].pose.position.y,ref_path.poses[i + 1].pose.position.x - ref_path.poses[i].pose.position.x)                    
-                    tmp_translation = [ref_path.poses[i].pose.position.x,ref_path.poses[i].pose.position.y]
-                    tmp_t = np.array([[cos(tmp_theta), -sin(tmp_theta), tmp_translation[0]], [sin(tmp_theta), cos(tmp_theta), tmp_translation[1]], [0, 0, 1]])
+                    tmp_theta = atan2(ref_path.poses[i + 1].pose.position.y - ref_path.poses[i].pose.position.y,
+                                      ref_path.poses[i + 1].pose.position.x - ref_path.poses[i].pose.position.x)                    
+                    tmp_translation = [ref_path.poses[i].pose.position.x, ref_path.poses[i].pose.position.y]
+                    tmp_t = np.array([[cos(tmp_theta), -sin(tmp_theta), tmp_translation[0]],
+                                      [sin(tmp_theta), cos(tmp_theta), tmp_translation[1]],
+                                      [0, 0, 1]])
 
                     for lane_num in range(len(lane_off_set)) :
                         local_result = np.array([[0], [lane_off_set[lane_num]], [1]])
@@ -232,6 +281,14 @@ class latticePlanner:
                 globals()['lattice_pub_{}'.format(i+1)].publish(out_path[i])
 
             '''
+            for i in range(len(out_path)):          
+                # 동적으로 Publisher 객체 생성
+                globals()['lattice_pub_{}'.format(i+1)] = rospy.Publisher('/lattice_path_{}'.format(i+1), Path, queue_size=1)
+                out_path[i].header.frame_id = 'map'
+               
+
+                # 해당 경로를 발행
+                globals()['lattice_pub_{}'.format(i+1)].publish(out_path[i])
         return out_path
 
 if __name__ == '__main__':
