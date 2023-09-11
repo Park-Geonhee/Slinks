@@ -81,9 +81,9 @@ class latticePlanner:
         while not rospy.is_shutdown():
 
             if self.is_path and self.is_status and self.is_obj:
-                if self.checkObject(self.local_path, self.object_data):
+                if self.checkObject(self.local_path, self.object_data, self.status_msg):
                     lattice_path = self.latticePlanner(self.local_path, self.status_msg)
-                    lattice_path_index = self.collision_check(self.object_data, lattice_path)
+                    lattice_path_index = self.collision_check(self.object_data, lattice_path, self.status_msg)
 
                     #TODO: (7) lattice 경로 메세지 Publish
                     self.lattice_path_pub.publish(lattice_path[lattice_path_index])
@@ -140,7 +140,7 @@ class latticePlanner:
 
         return is_crash
 
-    def collision_check(self, object_data, out_path):
+    def collision_check(self, object_data, out_path, status_msg):
         #TODO: (6) 생성된 충돌회피 경로 중 낮은 비용의 경로 선택
         '''
         # 충돌 회피 경로를 생성 한 이후 가장 낮은 비용의 경로를 선택 합니다.
@@ -154,11 +154,33 @@ class latticePlanner:
         
         selected_lane = -1        
         lane_weight = [3, 2, 1, 1, 2, 3] #reference path 
+
+        '''
+        you have to change object_data's Dir. ( Relative -> Absolute )
+        To do this, you must receive EgoVehicle Data.
+        '''
         
-        for obstacle in object_data.obstacle_list:                        
+        # TODO : Relative Dir -> Absolute Dir
+        ego_pose_x = status_msg[0]
+        ego_pose_y = status_msg[1]
+        ego_heading = status_msg[2]
+
+        trans_matrix = np.array(
+            [[cos(ego_heading), -sin(ego_heading), ego_pose_x],
+             [sin(ego_heading),  cos(ego_heading), ego_pose_y],
+             [               0,                 0,          1]])
+        abs_obstacle_list = []
+        for rel_obs in object_data.obstacle_list:
+            obs_mat = np.array([[rel_obs.position.x],
+                                [rel_obs.position.y],
+                                [1]])
+            abs_obs = trans_matrix.dot(obs_mat)
+            abs_obstacle_list.append(abs_obs)
+        
+        for obstacle in abs_obstacle_list:                        
             for path_num in range(len(out_path)) :                    
                 for path_pos in out_path[path_num].poses :                                
-                    dis = sqrt(pow(obstacle.position.x - path_pos.pose.position.x, 2) + pow(obstacle.position.y - path_pos.pose.position.y, 2))
+                    dis = sqrt(pow(obstacle[0] - path_pos.pose.position.x, 2) + pow(obstacle[1] - path_pos.pose.position.y, 2))
                     if dis < 1.5:
                         lane_weight[path_num] = lane_weight[path_num] + 100
 
