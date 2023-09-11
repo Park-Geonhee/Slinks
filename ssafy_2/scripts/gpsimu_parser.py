@@ -10,7 +10,7 @@ from morai_msgs.msg import GPSMessage
 from nav_msgs.msg import Odometry
 from pyproj import Proj
 from math import pi
-
+from std_msgs.msg import Float64MultiArray
 # gpsimu_parser 는 GPS, IMU 센서 데이터를 받아 차량의 상대위치를 추정하는 예제입니다.
 
 # 노드 실행 순서 
@@ -23,13 +23,19 @@ from math import pi
 class GPSIMUParser:
     def __init__(self):
         rospy.init_node('GPS_IMU_parser', anonymous=True)
-        self.gps_sub = rospy.Subscriber("/gps", GPSMessage, self.navsat_callback)
-        self.imu_sub = rospy.Subscriber("/imu", Imu, self.imu_callback)
+        rospy.Subscriber("/gps", GPSMessage, self.navsat_callback)
+        rospy.Subscriber("/imu", Imu, self.imu_callback)
+        # 웹에서 출발지, 경유지, 도착지 좌표(gps)를 받는 subscriber 필요
+        rospy.Subscriber("/point", Float32MultiArray, self.poinpoint_list_callback)
+
         self.odom_pub = rospy.Publisher('/odom',Odometry, queue_size=1)
+        self.pinpoint_utm_list_pub = rospy.Publisher('/pinpoint_utm_list',Float32MultiArray, queue_size=1)
         # 초기화
+        self.aaa = 1
         self.x, self.y = None, None
         self.is_imu=False
         self.is_gps=False
+        
 
         #TODO: (1) 변환 하고자 하는 좌표계를 선언
         # GPS 센서에서 수신되는 위도, 경도 데이터를 UTM 좌표료 변환 하기 위한 예제이다.
@@ -61,6 +67,7 @@ class GPSIMUParser:
 
         rate = rospy.Rate(30) # 30hz
         while not rospy.is_shutdown():
+            print(self.aaa)
             if self.is_imu==True and self.is_gps == True:
                 self.convertLL2UTM()
 
@@ -73,10 +80,10 @@ class GPSIMUParser:
                 self.odom_pub.publish(self.odom_msg)
 
                 os.system('clear')
-                print(" ROS Odometry Msgs Pose ")
-                print(self.odom_msg.pose.pose.position)
-                print(" ROS Odometry Msgs Orientation ")
-                print(self.odom_msg.pose.pose.orientation)
+                #print(" ROS Odometry Msgs Pose ")
+                #print(self.odom_msg.pose.pose.position)
+                #print(" ROS Odometry Msgs Orientation ")
+                #print(self.odom_msg.pose.pose.orientation)
 
                 rate.sleep()
 
@@ -160,6 +167,31 @@ class GPSIMUParser:
             self.odom_msg.pose.pose.orientation.w = data.orientation.w
             
         self.is_imu=True
+
+    def poinpoint_list_callback(self, data):
+        
+        self.pinpoint_utm_list = Float32MultiArray()
+        self.pinpoint_list = data.data
+        self.aaa = len(self.pinpoint_list)
+        
+        for i in range(len(self.pinpoint_list)/2):
+            pp_x = float(self.pinpoint_list[i*2])
+            pp_y = float(self.pinpoint_list[i*2+1])
+            pp_xy = self.proj_UTM(pp_x, pp_y)
+            
+            if pp_x == 0 and pp_y == 0:
+                pp_utm_x = 0.0
+                pp_utm_y = 0.0
+            else:
+                pp_utm_x = pp_xy[0] - self.e_o
+                pp_utm_y = pp_xy[1] - self.n_o
+            self.pinpoint_utm_list.data.append(pp_utm_x)
+            self.pinpoint_utm_list.data.append(pp_utm_y)
+            print(pp_utm_x)
+            print(pp_utm_y)
+        self.pinpoint_utm_list_pub.publish(self.pinpoint_utm_list)
+
+
 
 if __name__ == '__main__':
     try:

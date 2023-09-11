@@ -6,10 +6,16 @@ import rospkg
 from math import cos,sin,pi,sqrt,pow,atan2
 from geometry_msgs.msg import Point,PoseWithCovarianceStamped
 from nav_msgs.msg import Odometry,Path
-from morai_msgs.msg import CtrlCmd,EgoVehicleStatus,ObjectStatusList
+from morai_msgs.msg import CtrlCmd,EgoVehicleStatus,ObjectStatusList,GetTrafficLightStatus
 import numpy as np
 import tf
+import sys
+import os
+import time
 from tf.transformations import euler_from_quaternion,quaternion_from_euler
+from lib.mgeo.class_defs import *
+current_path = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(current_path)
 
 # acc 는 차량의 Adaptive Cruise Control 예제입니다.
 # 차량 경로상의 장애물을 탐색하여 탐색된 차량과의 속도 차이를 계산하여 Cruise Control 을 진행합니다.
@@ -53,9 +59,8 @@ class pure_pursuit :
         rospy.Subscriber("odom", Odometry, self.odom_callback )
         rospy.Subscriber("/Ego_topic", EgoVehicleStatus, self.status_callback )
         rospy.Subscriber("/Object_topic", ObjectStatusList, self.object_info_callback )
+        rospy.Subscriber("GetTrafficLightStatus", GetTrafficLightStatus, self.traffic_light_callback)
         self.ctrl_cmd_pub = rospy.Publisher('/ctrl_cmd', CtrlCmd, queue_size = 1)
-
-        
 
         self.ctrl_cmd_msg = CtrlCmd()
         self.ctrl_cmd_msg.longlCmdType = 1
@@ -72,21 +77,29 @@ class pure_pursuit :
 
         self.vehicle_length = 2.6
         self.lfd = 8
-        self.min_lfd=5
+        self.min_lfd=3
         self.max_lfd=30
         self.lfd_gain = 0.78
         self.target_velocity = 60
 
         self.pid = pidControl()
-        self.adaptive_cruise_control = AdaptiveCruiseControl(velocity_gain = 0.5, distance_gain = 1, time_gap = 0.8, vehicle_length = 2.7)
+        self.adaptive_cruise_control = AdaptiveCruiseControl(velocity_gain = 0.5, distance_gain = 1, time_gap = 2, vehicle_length = 2.7)
         self.vel_planning = velocityPlanning(self.target_velocity/3.6, 0.15)
+
+        load_path = os.path.normpath(os.path.join(current_path, 'lib/mgeo_data/R_KR_PG_K-City'))
+        mgeo_planner_map = MGeo.create_instance_from_json(load_path)
+        traffic_light_set = mgeo_planner_map.light_set
+        self.traffic_lights = traffic_light_set.signals
+
+
 
         while True:
             if self.is_global_path == True:
                 self.velocity_list = self.vel_planning.curvedBaseVelocity(self.global_path, 50)
                 break
             else:
-                rospy.loginfo('Waiting global path data')
+                pass
+                #rospy.loginfo('Waiting global path data')
 
         rate = rospy.Rate(30) # 30hz
         while not rospy.is_shutdown():
@@ -94,6 +107,7 @@ class pure_pursuit :
             if self.is_path == True and self.is_odom == True and self.is_status == True:
 
                 # global_obj,local_obj
+
                 result = self.calc_vaild_obj([self.current_postion.x,self.current_postion.y,self.vehicle_yaw],self.object_data)
                 
                 global_npc_info = result[0] 
@@ -102,7 +116,9 @@ class pure_pursuit :
                 local_ped_info = result[3] 
                 global_obs_info = result[4] 
                 local_obs_info = result[5] 
-                
+                global_tl_info = result[6]
+                local_tl_info = result[7]
+
                 self.current_waypoint = self.get_current_waypoint([self.current_postion.x,self.current_postion.y],self.global_path)
                 self.target_velocity = self.velocity_list[self.current_waypoint]*3.6
 
@@ -115,8 +131,9 @@ class pure_pursuit :
 
                 self.adaptive_cruise_control.check_object(self.path ,global_npc_info, local_npc_info
                                                                     ,global_ped_info, local_ped_info
-                                                                    ,global_obs_info, local_obs_info)
-                self.target_velocity = self.adaptive_cruise_control.get_target_velocity(local_npc_info, local_ped_info, local_obs_info,
+                                                                    ,global_obs_info, local_obs_info
+                                                                    ,global_tl_info, local_tl_info)
+                self.target_velocity = self.adaptive_cruise_control.get_target_velocity(local_npc_info, local_ped_info, local_obs_info, local_tl_info,
                                                                                                         self.status_msg.velocity.x, self.target_velocity/3.6)
 
                 output = self.pid.pid(self.target_velocity,self.status_msg.velocity.x*3.6)
@@ -128,9 +145,6 @@ class pure_pursuit :
                     self.ctrl_cmd_msg.accel = 0.0
                     self.ctrl_cmd_msg.brake = -output
 
-                #TODO: (10) 제어입력 메세지 Publish
-                
-                # 제어입력 메세지 를 전송하는 publisher 를 만든다.
                 self.ctrl_cmd_pub.publish(self.ctrl_cmd_msg)
                 
                 
@@ -159,6 +173,11 @@ class pure_pursuit :
     def object_info_callback(self,data): ## Object information Subscriber
         self.is_object_info = True
         self.object_data = data 
+
+    def traffic_light_callback(self,msg):
+        self.traffic_light_info = msg
+        print(msg.trafficLightIndex, " : ", msg.trafficLightStatus, time.time())
+        self.is_traffic_light_info = True
 
     def get_current_waypoint(self,ego_status,global_path):
         min_dist = float('inf')        
@@ -190,21 +209,40 @@ class pure_pursuit :
         local_ped_info  = []
         global_obs_info = []
         local_obs_info  = []
+        global_tl_info = [] 
+        local_tl_info = []
 
-        num_of_object = self.all_object.num_of_npcs + self.all_object.num_of_obstacle + self.all_object.num_of_pedestrian        
+        #translation
+        tmp_theta=ego_heading
+        tmp_translation=[ego_pose_x, ego_pose_y]
+        tmp_t=np.array([[cos(tmp_theta), -sin(tmp_theta), tmp_translation[0]],
+                        [sin(tmp_theta),  cos(tmp_theta), tmp_translation[1]],
+                        [0             ,               0,                  1]])
+        tmp_det_t=np.array([[tmp_t[0][0], tmp_t[1][0], -(tmp_t[0][0] * tmp_translation[0] + tmp_t[1][0]*tmp_translation[1])],
+                            [tmp_t[0][1], tmp_t[1][1], -(tmp_t[0][1] * tmp_translation[0] + tmp_t[1][1]*tmp_translation[1])],
+                            [0,0,1]])
+
+        #traffic light translation
+        
+        cur_traffic_light_index = self.traffic_light_info.trafficLightIndex
+        
+        #traffic_lihgt_set에서 현재 도로에서의 신호등 찾기
+        for idx, traffic_light in self.traffic_lights.items():
+            if idx != cur_traffic_light_index : continue
+            self.cur_traffic_light = traffic_light
+        global_result = np.array([[self.cur_traffic_light.point[0]],[self.cur_traffic_light.point[1]],[1]])
+        local_result = tmp_det_t.dot(global_result)
+        global_tl_info = [[self.cur_traffic_light.point[0], self.cur_traffic_light.point[1]], 
+                        self.traffic_light_info.trafficLightType,self.traffic_light_info.trafficLightStatus]
+        
+        local_tl_info = [[local_result[0][0], local_result[1][0]],
+                        self.traffic_light_info.trafficLightType, self.traffic_light_info.trafficLightStatus]
+
+
+        num_of_object = self.all_object.num_of_npcs + self.all_object.num_of_obstacle + self.all_object.num_of_pedestrian + 1
         if num_of_object > 0:
 
-            #translation
-            tmp_theta=ego_heading
-            tmp_translation=[ego_pose_x, ego_pose_y]
-            tmp_t=np.array([[cos(tmp_theta), -sin(tmp_theta), tmp_translation[0]],
-                            [sin(tmp_theta),  cos(tmp_theta), tmp_translation[1]],
-                            [0             ,               0,                  1]])
-            tmp_det_t=np.array([[tmp_t[0][0], tmp_t[1][0], -(tmp_t[0][0] * tmp_translation[0] + tmp_t[1][0]*tmp_translation[1])],
-                                [tmp_t[0][1], tmp_t[1][1], -(tmp_t[0][1] * tmp_translation[0] + tmp_t[1][1]*tmp_translation[1])],
-                                [0,0,1]])
-
-            #npc vehicle ranslation        
+            #npc vehicle translation        
             for npc_list in self.all_object.npc_list:
                 global_result=np.array([[npc_list.position.x],[npc_list.position.y],[1]])
                 local_result=tmp_det_t.dot(global_result)
@@ -228,7 +266,7 @@ class pure_pursuit :
                     global_obs_info.append([obs_list.type,obs_list.position.x,obs_list.position.y,obs_list.velocity.x])
                     local_obs_info.append([obs_list.type,local_result[0][0],local_result[1][0],obs_list.velocity.x])
                 
-        return global_npc_info, local_npc_info, global_ped_info, local_ped_info, global_obs_info, local_obs_info
+        return global_npc_info, local_npc_info, global_ped_info, local_ped_info, global_obs_info, local_obs_info, global_tl_info, local_tl_info
 
     def calc_pure_pursuit(self,):
 
@@ -240,13 +278,13 @@ class pure_pursuit :
         # 최소 최대 전방주시거리(Look Forward Distance) 값과 속도에 비례한 lfd_gain 값을 직접 변경해 볼 수 있습니다.
         # 초기 정의한 변수 들의 값을 변경하며 속도에 비례해서 전방주시거리 가 변하는 advanced_purepursuit 예제를 완성하세요.
         # 
-        self.lfd = self.lfd_gain * self.status_msg.velocity.x * 3.6
+        self.lfd = self.lfd_gain * self.status_msg.velocity.x
         if self.lfd < self.min_lfd :
             self.lfd = self.min_lfd
         if self.lfd > self.max_lfd:
             self.lfd = self.max_lfd
 
-        rospy.loginfo(self.lfd)        
+        #rospy.loginfo(self.lfd)        
         
         vehicle_position=self.current_postion
         self.is_look_forward_point= False
@@ -380,7 +418,7 @@ class velocityPlanning:
             # 계산 한 곡률 반경을 이용하여 최고 속도를 계산합니다.
             # 평평한 도로인 경우 최대 속도를 계산합니다. 
             # 곡률 반경 x 중력가속도 x 도로의 마찰 계수 계산 값의 제곱근이 됩니다.
-            v_max =sqrt(r * 9.81 * self.road_friction )
+            v_max =sqrt(r * 9.81 * self.road_friction ) + 1.5
 
             if v_max > self.car_max_speed:
                 v_max = self.car_max_speed
@@ -399,6 +437,7 @@ class AdaptiveCruiseControl:
         self.npc_vehicle=[False,0]
         self.object=[False,0]
         self.Person=[False,0]
+        self.tl =[False,0]
         self.velocity_gain = velocity_gain
         self.distance_gain = distance_gain
         self.time_gap = time_gap
@@ -410,7 +449,8 @@ class AdaptiveCruiseControl:
 
     def check_object(self,ref_path, global_npc_info, local_npc_info, 
                                     global_ped_info, local_ped_info, 
-                                    global_obs_info, local_obs_info):
+                                    global_obs_info, local_obs_info,
+                                    global_tl_info, local_tl_info):
         #TODO: (8) 경로상의 장애물 유무 확인 (차량, 사람, 정지선 신호)
         
         # 주행 경로 상의 장애물의 유무를 파악합니다.
@@ -464,8 +504,19 @@ class AdaptiveCruiseControl:
                                 min_rel_distance = rel_distance
                                 self.object=[True,i] 
 
+        # 주행 경로 상 Traffic Light 유무 파악
+        if global_tl_info:     
+            for path in ref_path.poses :        
+                dis = sqrt(pow(global_tl_info[0][0] - path.pose.position.x, 2) + pow(global_tl_info[0][1] - path.pose.position.y, 2))
+                if dis < 2.5:
+                    rel_distance = sqrt(pow(local_tl_info[0][0], 2) + pow(local_tl_info[0][1], 2))           
+                    if rel_distance < min_rel_distance:
+                        min_rel_distance = rel_distance
+                        #print(global_tl_info)               
+                        self.tl=[True,0]
+
         
-    def get_target_velocity(self, local_npc_info, local_ped_info, local_obs_info, ego_vel, target_vel): 
+    def get_target_velocity(self, local_npc_info, local_ped_info, local_obs_info, local_tl_info, ego_vel, target_vel): 
         #TODO: (9) 장애물과의 속도와 거리 차이를 이용하여 ACC 를 진행 목표 속도를 설정
         out_vel =  target_vel
         default_space = 8
@@ -506,8 +557,22 @@ class AdaptiveCruiseControl:
 
             out_vel = ego_vel + acceleration           
 
+        
+        if self.tl[0]: #ACC ON_traffic_light
+            #print("ACC ON Traffic light")
+
+            if (local_tl_info[2] == 1 or (local_tl_info[2]== 33) or (local_tl_info[2]== 5)) and local_tl_info[0][0]>0 : 
+                dis_safe = ego_vel * time_gap*0.25 + default_space + 6
+                dis_rel = sqrt(pow(local_tl_info[0][0],2) + pow(local_tl_info[0][1],2))            
+                vel_rel=(0 - ego_vel)                        
+                acceleration = vel_rel * v_gain - x_errgain * (dis_safe - dis_rel)
+                out_vel = ego_vel + acceleration
+
+            
+
         out_vel = min(out_vel, target_vel) * 3.6
-        print("now Target_vel = ", out_vel)
+
+        #print("now Target_vel = ", out_vel)
 
         return out_vel
 
