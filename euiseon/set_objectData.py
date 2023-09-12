@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import rospy
 import cv2
@@ -31,9 +31,9 @@ parameters_cam ={
     "ROLL": np.radians(0)
 }
 parameters_lidar = {
-    "X": 1.58, # meter
-    "Y": -0.01,
-    "Z": 1.07,
+    "X": 1., # meter
+    "Y": 0.,
+    "Z": 1.3,
     "YAW": np.radians(0), # radian
     "PITCH": np.radians(0),
     "ROLL": np.radians(0)
@@ -51,8 +51,12 @@ class ObjectDataSet :
     def __init__(self, params_cam, params_lidar, params_radar ) :
         self.cluster_sub = rospy.Subscriber('/clusters', PoseArray, self.cluster_callback)
         self.radar_sub = rospy.Subscriber('/radar_data',RadarDetections, self.radar_callback)
-        self.object_pc_pub = rospy.Publisher('object_pc', PointCloud, queue_size = 1)
-        self.object_list_pub = rospy.Publisher('object_list',ObjectStatusList, queue_size=1)
+        # self.object_pc_pub = rospy.Publisher('object_pc', PointCloud, queue_size = 1)
+        # self.object_list_pub = rospy.Publisher('object_list',ObjectStatusList, queue_size=1)
+        self.radar_detect_pub = rospy.Publisher('radar_detection',ObjectStatusList, queue_size=1)
+        self.lidar_detect_pub = rospy.Publisher('lidar_detection',ObjectStatusList, queue_size=1)
+        self.radar_pc_pub = rospy.Publisher('radar_pc',PointCloud, queue_size=1)
+        self.lidar_pc_pub = rospy.Publisher('lidar_pc',PointCloud, queue_size=1)
         self.lidar_status = False
         self.radar_status = False
         self.lidar_data = None
@@ -68,7 +72,10 @@ class ObjectDataSet :
             obj_list.num_of_obstacle = 0
             
             if self.lidar_status == True :
+                obj_list = ObjectStatusList()
                 obj_list.num_of_obstacle = len(self.lidar_data.poses)
+                obj_pc = PointCloud()
+                obj_pc.header.frame_id='map'
                 for i in self.lidar_data.poses :
                     tmp_point = Point32() # float32
                     tmp_point.x = i.position.x
@@ -83,9 +90,16 @@ class ObjectDataSet :
                     tmp_obstacle.position.z = i.position.z
                     tmp_obstacle.name = "lidar_data"
                     obj_list.obstacle_list.append(tmp_obstacle)
+                self.lidar_detect_pub.publish(obj_list)
+                self.lidar_pc_pub.publish(obj_pc)
+                print("lidar",obj_list)
 
             if self.radar_status == True :
-                obj_list.num_of_obstacle = obj_list.num_of_obstacle + len(self.radar_data.detections)
+                obj_list = ObjectStatusList()
+                # obj_list.num_of_obstacle = obj_list.num_of_obstacle + len(self.radar_data.detections)
+                obj_list.num_of_obstacle = len(self.radar_data.detections)
+                obj_pc = PointCloud()
+                obj_pc.header.frame_id='map'
                 for i in self.radar_data.detections :
                     tmp_point = Point32() # float32
                     tmp_point.x = i.position.x
@@ -101,10 +115,12 @@ class ObjectDataSet :
                     tmp_obstacle.velocity.x = i.rangerate
                     tmp_obstacle.name = "radar_data"
                     obj_list.obstacle_list.append(tmp_obstacle)
-            
-            self.object_list_pub.publish(obj_list)
-            print("obj_list", obj_list)
-            self.object_pc_pub.publish(obj_pc)
+                self.radar_detect_pub.publish(obj_list)
+                self.radar_pc_pub.publish(obj_pc)
+                print("radar",obj_list)
+            # self.object_list_pub.publish(obj_list)
+            # print("obj_list", obj_list)
+            # self.object_pc_pub.publish(obj_pc)
 
     def cluster_callback(self, msg) :
         self.lidar_data = msg # PoseArray

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #-*- coding:utf-8 -*-
 
 import rospy
@@ -20,9 +20,9 @@ from sklearn.cluster import DBSCAN
 # 2. 각 Cluster를 대표하는 위치 값 계산
 # 3. PointCloud Data로부터 Distance, Angle 값 계산
 parameters_lidar = {
-    "X": 1.58, # meter
-    "Y": -0.01,
-    "Z": 1.07,
+    "X": 1., # meter
+    "Y": 0.,
+    "Z": 1.3,
     "YAW": np.radians(0), # radian
     "PITCH": np.radians(0),
     "ROLL": np.radians(0)
