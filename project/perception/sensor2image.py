@@ -254,7 +254,7 @@ if __name__ == '__main__':
     rospy.init_node('ex_calib', anonymous=True)
     Transformer = LiDARToCameraTransform(parameters_cam, parameters_lidar)
     time.sleep(1)
-    rate = rospy.Rate(20)
+    rate = rospy.Rate(30)
     cnt = 0
     while not rospy.is_shutdown():
 

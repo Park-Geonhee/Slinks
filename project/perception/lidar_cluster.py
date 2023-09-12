@@ -31,6 +31,7 @@ class SCANCluster:
     def __init__(self):
         self.scan_sub = rospy.Subscriber("/lidar3D", PointCloud2, self.callback)
         self.cluster_pub = rospy.Publisher("clusters", PoseArray, queue_size=10) 
+        
         self.pc_np = None
 
         #TODO: (1) DBSCAN Parameter 입력
@@ -110,8 +111,10 @@ class SCANCluster:
             # LiDAR의 PointCloud Data로부터 Distance와 Angle 값을 계산하는 영역입니다.
             # 각 Point의 XYZ 값을 활용하여 Distance와 Yaw Angle을 계산합니다.
             # Input : point (X, Y, Z, Intensity)     
+
             xy_dist = (point[0]**2+point[1]**2)**0.5
             dist = (xy_dist**2+point[2]**2)**0.5
+            if point[0]==0 : continue
             angle = math.atan(point[1]/point[0])
             
             

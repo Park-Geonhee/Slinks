@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 import rospy
@@ -52,7 +52,8 @@ class pure_pursuit :
         rospy.Subscriber("local_path", Path, self.path_callback )
         rospy.Subscriber("odom", Odometry, self.odom_callback )
         rospy.Subscriber("/Ego_topic", EgoVehicleStatus, self.status_callback )
-        rospy.Subscriber("/Object_topic", ObjectStatusList, self.object_info_callback )
+        rospy.Subscriber("/radar_detection", ObjectStatusList, self.radar_info_callback )
+        rospy.Subscriber("/lidar_detection", ObjectStatusList, self.lidar_info_callback )
         self.ctrl_cmd_pub = rospy.Publisher('/ctrl_cmd', CtrlCmd, queue_size = 1)
 
         
@@ -64,7 +65,7 @@ class pure_pursuit :
         self.is_odom = False
         self.is_status = False
         self.is_global_path = False
-
+        self.is_object_info = False
         self.is_look_forward_point = False
 
         self.forward_point = Point()
@@ -92,9 +93,9 @@ class pure_pursuit :
         while not rospy.is_shutdown():
 
             if self.is_path == True and self.is_odom == True and self.is_status == True:
-
+                print("in loop")
                 # global_obj,local_obj
-                result = self.calc_vaild_obj([self.current_postion.x,self.current_postion.y,self.vehicle_yaw],self.object_data)
+                result = self.calc_vaild_obj([self.current_postion.x,self.current_postion.y,self.vehicle_yaw],self.radar_data)
                 
                 global_npc_info = result[0] 
                 local_npc_info = result[1] 
@@ -156,9 +157,13 @@ class pure_pursuit :
         self.global_path = msg
         self.is_global_path = True
 
-    def object_info_callback(self,data): ## Object information Subscriber
-        self.is_object_info = True
-        self.object_data = data 
+    def radar_info_callback(self,data): ## Object information Subscriber
+        self.is_radar_info = True
+        self.radar_data = data 
+
+    def lidar_info_callback(self,data): ## Object information Subscriber
+        self.is_lidar_info = True
+        self.lidar_data = data 
 
     def get_current_waypoint(self,ego_status,global_path):
         min_dist = float('inf')        
