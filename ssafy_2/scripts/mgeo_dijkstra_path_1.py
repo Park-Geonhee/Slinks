@@ -78,8 +78,8 @@ class dijkstra_path_pub :
         # MGeo Viewer 기능을 이용하여 맵에있는 MGeo 정보를 확인 할 수 있으며 시각화 까지 가능합니다.
         # 해당 기능을 이용하여 원하는 시작 위치와 종료 위치의 Node 이름을 알아낸 뒤 아래 변수에 입력하세요.
         
-        self.start_node = 'A119BS010184'
-        self.end_node = 'A119BS010212'
+        self.start_node = 'A119BS010244'
+        self.end_node = 'A119BS010729'
         
         self.global_path_msg = Path()
         self.global_path_msg.header.frame_id = '/map'

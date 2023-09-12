@@ -4,7 +4,7 @@
 import rospy
 import tf
 import os
-from std_msgs.msg import Float32MultiArray
+from std_msgs.msg import Float64MultiArray, Float64
 from sensor_msgs.msg import Imu
 from morai_msgs.msg import GPSMessage
 from nav_msgs.msg import Odometry
@@ -26,16 +26,17 @@ class GPSIMUParser:
         rospy.Subscriber("/gps", GPSMessage, self.navsat_callback)
         rospy.Subscriber("/imu", Imu, self.imu_callback)
         # 웹에서 출발지, 경유지, 도착지 좌표(gps)를 받는 subscriber 필요
-        rospy.Subscriber("/point", Float32MultiArray, self.poinpoint_list_callback)
+        rospy.Subscriber("/point", Float64MultiArray, self.poinpoint_list_callback)
 
         self.odom_pub = rospy.Publisher('/odom',Odometry, queue_size=1)
-        self.pinpoint_utm_list_pub = rospy.Publisher('/pinpoint_utm_list',Float32MultiArray, queue_size=1)
+        self.pinpoint_utm_list_pub = rospy.Publisher('/pinpoint_utm_list',Float64MultiArray, queue_size=1)
+    
         # 초기화
-        self.aaa = 1
+        self.input_len = 0
         self.x, self.y = None, None
         self.is_imu=False
         self.is_gps=False
-        
+        self.is_pinpoint=False
 
         #TODO: (1) 변환 하고자 하는 좌표계를 선언
         # GPS 센서에서 수신되는 위도, 경도 데이터를 UTM 좌표료 변환 하기 위한 예제이다.
@@ -48,6 +49,8 @@ class GPSIMUParser:
         # self.proj_UTM = Proj( 좌표 변환을 위한 변수 입력 )
 
         self.proj_UTM = Proj(proj='utm', zone=52, ellps='WGS84', preserve_units=True)
+        self.proj_UTM2 = Proj(proj='utm', zone=52, ellps='WGS84', preserve_units=True)
+
 
         #TODO: (2) 송신 될 Odometry 메세지 변수 생성
         '''
@@ -63,28 +66,20 @@ class GPSIMUParser:
         self.odom_msg = Odometry()
         self.odom_msg.header.frame_id = '/odom'
         self.odom_msg.child_frame_id = '/base_link'
+        self.pinpoint_utm_list = Float64MultiArray()
 
-
+        print(self.input_len)
         rate = rospy.Rate(30) # 30hz
         while not rospy.is_shutdown():
-            print(self.aaa)
             if self.is_imu==True and self.is_gps == True:
                 self.convertLL2UTM()
 
                 #TODO: (5) Odometry 메세지 Publish
-                '''
-                # Odometry 메세지 를 전송하는 publisher 를 만든다.
-                self.odom_pub.
-                
-                '''
+
                 self.odom_pub.publish(self.odom_msg)
-
-                os.system('clear')
-                #print(" ROS Odometry Msgs Pose ")
-                #print(self.odom_msg.pose.pose.position)
-                #print(" ROS Odometry Msgs Orientation ")
-                #print(self.odom_msg.pose.pose.orientation)
-
+                if self.is_pinpoint:
+                    self.pinpoint_utm_list_pub.publish(self.pinpoint_utm_list)
+                    self.is_pinpoint = False
                 rate.sleep()
 
     def navsat_callback(self, gps_msg):
@@ -115,6 +110,7 @@ class GPSIMUParser:
 
         '''
         xy_zone = self.proj_UTM(self.lon, self.lat)
+        #xy_zone = self.proj_UTM(self.lon, self.lat)
         
         if self.lon == 0 and self.lat == 0:
             self.x = 0.0
@@ -136,6 +132,24 @@ class GPSIMUParser:
         self.odom_msg.pose.pose.position.x = self.x
         self.odom_msg.pose.pose.position.y = self.y
         self.odom_msg.pose.pose.position.z = 0.0
+
+        if self.is_pinpoint == True:
+            self.pinpoint_utm_list = Float64MultiArray()
+            for i in range(len(self.pinpoint_list)/2):
+                pp_x = self.pinpoint_list[i*2]
+                pp_y = self.pinpoint_list[i*2+1]
+                pp_xy = self.proj_UTM2(pp_y, pp_x)
+                
+                if pp_x == 0 and pp_y == 0:
+                    pp_utm_x = 0.0
+                    pp_utm_y = 0.0
+                else:
+                    pp_utm_x = pp_xy[0] - self.e_o
+                    pp_utm_y = pp_xy[1] - self.n_o
+                self.pinpoint_utm_list.data.append(pp_utm_y)
+                self.pinpoint_utm_list.data.append(pp_utm_x)
+            
+
 
     def imu_callback(self, data):
 
@@ -168,33 +182,17 @@ class GPSIMUParser:
             
         self.is_imu=True
 
-    def poinpoint_list_callback(self, data):
-        
-        self.pinpoint_utm_list = Float32MultiArray()
-        self.pinpoint_list = data.data
-        self.aaa = len(self.pinpoint_list)
-        
-        for i in range(len(self.pinpoint_list)/2):
-            pp_x = float(self.pinpoint_list[i*2])
-            pp_y = float(self.pinpoint_list[i*2+1])
-            pp_xy = self.proj_UTM(pp_x, pp_y)
-            
-            if pp_x == 0 and pp_y == 0:
-                pp_utm_x = 0.0
-                pp_utm_y = 0.0
-            else:
-                pp_utm_x = pp_xy[0] - self.e_o
-                pp_utm_y = pp_xy[1] - self.n_o
-            self.pinpoint_utm_list.data.append(pp_utm_x)
-            self.pinpoint_utm_list.data.append(pp_utm_y)
-            print(pp_utm_x)
-            print(pp_utm_y)
-        self.pinpoint_utm_list_pub.publish(self.pinpoint_utm_list)
-
-
+    def poinpoint_list_callback(self, msg):
+        self.pinpoint_list = msg.data
+        self.input_len = len(self.pinpoint_list)
+        self.is_pinpoint = True
+        print(self.input_len)
 
 if __name__ == '__main__':
     try:
         GPS_IMU_parser = GPSIMUParser()
     except rospy.ROSInterruptException:
         pass
+
+
+
