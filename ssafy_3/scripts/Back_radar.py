@@ -85,6 +85,7 @@ class LiDARToCameraTransform:
             if d_p[0]==0 and d_p[1]==0 and d_p[2]==0:
                 continue
             print(self.TransformMat.dot(d_p)[:3],d.rangerate)
+        print("============================")
 
     # def transformLiDARToCamera(self, pc_lidar):
     #     pc_wrt_cam = self.TransformMat.dot(pc_lidar)
