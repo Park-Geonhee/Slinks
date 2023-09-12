@@ -64,8 +64,6 @@ class dijkstra_path_pub :
 
         self.global_path_pub = rospy.Publisher('/global_path',Path, queue_size = 1)
 
-        rospy.Subscriber('/pinpoint_utm_list', Float64MultiArray, self.pinpoint_list_callback)
-
         #rospy.Subscriber('/move_base_simple/goal', PoseStamped, self.goal_callback)
         #rospy.Subscriber('/initialpose', PoseWithCovarianceStamped, self.init_callback)
 
@@ -80,88 +78,26 @@ class dijkstra_path_pub :
         self.links=link_set.lines
 
         self.global_planner=Dijkstra(self.nodes,self.links)
-
-        self.is_goal_pose = False
-        self.is_init_pose = False
-        self.reset_flag = 0
-
-        while True:
-            if self.is_goal_pose == True and self.is_init_pose == True:
-                break
-            else:
-                rospy.loginfo('Waiting goal pose data')
-                rospy.loginfo('Waiting init pose data')
-
+        self.is_node_list = False
+        rospy.Subscriber('/pinpoint_utm_list', Float64MultiArray, self.pinpoint_list_callback)
 
         self.global_path_msg = Path()
         self.global_path_msg.header.frame_id = '/map'
 
-        if self.is_node_list:
-            for i in range(len(self.target_node_list)-1):
-                now_path = Path()
-                now_path = self.calc_dijkstra_path_node(self.target_node_list[i], self.target_node_list[i+1])
-                self.global_path_msg.poses.extend(now_path.poses)
-
         rate = rospy.Rate(10) # 10hz
         while not rospy.is_shutdown():
-            #TODO: (11) dijkstra 이용해 만든 Global Path 정보 Publish
-            '''
-            # dijkstra 이용해 만든 Global Path 메세지 를 전송하는 publisher 를 만든다.
-            '''
             self.global_path_pub.publish(self.global_path_msg)
-            #self.global_path_msg = self.calc_dijkstra_path_node(self.start_node, self.end_node)
-
-
             rate.sleep()
     
-    def init_callback(self,msg):
-        #TODO: (2) 시작 Node 와 종료 Node 정의
-        # 시작 Node 는 Rviz 기능을 이용해 지정한 위치에서 가장 가까이 있는 Node 로 한다.
-        '''
-        # Rviz 의 2D Pose Estimate 기능을 이용해 시작 Node를 지정합니다.
-        # Rviz 창에서 2D Pose Estimate 기능 클릭 후 마우스 좌 클릭을 통해 원하는 위치를 지정할 수 있습니다.
-        # 출발 위치를 2D Pose Estimate 지정 하면 Rviz 에서
-        # PoseWithCovarianceStamped 형식의 ROS 메세지를 Publish 합니다.
-        # 해당 형식의 메세지를 Subscribe 해서  2D Pose Estimate 로 지정한 위치와 가장 가까운 노드를 탐색하는 합니다.
-        # 가장 가까운 Node 가 탐색 된다면 이를 "self.start_node" 변수에 해당 Node Idx 를 지정합니다.
-        self.start_node = node_idx
-        '''
-        min_dist = 21e8
-        for node_idx, node in self.nodes.items():
-            #node = node.item_prop()
-            dist = pow(msg.pose.pose.position.x - node.point[0], 2) + pow(msg.pose.pose.position.y - node.point[1], 2)
-            if dist < min_dist:
-                min_dist = dist
-                self.start_node = node_idx
-        self.is_init_pose = True
-
-    def goal_callback(self,msg):
-        #TODO: (2) 시작 Node 와 종료 Node 정의
-        # 종료 Node 는 Rviz 기능을 이용해 지정한 위치에서 가장 가까이 있는 Node 로 한다.
-        '''
-        # Rviz 의 2D Nav Goal 기능을 이용해 도착 Node를 지정합니다.
-        # Rviz 창에서 2D Nav Goal 기능 클릭 후 마우스 좌 클릭을 통해 원하는 위치를 지정할 수 있습니다.
-        # 도착 위치를 2D Nav Goal 지정 하면 Rviz 에서
-        # PoseStamped 형식의 ROS 메세지를 Publish 합니다.
-        # 해당 형식의 메세지를 Subscribe 해서  2D Nav Goal 로 지정한 위치와 가장 가까운 노드를 탐색하는 합니다.
-        # 가장 가까운 Node 가 탐색 된다면 이를 "self.start_node" 변수에 해당 Node Idx 를 지정합니다.
-        self.end_node = node_idx
-        '''
-        min_dist = 21e8
-        for node_idx, node in self.nodes.items():
-            #node = node.item_prop()
-            dist = pow(msg.pose.position.x - node.point[0], 2) + pow(msg.pose.position.y - node.point[1], 2)
-            if dist < min_dist:
-                min_dist = dist
-                self.end_node = node_idx
-        self.is_goal_pose = True
-        self.global_path_msg = self.calc_dijkstra_path_node(self.start_node, self.end_node)
 
     def pinpoint_list_callback(self, msg):
         self.target_node_list = []
-        pinpoint_list = msg
+        pinpoint_list = msg.data
+        pinpoint_list_set = []
+        for i in range(len(pinpoint_list)/2):
+            pinpoint_list_set.append([pinpoint_list[i*2+1],pinpoint_list[i*2]])
         #각각의 핀포인트(출발지,경유지,도착지)마다 가장 가까운 노드를 담는 리스트를 만든다.
-        for pinpoint in pinpoint_list:
+        for pinpoint in pinpoint_list_set:
             min_dist = 21e8
             nearest_node = None
             for node_idx, node in self.nodes.items():
@@ -173,8 +109,18 @@ class dijkstra_path_pub :
             self.is_node_list = True
 
 
-    def calc_dijkstra_path_node(self, start_node, end_node):
+            #if self.is_node_list:
+        self.global_path_msg.poses = []
+        for i in range(len(self.target_node_list)-1):
+            print(len(self.target_node_list))
+            print(self.target_node_list[i])
+            print(self.target_node_list[i+1])
+            now_path = Path()
+            now_path = self.calc_dijkstra_path_node(self.target_node_list[i], self.target_node_list[i+1])
+            self.global_path_msg.poses.extend(now_path.poses)
 
+
+    def calc_dijkstra_path_node(self, start_node, end_node):
         result, path = self.global_planner.find_shortest_path(start_node, end_node)
 
         #TODO: (10) dijkstra 경로 데이터를 ROS Path 메세지 형식에 맞춰 정의
@@ -295,7 +241,7 @@ class Dijkstra:
             s[node_id] = False
             from_node[node_id] = start_node_idx
 
-        s[start_node_idx] = True
+        s[start_node_idx] = True #visited
         distance =copy.deepcopy(self.weight[start_node_idx])
 
         #TODO: (5) Dijkstra 핵심 코드
@@ -308,12 +254,12 @@ class Dijkstra:
                     if distance_candidate < distance[to_node_idx]:
                         distance[to_node_idx] = distance_candidate
                         from_node[to_node_idx] = selected_node_idx
-
         #TODO: (6) node path 생성
         tracking_idx = end_node_idx
         node_path = [end_node_idx]
         
         while start_node_idx != tracking_idx:
+            print(tracking_idx)
             tracking_idx = from_node[tracking_idx]
             node_path.append(tracking_idx)     
 
@@ -331,20 +277,10 @@ class Dijkstra:
             shortest_link, min_cost = self.find_shortest_link_leading_to_node(from_node,to_node)
             link_path.append(shortest_link.idx)
 
-        '''
         #TODO: (8) Result 판별
         if len(link_path) == 0:
             return False, {'node_path': node_path, 'link_path':link_path, 'point_path':[]}
 
-        #TODO: (9) point path 생성
-        point_path = []        
-        for link_id in link_path:
-            link = self.links[link_id]
-            for point in link.points:
-                point_path.append([point[0], point[1], 0])
-
-        return True, {'node_path': node_path, 'link_path':link_path, 'point_path':point_path}
-        '''
         #TODO: (9) point path 생성
         point_path = []        
         for i, link_id in enumerate(link_path):
