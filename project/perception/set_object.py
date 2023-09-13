@@ -5,9 +5,12 @@ import cv2
 import numpy as np
 import math
 import time
-from morai_msgs.msg import ObjectStatusList, ObjectStatus, RadarDetections
+from morai_msgs.msg import ObjectStatusList, ObjectStatus, RadarDetections, RadarDetection
 from geometry_msgs.msg import PoseArray,Pose, Point32
 from sensor_msgs.msg import PointCloud2, PointCloud
+from nav_msgs.msg import Odometry
+
+from tf.transformations import euler_from_quaternion, quaternion_from_euler
 '''
 using camera(2D object detect), lidar(object position), radar(velocity) data,
 identify objects around ego vehicle
@@ -49,10 +52,9 @@ parameters_radar = {
 
 class ObjectDataSet :
     def __init__(self, params_cam, params_lidar, params_radar ) :
-        self.cluster_sub = rospy.Subscriber('/clusters', PoseArray, self.cluster_callback)
-        self.radar_sub = rospy.Subscriber('/radar_data',RadarDetections, self.radar_callback)
-        # self.object_pc_pub = rospy.Publisher('object_pc', PointCloud, queue_size = 1)
-        # self.object_list_pub = rospy.Publisher('object_list',ObjectStatusList, queue_size=1)
+        rospy.Subscriber('/clusters', PoseArray, self.cluster_callback)
+        rospy.Subscriber('/radar_data',RadarDetections, self.radar_callback)
+        rospy.Subscriber('odom', Odometry, self.odom_callback)
         self.radar_detect_pub = rospy.Publisher('radar_detection',ObjectStatusList, queue_size=1)
         self.lidar_detect_pub = rospy.Publisher('lidar_detection',ObjectStatusList, queue_size=1)
         self.radar_pc_pub = rospy.Publisher('radar_pc',PointCloud, queue_size=1)
@@ -61,66 +63,53 @@ class ObjectDataSet :
         self.radar_status = False
         self.lidar_data = None
         self.radar_data = None
+        self.is_odom = False
         rate = rospy.Rate(10)
+        cnt =0
         while not rospy.is_shutdown():
+            if self.is_odom == False :
+                continue
             if self.lidar_status == False and self.radar_status == False :
-                pass
-            obj_pc = PointCloud() # for connecting pc with camera image after transform to camera image  
-            obj_pc.header.frame_id='map'
+                continue
 
-            obj_list = ObjectStatusList()
-            obj_list.num_of_obstacle = 0
-            
             if self.lidar_status == True :
-                obj_list = ObjectStatusList()
-                obj_list.num_of_obstacle = len(self.lidar_data.poses)
-                obj_pc = PointCloud()
-                obj_pc.header.frame_id='map'
+                lidar_list = ObjectStatusList()
+                lidar_pc = PointCloud()
+                lidar_list.num_of_obstacle = len(self.lidar_data.poses)
+                lidar_pc.header.frame_id='map'
                 for i in self.lidar_data.poses :
-                    tmp_point = Point32() # float32
-                    tmp_point.x = i.position.x
-                    tmp_point.y = i.position.y
-                    tmp_point.z = i.position.z
-                    obj_pc.points.append(tmp_point)
+                    tmp_detection = self.get_global_pose(i)
+                    tmp_point = self.get_global_lidar(tmp_detection,"point")
+                    tmp_obstacle = self.get_global_lidar(tmp_detection,"objectStatus")
+                    lidar_pc.points.append(tmp_point)
+                    lidar_list.obstacle_list.append(tmp_obstacle)
 
-                    tmp_obstacle = ObjectStatus()
-                    tmp_obstacle.type = 2
-                    tmp_obstacle.position.x = i.position.x
-                    tmp_obstacle.position.y = i.position.y
-                    tmp_obstacle.position.z = i.position.z
-                    tmp_obstacle.name = "lidar_data"
-                    obj_list.obstacle_list.append(tmp_obstacle)
-                self.lidar_detect_pub.publish(obj_list)
-                self.lidar_pc_pub.publish(obj_pc)
-                print("lidar",obj_list)
+                self.lidar_detect_pub.publish(lidar_list)
+                self.lidar_pc_pub.publish(lidar_pc)
+                print("========lidar_pc")
+                print(lidar_pc)
 
             if self.radar_status == True :
-                obj_list = ObjectStatusList()
-                # obj_list.num_of_obstacle = obj_list.num_of_obstacle + len(self.radar_data.detections)
-                obj_list.num_of_obstacle = len(self.radar_data.detections)
-                obj_pc = PointCloud()
-                obj_pc.header.frame_id='map'
-                for i in self.radar_data.detections :
-                    tmp_point = Point32() # float32
-                    tmp_point.x = i.position.x
-                    tmp_point.y = i.position.y
-                    tmp_point.z = i.position.z
-                    obj_pc.points.append(tmp_point)
+                radar_list = ObjectStatusList()
+                radar_pc = PointCloud()
+                radar_list.num_of_obstacle = len(self.radar_data.detections)
+                radar_pc.header.frame_id='map'
 
-                    tmp_obstacle = ObjectStatus()
-                    tmp_obstacle.type = 2
-                    tmp_obstacle.position.x = i.position.x
-                    tmp_obstacle.position.y = i.position.y
-                    tmp_obstacle.position.z = i.position.z
-                    tmp_obstacle.velocity.x = i.rangerate
-                    tmp_obstacle.name = "radar_data"
-                    obj_list.obstacle_list.append(tmp_obstacle)
-                self.radar_detect_pub.publish(obj_list)
-                self.radar_pc_pub.publish(obj_pc)
-                print("radar",obj_list)
-            # self.object_list_pub.publish(obj_list)
-            # print("obj_list", obj_list)
-            # self.object_pc_pub.publish(obj_pc)
+                for i in self.radar_data.detections :
+
+                    tmp_detection = self.get_global_detection(i) # 
+                    tmp_detection.rangerate = i.rangerate
+                    tmp_point = self.get_global_radar(tmp_detection,"point")   
+                    tmp_obstacle = self.get_global_radar(tmp_detection,"objectStatus")
+                    radar_pc.points.append(tmp_point)
+                    radar_list.obstacle_list.append(tmp_obstacle)
+  
+                self.radar_detect_pub.publish(radar_list)
+                self.radar_pc_pub.publish(radar_pc)
+                print("========radar_pc")
+                print(radar_pc)
+                # print("========radar_list")
+                # print(radar_list)
 
     def cluster_callback(self, msg) :
         self.lidar_data = msg # PoseArray
@@ -130,6 +119,81 @@ class ObjectDataSet :
         self.radar_data = msg # RadarDetections
         self.radar_status = True
 
+    def odom_callback(self, msg):
+        if self.is_odom == False:
+            print(msg.pose.pose)
+        self.is_odom = True
+        odom_quaternion=(msg.pose.pose.orientation.x, msg.pose.pose.orientation.y,msg.pose.pose.orientation.z, msg.pose.pose.orientation.w)
+        _,_,self.vehicle_yaw=euler_from_quaternion(odom_quaternion)
+        self.vehicle_pos_x = msg.pose.pose.position.x
+        self.vehicle_pos_y = msg.pose.pose.position.y
+        self.vehicle_pos_z = msg.pose.pose.position.z
+        # print(msg.pose.pose)
+
+    def set_Point32(self, detection):
+        data = Point32() # float32
+        data.x = detection.position.x
+        data.y = detection.position.y
+        data.z = detection.position.z
+        return data
+    
+    def set_ObjectStatus(self, detection):
+        data = ObjectStatus()
+        data.type = type
+        data.position.x = detection.position.x
+        data.position.y = detection.position.y
+        data.position.z = detection.position.z
+        return data
+    def get_global_pose(self, pose):
+        data = Pose()
+        trans_matrix = np.array([
+            [np.cos(self.vehicle_yaw), -np.sin(self.vehicle_yaw), 0, self.vehicle_pos_x],
+            [np.sin(self.vehicle_yaw), np.cos(self.vehicle_yaw), 0, self.vehicle_pos_y],
+            [0, 0, 1, self.vehicle_pos_z],
+            [0, 0, 0, 1]
+            ])
+        local_result = np.array([[pose.position.x],[pose.position.y],[pose.position.z],[1]])
+        global_result = trans_matrix.dot(local_result)
+        data.position.x = global_result[0][0]
+        data.position.y = global_result[1][0]
+        data.position.z = global_result[2][0]
+        return data
+    def get_global_detection(self, detection):
+        data = RadarDetection()
+        trans_matrix = np.array([
+            [np.cos(self.vehicle_yaw), -np.sin(self.vehicle_yaw), 0, self.vehicle_pos_x],
+            [np.sin(self.vehicle_yaw), np.cos(self.vehicle_yaw), 0, self.vehicle_pos_y],
+            [0, 0, 1, self.vehicle_pos_z],
+            [0, 0, 0, 1]
+            ])
+
+        local_result = np.array([[detection.position.x],[detection.position.y],[detection.position.z],[1]])
+        global_result = trans_matrix.dot(local_result)
+        data.position.x = global_result[0][0]
+        data.position.y = global_result[1][0]
+        data.position.z = global_result[2][0]
+        data.rangerate = detection.rangerate
+        return data
+    
+    def get_global_lidar(self, detection, type) : 
+        result = None
+        if type == "point" : # Point32 pose
+            result = self.set_Point32(detection)
+        elif type == "objectStatus" : # ObjectStatus
+            result = self.set_ObjectStatus(detection)
+            result.name = "lidar_data"
+        return result
+    
+    def get_global_radar(self, detection, t) : 
+        result = None
+        if t == "point" : # Point32 pose
+            result = self.set_Point32(detection)
+        elif t == "objectStatus" : # ObjectStatus
+            result = self.set_ObjectStatus(detection)
+            result.velocity.x = detection.rangerate
+            result.name = "radar_data"
+        return result
+    
 if __name__ == '__main__':
     rospy.init_node('object_data', anonymous=True)
     object_data_setting = ObjectDataSet(parameters_cam, parameters_lidar, parameters_radar)
