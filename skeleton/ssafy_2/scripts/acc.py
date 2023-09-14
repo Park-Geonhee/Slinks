@@ -10,7 +10,7 @@ from morai_msgs.msg import CtrlCmd,EgoVehicleStatus,ObjectStatusList
 import numpy as np
 import tf
 from tf.transformations import euler_from_quaternion,quaternion_from_euler
-
+import sys
 # acc 는 차량의 Adaptive Cruise Control 예제입니다.
 # 차량 경로상의 장애물을 탐색하여 탐색된 차량과의 속도 차이를 계산하여 Cruise Control 을 진행합니다.
 
@@ -49,14 +49,17 @@ class pure_pursuit :
         # Ego topic 데이터는 차량의 현재 속도를 알기 위해 사용한다.
         # Gloabl Path 데이터는 경로의 곡률을 이용한 속도 계획을 위해 사용한다.
         rospy.Subscriber("/global_path", Path, self.global_path_callback )
-        rospy.Subscriber("local_path", Path, self.path_callback )
+        #rospy.Subscriber("lattice_path", Path, self.path_callback )
         rospy.Subscriber("odom", Odometry, self.odom_callback )
         rospy.Subscriber("/Ego_topic", EgoVehicleStatus, self.status_callback )
         rospy.Subscriber("/Object_topic", ObjectStatusList, self.object_info_callback )
         self.ctrl_cmd_pub = rospy.Publisher('/ctrl_cmd', CtrlCmd, queue_size = 1)
 
         
-
+        arg = rospy.myargv(argv=sys.argv)
+        local_path_name = arg[1]
+        rospy.Subscriber(local_path_name, Path, self.path_callback)
+        
         self.ctrl_cmd_msg = CtrlCmd()
         self.ctrl_cmd_msg.longlCmdType = 1
 
@@ -72,7 +75,7 @@ class pure_pursuit :
 
         self.vehicle_length = 2.6
         self.lfd = 8
-        self.min_lfd=5
+        self.min_lfd=3
         self.max_lfd=30
         self.lfd_gain = 0.78
         self.target_velocity = 60
@@ -240,7 +243,7 @@ class pure_pursuit :
         # 최소 최대 전방주시거리(Look Forward Distance) 값과 속도에 비례한 lfd_gain 값을 직접 변경해 볼 수 있습니다.
         # 초기 정의한 변수 들의 값을 변경하며 속도에 비례해서 전방주시거리 가 변하는 advanced_purepursuit 예제를 완성하세요.
         # 
-        self.lfd = self.lfd_gain * self.status_msg.velocity.x * 3.6
+        self.lfd = self.lfd_gain * self.status_msg.velocity.x
         if self.lfd < self.min_lfd :
             self.lfd = self.min_lfd
         if self.lfd > self.max_lfd:
@@ -462,7 +465,7 @@ class AdaptiveCruiseControl:
                             rel_distance = sqrt(pow(local_obs_info[i][1], 2) + pow(local_obs_info[i][2], 2))               
                             if rel_distance < min_rel_distance:
                                 min_rel_distance = rel_distance
-                                self.object=[True,i] 
+                                #self.object=[True,i] 
 
         
     def get_target_velocity(self, local_npc_info, local_ped_info, local_obs_info, ego_vel, target_vel): 

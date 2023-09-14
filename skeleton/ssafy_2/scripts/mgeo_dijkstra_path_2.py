@@ -240,7 +240,7 @@ class Dijkstra:
         return shortest_link, min_cost
         
     def find_nearest_node_idx(self, distance, s):        
-        idx_list = self.nodes.keys()
+        idx_list = list(self.nodes.keys())
         min_value = float('inf')
         min_idx = idx_list[-1]
 

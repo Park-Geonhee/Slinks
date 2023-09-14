@@ -57,8 +57,8 @@ class ObjectDataSet :
         rospy.Subscriber('odom', Odometry, self.odom_callback)
         self.radar_detect_pub = rospy.Publisher('radar_detection',ObjectStatusList, queue_size=1)
         self.lidar_detect_pub = rospy.Publisher('lidar_detection',ObjectStatusList, queue_size=1)
-        self.radar_pc_pub = rospy.Publisher('radar_pc',PointCloud, queue_size=1)
-        self.lidar_pc_pub = rospy.Publisher('lidar_pc',PointCloud, queue_size=1)
+        #self.radar_pc_pub = rospy.Publisher('radar_pc',PointCloud, queue_size=1)
+        #self.lidar_pc_pub = rospy.Publisher('lidar_pc',PointCloud, queue_size=1)
         self.lidar_status = False
         self.radar_status = False
         self.lidar_data = None
