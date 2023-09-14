@@ -13,7 +13,7 @@ from nav_msgs.msg import Odometry
 from tf.transformations import euler_from_quaternion, quaternion_from_euler
 '''
 using camera(2D object detect), lidar(object position), radar(velocity) data,
-identify objects around ego vehicle
+identify objects around ego vehicle 
 
 1. camera object detect (2D image coordi)
 2. lidar object detect (3D local coordi)
@@ -57,8 +57,8 @@ class ObjectDataSet :
         rospy.Subscriber('odom', Odometry, self.odom_callback)
         self.radar_detect_pub = rospy.Publisher('radar_detection',ObjectStatusList, queue_size=1)
         self.lidar_detect_pub = rospy.Publisher('lidar_detection',ObjectStatusList, queue_size=1)
-        self.radar_pc_pub = rospy.Publisher('radar_pc',PointCloud, queue_size=1)
-        self.lidar_pc_pub = rospy.Publisher('lidar_pc',PointCloud, queue_size=1)
+        #self.radar_pc_pub = rospy.Publisher('radar_pc',PointCloud, queue_size=1)
+        #self.lidar_pc_pub = rospy.Publisher('lidar_pc',PointCloud, queue_size=1)
         self.lidar_status = False
         self.radar_status = False
         self.lidar_data = None
@@ -139,7 +139,7 @@ class ObjectDataSet :
     
     def set_ObjectStatus(self, detection):
         data = ObjectStatus()
-        data.type = type
+        data.type = 2
         data.position.x = detection.position.x
         data.position.y = detection.position.y
         data.position.z = detection.position.z

@@ -112,6 +112,7 @@ class SCANCluster:
             # Input : point (X, Y, Z, Intensity)     
             xy_dist = (point[0]**2+point[1]**2)**0.5
             dist = (xy_dist**2+point[2]**2)**0.5
+            if point[0]==0 : continue
             angle = math.atan(point[1]/point[0])
             
             
