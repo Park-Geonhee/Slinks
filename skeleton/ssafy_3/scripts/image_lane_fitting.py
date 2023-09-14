@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 # -*- coding:utf-8 -*-
 
 import rospy
@@ -20,7 +20,7 @@ from morai_msgs.msg import CtrlCmd, EgoVehicleStatus
 
 
 class IMGParser:
-    def __init__(self, pkg_name='ssafy_ad'):
+    def __init__(self, pkg_name='project'):
 
         self.image_sub = rospy.Subscriber("/image_jpeg/compressed", CompressedImage, self.callback)
         # self.ego_sub = rospy.Subscriber("/Ego_topic", EgoVehicleStatus, self.ego_callback)
@@ -42,7 +42,7 @@ class IMGParser:
         rospack = rospkg.RosPack()
         currentPath = rospack.get_path(pkg_name)
 
-        with open(os.path.join(currentPath, 'S09P22A701/ssafy_3/sensor/sensor_params.json'), 'r') as fp:
+        with open(os.path.join(currentPath, '/home/lsh/catkin_ws/src/project/src/S09P22A701/skeleton/ssafy_3/sensor/sensor_params.json'), 'r') as fp:
             sensor_params = json.load(fp)
 
         params_cam = sensor_params["params_cam"]
@@ -96,7 +96,7 @@ class IMGParser:
 
     def callback(self, msg):
         try:
-            np_arr = np.fromstring(msg.data, np.uint8)
+            np_arr = np.frombuffer(msg.data, np.uint8)
             self.img_bgr = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
         except CvBridgeError as e:
             print(e)
@@ -403,15 +403,15 @@ class CURVEFit:
         #                                                  loss='absolute_loss',
         #                                                  min_samples=self.min_pts,
         #                                                  residual_threshold=self.y_margin)
-        self.ransac_left = linear_model.RANSACRegressor(base_estimator=linear_model.Lasso(alpha=1),
+        self.ransac_left = linear_model.RANSACRegressor(estimator=linear_model.LassoCV(alphas=[1,0.1,0.01,10,100],cv=5,tol=1e-2,max_iter=10000),
                                                         max_trials=10000000000000,
-                                                        loss='absolute_loss',
+                                                        loss='absolute_error',
                                                         min_samples=self.min_pts,
                                                         residual_threshold=self.y_margin)
 
-        self.ransac_right = linear_model.RANSACRegressor(base_estimator=linear_model.Lasso(alpha=1),
+        self.ransac_right = linear_model.RANSACRegressor(estimator=linear_model.LassoCV(alphas=[1,0.1,0.01,10,100],cv=5,tol=01e-2,max_iter=10000),
                                                          max_trials=10000000000000,
-                                                         loss='absolute_loss',
+                                                         loss='absolute_error',
                                                          min_samples=self.min_pts,
                                                          residual_threshold=self.y_margin)
 
