@@ -10,38 +10,47 @@ import math
 
 RIGHT_RADAR = {
     "X": -0.73,
-    "Y": 0.82,
+    "Y": -0.74,
     "Z": -0.01,
-    "YAW": np.radians(135), # radian
+    "YAW": np.radians(220), # radian
     "PITCH": np.radians(0),
     "ROLL": np.radians(0)
 }
 
 LEFT_RADAR = {
     "X": -0.73,
-    "Y": -0.82,
-    "Z": 0.00,
-    "YAW": np.radians(220), # radian
+    "Y": 0.74,
+    "Z": -0.01,
+    "YAW": np.radians(130), # radian
     "PITCH": np.radians(0),
     "ROLL": np.radians(0)
 }
 
 def getTransformMat(params_sensor) :
-    sensorPosition = np.array([params_sensor.get(i) for i in (["X","Y","Z"])]) 
-    sensorRPY = np.array([params_sensor.get(i) for i in (["ROLL","PITCH","YAW"])])  
-    cosY = math.cos(sensorRPY[2])
-    sinY = math.sin(sensorRPY[2])
-    posX = sensorPosition[0]
-    posY = sensorPosition[1]
-    posZ = sensorPosition[2]
+    RPY = np.array([params_sensor.get(i) for i in (["ROLL","PITCH","YAW"])])  
+    cosR = math.cos(RPY[0])
+    cosP = math.cos(RPY[1])
+    cosY = math.cos(RPY[2])
+    sinR = math.sin(RPY[0])
+    sinP = math.sin(RPY[1])
+    sinY = math.sin(RPY[2])
+    
+    rotRoll = np.array([[1, 0, 0], 
+                       [0, cosR, -sinR], 
+                       [0, sinR, cosR]])
+    rotPitch = np.array([[cosP, 0, sinP],
+                        [0, 1, 0], 
+                        [-sinP, 0, cosP]])
+    rotYaw = np.array([[cosY, -sinY, 0],
+                      [sinY, cosY, 0], 
+                      [0, 0, 1]])
 
-    trans_matrix = np.array([
-            [cosY, -sinY, 0, posX],
-            [sinY, cosY, 0, posY],
-            [0, 0, 1, posZ],
-            [0, 0, 0, 1]
-        ])
-    return trans_matrix
+    rotMat = rotYaw.dot(rotPitch.dot(rotRoll))    
+    sensorRotationMat = np.zeros((4, 4))
+    sensorRotationMat[:3,:3] = rotMat
+    sensorRotationMat[3,3] = 1
+    return sensorRotationMat
+
 
 class Radar :
     def __init__(self): 
@@ -56,40 +65,6 @@ class Radar :
         self.LeftTransMat = getTransformMat(LEFT_RADAR)
 
     def right_callback(self, msg): #RaderDetection[] RadarDetections
-        print("get radar")
-        now = time.time()
-        ''' RaderDetection
-        uint16 detection_id
-        geometry_msgs/Point position
-        float32 azimuth
-        float32 rangerate
-        float32 amplitude
-        '''
-        # radar_data_list = RadarDetections()
-        for point in msg.detections :
-            if point.position.x == 0 and point.position.y == 0 and point.position.z == 0 :
-                continue
-            
-            tmp_data = np.array([point.position.x,point.position.y,point.position.z,1]) # 4x4
-            trans_data = self.RightTransmMat.dot(tmp_data.T)
-            if trans_data[1]<-6 or trans_data[0] <-10:
-                continue
-
-            print(point.detection_id,np.round(trans_data[0],4).astype(float), np.round(trans_data[1],4).astype(float), np.round(trans_data[2],4).astype(float),  point.rangerate)
-            # radar_data = RadarDetection()
-            # radar_data.detection_id = point.detection_id
-            # radar_data.position.x = trans_data[0][0]
-            # radar_data.position.y = trans_data[1][0]
-            # radar_data.position.z = trans_data[2][0]
-
-            # radar_data.azimuth = point.azimuth
-            # radar_data.rangerate = point.rangerate
-            # radar_data.amplitude = point.amplitude
-        #     radar_data_list.detections.append(radar_data)
-        # self.radar_pub.publish(radar_data_list)
-        # print(radar_data_list)
-        print("process time : ",time.time()-now)
-    def left_callback(self, msg): #RaderDetection[] RadarDetections
         ''' RaderDetection
         uint16 detection_id
         geometry_msgs/Point position
@@ -98,32 +73,62 @@ class Radar :
         float32 amplitude
         '''
         radar_data_list = RadarDetections()
+        print("Right Object!!")
         for point in msg.detections :
             if point.position.x == 0 and point.position.y == 0 and point.position.z == 0 :
                 continue
             
             tmp_data = np.array([point.position.x,point.position.y,point.position.z,1]) # 4x4
-
-            trans_data = self.LeftTransMat.dot(tmp_data)
-            if trans_data[1]<-6:
+            trans_data = self.RightTransmMat.dot(tmp_data.T)
+            if trans_data[1]<-6 :
                 continue
+            print(trans_data, point.rangerate)
             # radar_data = RadarDetection()
             # radar_data.detection_id = point.detection_id
-            # radar_data.position.x = trans_data[0][0]
-            # radar_data.position.y = trans_data[1][0]
-            # radar_data.position.z = trans_data[2][0]
+            # radar_data.position.x = trans_data[0]
+            # radar_data.position.y = trans_data[1]
+            # radar_data.position.z = trans_data[2]
 
             # radar_data.azimuth = point.azimuth
             # radar_data.rangerate = point.rangerate
             # radar_data.amplitude = point.amplitude
-        #     radar_data_list.detections.append(radar_data)
-        # self.radar_pub.publish(radar_data_list)
+            # radar_data_list.detections.append(radar_data)
+        
         # print(radar_data_list)
+        #self.radar_pub.publish(radar_data_list)
+        
+    def left_callback(self, msg): #RaderDetection[] RadarDetections
+        radar_data_list = RadarDetections()
+        print("Left Object!!")
+        for point in msg.detections :
+            if point.position.x == 0 and point.position.y == 0 and point.position.z == 0 :
+                continue
+            
+            tmp_data = np.array([point.position.x,point.position.y,point.position.z,1]) # 4x4
+            trans_data = self.RightTransmMat.dot(tmp_data.T)
+            if trans_data[1]<-6 :
+                continue
+            print(trans_data, point.rangerate)
+            # radar_data = RadarDetection()
+            # radar_data.detection_id = point.detection_id
+            # radar_data.position.x = trans_data[0]
+            # radar_data.position.y = trans_data[1]
+            # radar_data.position.z = trans_data[2]
+
+            # radar_data.azimuth = point.azimuth
+            # radar_data.rangerate = point.rangerate
+            # radar_data.amplitude = point.amplitude
+            # radar_data_list.detections.append(radar_data)
+
+        
+        # print(radar_data_list)
+        # self.radar_pub.publish(radar_data_list)
 
 
 if __name__ == '__main__':
     rospy.init_node('rader', anonymous=True)
-    rospy.Rate(20)
+    time.sleep(1)
+    rospy.Rate(5)
     Transformer = Radar()
     rospy.spin()
         
