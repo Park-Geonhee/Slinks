@@ -1,3 +1,4 @@
+
 <launch>
     <node pkg="ssafy_ad" type="mgeo_pub.py" name="mgeo_pub"  />
     <node pkg="ssafy_ad" type="gpsimu_parser.py" name="gpsimu_parser" />
