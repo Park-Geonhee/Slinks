@@ -86,7 +86,7 @@ class pure_pursuit :
         self.adaptive_cruise_control = AdaptiveCruiseControl(velocity_gain = 0.5, distance_gain = 1, time_gap = 2, vehicle_length = 2.7)
         self.vel_planning = velocityPlanning(self.target_velocity/3.6, 0.15)
 
-        load_path = os.path.normpath(os.path.join(current_path, 'lib/mgeo_data/R_KR_PG_K-City'))
+        load_path = os.path.normpath(os.path.join(current_path, 'lib/mgeo_data/R_KR_PR_Sangam_NoBuildings'))
         mgeo_planner_map = MGeo.create_instance_from_json(load_path)
         traffic_light_set = mgeo_planner_map.light_set
         self.traffic_lights = traffic_light_set.signals
