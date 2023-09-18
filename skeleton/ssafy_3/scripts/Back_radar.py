@@ -1,37 +1,33 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #-*- coding:utf-8 -*-
 
-import rospy
-import cv2
+from morai_msgs.msg import RadarDetections, RadarDetection
 import numpy as np
-import math
+import rospy
 import time
-from sensor_msgs.msg import PointCloud2, CompressedImage
-import sensor_msgs.point_cloud2 as pc2
-from morai_msgs.msg import RadarDetections
-from numpy.linalg import inv
-from geometry_msgs.msg import Point
+import math
 
-BACK_RADAR1 = {
-    "X": -0.72,
+
+RIGHT_RADAR = {
+    "X": -0.73,
     "Y": -0.74,
-    "Z": -0.07,
+    "Z": -0.01,
     "YAW": np.radians(220), # radian
     "PITCH": np.radians(0),
     "ROLL": np.radians(0)
 }
 
-BACK_RADAR2 = {
-    "X": 3.25,
-    "Y": -0.02,
-    "Z": 0.03,
-    "YAW": np.radians(0), # radian
+LEFT_RADAR = {
+    "X": -0.73,
+    "Y": 0.74,
+    "Z": -0.01,
+    "YAW": np.radians(130), # radian
     "PITCH": np.radians(0),
     "ROLL": np.radians(0)
 }
 
-## rotation mat
-def getRotMat(RPY):        
+def getTransformMat(params_sensor) :
+    RPY = np.array([params_sensor.get(i) for i in (["ROLL","PITCH","YAW"])])  
     cosR = math.cos(RPY[0])
     cosP = math.cos(RPY[1])
     cosY = math.cos(RPY[2])
@@ -50,75 +46,89 @@ def getRotMat(RPY):
                       [0, 0, 1]])
 
     rotMat = rotYaw.dot(rotPitch.dot(rotRoll))    
-    return rotMat
-
-## TransForm MAT
-def getSensorToVehicleMat(sensorRPY, sensorPosition):
-    # Roatation MaT
-    sensorRotationMat = getRotMat(sensorRPY)
-    # Translate
-    sensorTranslationMat = np.array([sensorPosition]) ## Coord
-    
-    Tr_sensor_to_vehicle = np.concatenate((sensorRotationMat,sensorTranslationMat.T),axis = 1)
-    Tr_sensor_to_vehicle = np.insert(Tr_sensor_to_vehicle, 3, values=[0,0,0,1],axis = 0)
-    return Tr_sensor_to_vehicle
+    sensorRotationMat = np.zeros((4, 4))
+    sensorRotationMat[:3,:3] = rotMat
+    sensorRotationMat[3,3] = 1
+    return sensorRotationMat
 
 
-def getTransformMat(params_RADAR):
-    radarPosition = np.array([params_RADAR.get(i) for i in (["X","Y","Z"])])    
-    radarRPY = np.array([params_RADAR.get(i) for i in (["ROLL","PITCH","YAW"])])
-    
-    print("radarRPY:",radarRPY) #radarRPY [Roll, pitch, YAW]
-    print("radarPosition:",radarPosition)
-    Tr_radar_to_vehicle = getSensorToVehicleMat(radarRPY,radarPosition)
-    return Tr_radar_to_vehicle
+class Radar :
+    def __init__(self): 
+        rospy.Subscriber('/right_radar', RadarDetections, self.right_callback)
+        rospy.Subscriber('/left_radar', RadarDetections, self.left_callback)
 
-class LiDARToCameraTransform:
-    def __init__(self, params_RADAR): 
-        self.TransformMat = getTransformMat(BACK_RADAR1)
-        print(self.TransformMat)
-        rospy.Subscriber('/back_radar1',RadarDetections, self.callback)
+        self.radar_pub = rospy.Publisher('radar_data', RadarDetections, queue_size=1)
+        self.point_list = None
+        self.detection_list = None
 
-    def callback(self,msg):
-        for idx,d in enumerate(msg.detections):
-            d_p = np.array([d.position.x,d.position.y,d.position.z,1])
-            if d_p[0]==0 and d_p[1]==0 and d_p[2]==0:
+        self.RightTransmMat = getTransformMat(RIGHT_RADAR)
+        self.LeftTransMat = getTransformMat(LEFT_RADAR)
+
+    def right_callback(self, msg): #RaderDetection[] RadarDetections
+        ''' RaderDetection
+        uint16 detection_id
+        geometry_msgs/Point position
+        float32 azimuth
+        float32 rangerate
+        float32 amplitude
+        '''
+        radar_data_list = RadarDetections()
+        print("Right Object!!")
+        for point in msg.detections :
+            if point.position.x == 0 and point.position.y == 0 and point.position.z == 0 :
                 continue
-            print(self.TransformMat.dot(d_p)[:3],d.rangerate)
-        print("============================")
+            
+            tmp_data = np.array([point.position.x,point.position.y,point.position.z,1]) # 4x4
+            trans_data = self.RightTransmMat.dot(tmp_data.T)
+            if trans_data[1]<-6 :
+                continue
+            print(trans_data, point.rangerate)
+            # radar_data = RadarDetection()
+            # radar_data.detection_id = point.detection_id
+            # radar_data.position.x = trans_data[0]
+            # radar_data.position.y = trans_data[1]
+            # radar_data.position.z = trans_data[2]
 
-    # def transformLiDARToCamera(self, pc_lidar):
-    #     pc_wrt_cam = self.TransformMat.dot(pc_lidar)
-    #     pc_wrt_cam = np.delete(pc_wrt_cam, 3, axis=0)
-    #     return pc_wrt_cam
+            # radar_data.azimuth = point.azimuth
+            # radar_data.rangerate = point.rangerate
+            # radar_data.amplitude = point.amplitude
+            # radar_data_list.detections.append(radar_data)
+        
+        # print(radar_data_list)
+        #self.radar_pub.publish(radar_data_list)
+        
+    def left_callback(self, msg): #RaderDetection[] RadarDetections
+        radar_data_list = RadarDetections()
+        print("Left Object!!")
+        for point in msg.detections :
+            if point.position.x == 0 and point.position.y == 0 and point.position.z == 0 :
+                continue
+            
+            tmp_data = np.array([point.position.x,point.position.y,point.position.z,1]) # 4x4
+            trans_data = self.RightTransmMat.dot(tmp_data.T)
+            if trans_data[1]<-6 :
+                continue
+            print(trans_data, point.rangerate)
+            # radar_data = RadarDetection()
+            # radar_data.detection_id = point.detection_id
+            # radar_data.position.x = trans_data[0]
+            # radar_data.position.y = trans_data[1]
+            # radar_data.position.z = trans_data[2]
+
+            # radar_data.azimuth = point.azimuth
+            # radar_data.rangerate = point.rangerate
+            # radar_data.amplitude = point.amplitude
+            # radar_data_list.detections.append(radar_data)
+
+        
+        # print(radar_data_list)
+        # self.radar_pub.publish(radar_data_list)
 
 
 if __name__ == '__main__':
-    
-    rospy.init_node('ex_calib', anonymous=True)
-    print("init node")
-    
-    Transformer = LiDARToCameraTransform(BACK_RADAR2)
+    rospy.init_node('rader', anonymous=True)
     time.sleep(1)
-    rate = rospy.Rate(20)
+    rospy.Rate(5)
+    Transformer = Radar()
     rospy.spin()
-    #     #xyz_p = np.delete(xyz_p,np.where(xyz_p[0,:]>10),axis=1)
-    #     #xyz_p = np.delete(xyz_p,np.where(xyz_p[2,:]<-1.2),axis=1) #Ground Filter
-    #     #print(xyz_p[0])
-
-    #     xyz_c = Transformer.transformLiDARToCamera(xyz_p)
-    #     # print(xyz_c)
-    #     #print(np.size(xyz_c[0]))
-
-    #     xy_i = Transformer.transformCameraToImage(xyz_c)
-    #     # #print(np.size(xy_i[0]))
-    #     # xy_i = np.delete(xy_i, np.where(xy_i[0,:]>400),axis=1)
-    #     # xy_i = np.delete(xy_i, np.where(xy_i[1,:]>300),axis=1)
-    #     # print(xy_i)
-    #     #TODO: (6) PointCloud가 Image에 투영된 Processed Image 시각화
-    #     xy_i = xy_i.astype(np.int32)
-    #     projectionImage = draw_pts_img(Transformer.img, xy_i[0,:], xy_i[1,:])   
-    
-    #     cv2.imshow("LidartoCameraProjection", projectionImage)
-    #     cv2.waitKey(1)
-
+        

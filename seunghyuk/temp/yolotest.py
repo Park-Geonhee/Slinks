@@ -19,7 +19,7 @@ upper_green = np.array([90, 255, 255])
 lower_yellow = np.array([11, 50, 50])
 upper_yellow = np.array([30, 200, 200])
 
-PATH = "/home/lsh/catkin_ws/src/test_pkg/src/yolov5"
+PATH = "/home/lsh/catkin_ws/src/project/src/S09P22A701/seunghyuk/temp"
 os.chdir(PATH)
 
 def Check_Color(img, traffic_light):
