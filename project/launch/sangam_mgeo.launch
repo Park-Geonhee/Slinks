@@ -1,0 +1,6 @@
+<launch>
+    <node pkg="ssafy_ad" type="sangam_mgeo_pub.py" name="mgeo_pub"  output="screen"/>
+    <node pkg="ssafy_ad" type="sangam_gpsimu_parser.py" name="gpsimu_parser" />
+    <!-- <node pkg="ssafy_ad" type="mgeo_global_dijkstra.py" name="mgeo_dijkstra_path" output="screen" /> -->
+
+</launch>

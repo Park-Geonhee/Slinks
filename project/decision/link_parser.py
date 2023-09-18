@@ -18,7 +18,7 @@ class LinkParser:
         self.get_link_pub = rospy.Publisher("/get_cur_link", String, queue_size=1)
 
         # get Mgeo data
-        load_path = os.path.normpath(os.path.join(current_path, 'lib/mgeo_data/R_KR_PG_K-City'))
+        load_path = os.path.normpath(os.path.join(current_path, 'lib/mgeo_data/R_KR_PR_Sangam_NoBuildings'))
         mgeo_planner_map = MGeo.create_instance_from_json(load_path)
         
         node_set = mgeo_planner_map.node_set
