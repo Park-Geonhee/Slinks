@@ -9,6 +9,12 @@ import os
 
 from cv_bridge import CvBridgeError
 from sensor_msgs.msg import CompressedImage
+from morai_msgs.msg import GetTrafficLightStatus
+# Header header
+
+# string trafficLightIndex
+# int16 trafficLightType
+# int16 trafficLightStatus
 
 lower_red = np.array([-10, 30, 50]) 
 upper_red = np.array([10, 255, 255])
@@ -19,13 +25,15 @@ upper_green = np.array([90, 255, 255])
 lower_yellow = np.array([11, 50, 50])
 upper_yellow = np.array([30, 200, 200])
 
-PATH = "/home/lsh/catkin_ws/src/project/src/S09P22A701/seunghyuk/temp"
+PATH = "/home/leesh/catkin_ws/src/ssafy_ad/S09P22A701/seunghyuk/temp"
 os.chdir(PATH)
 
 def Check_Color(img, traffic_light):
     try:
         img = img[int(traffic_light["ymin"]):int(traffic_light["ymax"]),int(traffic_light["xmin"]):int(traffic_light["xmax"])]
         hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+        cv2.imshow("od",img)
+        cv2.waitKey(1)
     except:
         return ""
     
@@ -45,23 +53,27 @@ def Check_Color(img, traffic_light):
         flag+=2
     if np.any(yellow_areas):
         flag+=4
+
+    return flag
+
     
-    if(flag==1):
-        return "red"
-    elif(flag==2):
-        return "green"
-    elif(flag==3):
-        return "left"
-    elif(flag==4 or flag==5):
-        return "yellow"
-    else:
-        return ""
+    # if(flag==1):
+    #     return "red"
+    # elif(flag==2):
+    #     return "green"
+    # elif(flag==3):
+    #     return "left"
+    # elif(flag==4 or flag==5):
+    #     return "yellow"
+    # else:
+    #     return ""
     
 class Object_Detect:
     def __init__(self):
         self.model = torch.hub.load('', 'custom', 'yolov5s.onnx',source='local')
         # self.model = torch.hub.load('', 'yolov5s', source='local')
         self.image_sub = rospy.Subscriber("/image_jpeg/compressed", CompressedImage, self.callback)
+        self.traffic_pub = rospy.Publisher("traffic_data",GetTrafficLightStatus,queue_size=1)
         self.imgs=None
         rate= rospy.Rate(5)
 
@@ -74,10 +86,20 @@ class Object_Detect:
                 temp = data[data["xmax"] - data["xmin"]>data["ymax"] - data["ymin"]]
                 if(len(temp)>0):
                    maxidx = ((temp["xmax"]-temp["xmin"])*(temp["ymax"]-temp["ymin"])).argmax()
-                   traffic_light = temp.iloc[maxidx]
-                   traffic_status = Check_Color(self.imgs,traffic_light)
-                   if(traffic_status!=""):
-                       print(traffic_status)
+                   height = temp.iloc[maxidx]["ymax"] - temp.iloc[maxidx]["ymin"]
+                   width = temp.iloc[maxidx]["xmax"] - temp.iloc[maxidx]["xmin"]
+                   if(width > height*1.7):
+                        traffic_light = temp.iloc[maxidx]
+                        traffic_status = Check_Color(self.imgs,traffic_light)
+                        if(traffic_status!=""):
+                            # string trafficLightIndex
+                            # int16 trafficLightType
+                            # int16 trafficLightStatus
+                            msgs = GetTrafficLightStatus()
+                            msgs.trafficLightIndex = "Traffic_Light"
+                            msgs.trafficLightType=1
+                            msgs.trafficLightStatus=traffic_status
+                            self.traffic_pub.publish(msgs)
                        
                 #    cv2.rectangle(self.imgs,(int(traffic_light["xmin"]),int(traffic_light["ymin"])),(int(traffic_light["xmax"]),int(traffic_light["ymax"])),(255,0,0),1)
                 #    cv2.putText(self.imgs,text=traffic_status+" traffic light",org=(int(traffic_light["xmin"])-10,int(traffic_light["ymin"])),color=(255,0,0),fontFace=0,fontScale=0.5)
