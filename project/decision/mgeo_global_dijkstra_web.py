@@ -109,26 +109,27 @@ class dijkstra_path_pub :
         for i in range(len(self.pinpoint_list)//2):
             pinpoint_list_set.append([self.pinpoint_list[i*2+1], self.pinpoint_list[i*2]])
             
-            # make nearest nodes list from each pinpoint
-            for pinpoint in pinpoint_list_set:
-                min_dist = 21e8
-                nearest_node = None
-                for node_idx, node in self.nodes.items():
-                    dist = pow(pinpoint[0] - node.point[0], 2) + pow(pinpoint[1] - node.point[1], 2)
-                    if dist < min_dist:
-                        min_dist = dist
-                        nearest_node = node_idx
-                buf = Point32()
-                buf.x, buf.y, buf.z = node.point[0], node.point[1], node.point[2]
-                pinpoints_cp.points.append(buf)
-                self.target_node_list.append(nearest_node)
-            self.is_node_list = True
-                
-            self.global_path_msg.poses = []
-            for i in range(len(self.target_node_list)-1):
-                now_path = Path()
-                now_path = self.calc_dijkstra_path_node(self.target_node_list[i], self.target_node_list[i+1])
-                self.global_path_msg.poses.extend(now_path.poses)
+        # make nearest nodes list from each pinpoint
+        for pinpoint in pinpoint_list_set:
+            min_dist = 21e8
+            nearest_node = None
+            for node_idx, node in self.nodes.items():
+                dist = pow(pinpoint[0] - node.point[0], 2) + pow(pinpoint[1] - node.point[1], 2)
+                if dist < min_dist:
+                    min_dist = dist
+                    nearest_node = node_idx
+            buf = Point32()
+            buf.x, buf.y, buf.z = node.point[0], node.point[1], node.point[2]
+            pinpoints_cp.points.append(buf)
+            self.target_node_list.append(nearest_node)
+        self.is_node_list = True
+
+        print(self.target_node_list)
+        self.global_path_msg.poses = []
+        for i in range(len(self.target_node_list)-1):
+            now_path = Path()
+            now_path = self.calc_dijkstra_path_node(self.target_node_list[i], self.target_node_list[i+1])
+            self.global_path_msg.poses.extend(now_path.poses)
 
         self.pin_point_pub.publish(pinpoints_cp)
         print(f"total cost : {self.total_total_cost}")
