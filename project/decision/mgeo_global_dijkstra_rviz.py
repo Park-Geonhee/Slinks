@@ -72,6 +72,7 @@ class dijkstra_path_pub :
         self.nodes=node_set.nodes
         self.links=link_set.lines
 
+        print("nodes and links are ready")
         self.global_planner=Dijkstra(self.nodes,self.links)
 
         self.is_goal_pose = False
@@ -303,12 +304,78 @@ class Dijkstra:
                     point_path.append([point[0], point[1], 0])
             else: #change lane link
                 links = link_id.split('-')
-                from_link = links[0]
-                to_link = links[-1]
+                from_link = self.links[links[0]]
+                to_link = self.links[links[-1]]
+                len_from_link = len(from_link.points)
+                len_to_link = len(to_link.points)
+                
+
+                # End Point 까지의 길이를 Point 간 간격으로 나눠 필요한 Point 의 수를 계산한다.
+                # 계산된 Point 의 숫자 만큼 X 좌표를 생성한다.
+
+                # five points of from_link 
+                for j in range(5):
+                    point_path.append([from_link.points[j][0],from_link.points[j][1],0])
+
+                # points of third-order curve
+                start_point_num = 5
+                end_point_num = 20
+                lane_change_path = self.get_lane_chage_path(from_link, to_link, start_point_num, end_point_num)
+                point_path.extend(lane_change_path)
+                # remains points of to_link
+                for j in range(end_point_num, len_to_link):
+                    point_path.append([to_link.points[j][0],to_link.points[j][1],0])
+                
+
+
+
                 print(f"from link : {from_link}")
                 print(f"to link : {to_link}")
         return True, {'node_path': node_path, 'link_path':link_path, 'point_path':point_path, 'cost' : total_cost}
 
+
+    def get_lane_chage_path(self, from_link, to_link, start_point_num, end_point_num):
+        change_start_point = from_link.points[0]
+        change_start_next_point = from_link.points[start_point_num]
+        end_point_num = min(end_point_num, len(to_link.points)-1)
+        change_end_point = to_link.points[end_point_num]
+
+        translation = [change_start_point[0], change_start_point[1]]
+        theta       = atan2(change_start_next_point[1]-change_start_point[1], change_start_next_point[0]-change_start_point[0])
+        trans_matrix = np.array([   [ cos(theta), -sin(theta), translation[0]],
+                                    [ sin(theta),  cos(theta), translation[1]],
+                                    [          0,             0,              1] ])
+        det_trans_matrix = np.linalg.inv(trans_matrix)
+
+        world_end_point=np.array([[change_end_point[0]],[change_end_point[1]],[1]])
+        local_end_point=det_trans_matrix.dot(world_end_point)
+        waypoints_x=[]
+        waypoints_y=[]
+        x_interval = 0.5 # 생성할 Path 의 Point 간격을 0.5 로 한다.
+        x_start=0
+        x_end=local_end_point[0][0]
+
+        y_start = 0.0
+        y_end = local_end_point[1][0]
+
+        x_num = x_end/x_interval
+
+        for i in range(x_start,int(x_num)) : 
+            waypoints_x.append(i*x_interval)
+
+        a,b,c,d = -2 * y_end / pow(x_end, 3), 3 * y_end / pow(x_end, 2), 0, 0
+
+        for i in waypoints_x:
+            result = a * pow(i, 3) + b * pow(i,2) + c * i + d
+            waypoints_y.append(result)
+
+        out_points = []
+        for i in range(0,len(waypoints_y)) :
+            local_result = np.array([[waypoints_x[i]],[waypoints_y[i]],[1]])
+            global_result = trans_matrix.dot(local_result)
+            out_points.append([global_result[0][0],global_result[1][0],0])
+        return out_points
+    
 if __name__ == '__main__':
     
     dijkstra_path_pub = dijkstra_path_pub()
