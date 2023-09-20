@@ -5,8 +5,9 @@ import rospy
 import os
 import sys
 from nav_msgs.msg import Odometry
+from geometry_msgs.msg import Point
 from lib.mgeo.class_defs import *
-from std_msgs.msg import String
+from std_msgs.msg import String, Bool
 
 current_path = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(current_path)
@@ -15,7 +16,9 @@ class LinkParser:
     def __init__(self):
         rospy.init_node('LinkParser', anonymous=True)
         rospy.Subscriber("/odom", Odometry, self.odom_callback)
-        self.get_link_pub = rospy.Publisher("/get_cur_link", String, queue_size=1)
+        self.get_link_pub = rospy.Publisher("/current_link", String, queue_size=1)
+        self.stop_line_pub = rospy.Publisher("/stop_line", Point, queue_size=1)
+        self.is_on_stop_line_pub = rospy.Publisher("/is_on_stop_line", Bool, queue_size=1)
 
         # get Mgeo data
         load_path = os.path.normpath(os.path.join(current_path, 'lib/mgeo_data/R_KR_PR_Sangam_NoBuildings'))
@@ -55,6 +58,18 @@ class LinkParser:
                         current_link = link
             print(current_link.idx)
             self.get_link_pub.publish(current_link.idx)
+
+            current_to_node = current_link.get_to_node()
+            stop_line_point = Point()
+            stop_line_point.x = current_to_node.point[0]
+            stop_line_point.y = current_to_node.point[1]
+            stop_line_point.z = current_to_node.point[2]
+
+            is_on_stop_line = current_to_node.on_stop_line
+
+            self.stop_line_pub.publish(stop_line_point)
+            self.is_on_stop_line_pub.publish(is_on_stop_line)
+
 
     def odom_callback(self, msg):
         self.is_odom = True

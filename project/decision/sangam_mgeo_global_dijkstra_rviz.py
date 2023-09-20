@@ -10,49 +10,13 @@ import numpy as np
 import json
 
 from math import cos,sin,sqrt,pow,atan2,pi
-from geometry_msgs.msg import Point32,PoseStamped, PoseWithCovarianceStamped
-from nav_msgs.msg import Odometry,Path
+from geometry_msgs.msg import PoseStamped, PoseWithCovarianceStamped
+from nav_msgs.msg import Path
+from lib.mgeo.class_defs import *
 
 current_path = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(current_path)
 
-from lib.mgeo.class_defs import *
-
-# mgeo_dijkstra_path_1 은 Mgeo 데이터를 이용하여 시작 Node 와 목적지 Node 를 지정하여 Dijkstra 알고리즘을 적용하는 예제 입니다.
-# 사용자가 직접 지정한 시작 Node 와 목적지 Node 사이 최단 경로 계산하여 global Path(전역경로) 를 생성 합니다.
-# 시작 Node 와 목적지 Node 는 Rviz 의 goal pose / initial pose 두 기능을 이용하여 정의합니다.
-
-# 노드 실행 순서 
-# 0. 필수 학습 지식
-# 1. Mgeo data 읽어온 후 데이터 확인
-# 2. 시작 Node 와 종료 Node 정의
-# 3. weight 값 계산
-# 4. Dijkstra Path 초기화 로직
-# 5. Dijkstra 핵심 코드
-# 6. node path 생성
-# 7. link path 생성
-# 8. Result 판별
-# 9. point path 생성
-# 10. dijkstra 경로 데이터를 ROS Path 메세지 형식에 맞춰 정의
-# 11. dijkstra 이용해 만든 Global Path 정보 Publish
-
-#TODO: (0) 필수 학습 지식
-'''
-# dijkstra 알고리즘은 그래프 구조에서 노드 간 최단 경로를 찾는 알고리즘 입니다.
-# 시작 노드부터 다른 모든 노드까지의 최단 경로를 탐색합니다.
-# 다양한 서비스에서 실제로 사용 되며 인공 위성에도 사용되는 방식 입니다.
-# 전체 동작 과정은 다음과 같습니다.
-#
-# 1. 시작 노드 지정
-# 2. 시작 노드를 기준으로 다른 노드와의 비용을 저장(경로 탐색 알고리즘에서는 비용이란 경로의 크기를 의미)
-# 3. 방문하지 않은 노드들 중 가장 적은 비용의 노드를 방문
-# 4. 방문한 노드와 인접한 노드들을 조사해서 새로 조사된 최단 거리가 기존 발견된 최단거리 보다 작으면 정보를 갱신
-#   [   새로 조사된 최단 거리 : 시작 노드에서 방문 노드 까지의 거리 비용 + 방문 노드에서 인접 노드까지의 거리 비용    ]
-#   [   기존 발견된 최단 거리 : 시작 노드에서 인접 노드까지의 거리 비용                                       ]
-# 5. 3 ~ 4 과정을 반복 
-# 
-
-'''
 class dijkstra_path_pub :
     def __init__(self):
         rospy.init_node('dijkstra_path_pub', anonymous=True)
@@ -62,8 +26,8 @@ class dijkstra_path_pub :
         rospy.Subscriber('/move_base_simple/goal', PoseStamped, self.goal_callback)
         rospy.Subscriber('/initialpose', PoseWithCovarianceStamped, self.init_callback)
 
-        #TODO: (1) Mgeo data 읽어온 후 데이터 확인
-        load_path = os.path.normpath(os.path.join(current_path, 'lib/mgeo_data/R_KR_PR_Sangam_NoBuildings'))
+        #Mgeo data 읽어온 후 데이터 확인
+        load_path = os.path.normpath(os.path.join(current_path, 'lib/mgeo_data/R_KR_PR_Sangam_NoBuildings'))    
         mgeo_planner_map = MGeo.create_instance_from_json(load_path)
 
         node_set = mgeo_planner_map.node_set
@@ -77,6 +41,7 @@ class dijkstra_path_pub :
 
         self.is_goal_pose = False
         self.is_init_pose = False
+        self.is_global_path = False
         self.reset_flag = 0
 
         while True:
@@ -85,22 +50,18 @@ class dijkstra_path_pub :
                 break
             else:
                 pass
-                #rospy.loginfo('Waiting goal pose data')
-                #rospy.loginfo('Waiting init pose data')
-
 
         self.global_path_msg = Path()
         self.global_path_msg.header.frame_id = '/map'
 
         self.global_path_msg = self.calc_dijkstra_path_node(self.start_node, self.end_node)
 
+
         rate = rospy.Rate(10) # 10hz
         while not rospy.is_shutdown():
-            #TODO: (11) dijkstra 이용해 만든 Global Path 정보 Publish
+            #dijkstra 이용해 만든 Global Path 정보 Publish
+            if self.is_global_path == False : continue
             self.global_path_pub.publish(self.global_path_msg)
-
-            #self.global_path_msg = self.calc_dijkstra_path_node(self.start_node, self.end_node)
-
 
             rate.sleep()
     
@@ -158,7 +119,7 @@ class dijkstra_path_pub :
             read_pose.pose.position.z = float(point[2])
             read_pose.pose.orientation.w = 1
             out_path.poses.append(read_pose)
-
+        self.is_global_path = True
         return out_path
 
 class Dijkstra:
@@ -326,9 +287,6 @@ class Dijkstra:
                 for j in range(end_point_num, len_to_link):
                     point_path.append([to_link.points[j][0],to_link.points[j][1],0])
                 
-
-
-
                 print(f"from link : {from_link}")
                 print(f"to link : {to_link}")
         return True, {'node_path': node_path, 'link_path':link_path, 'point_path':point_path, 'cost' : total_cost}
