@@ -294,7 +294,7 @@ class pure_pursuit :
 
         det_trans_matrix = np.linalg.inv(trans_matrix)
 
-        for num,i in enumerate(self.path.poses) :
+        for i in self.path.poses :
             path_point = i
 
             global_path_point = [ path_point.pose.position.x, path_point.pose.position.y, 1]
@@ -312,7 +312,7 @@ class pure_pursuit :
         # 제어 입력을 위한 Steering 각도를 계산 합니다.
         # theta 는 전방주시거리(Look Forward Distance) 와 가장 가까운 Path Point 좌표의 각도를 계산 합니다.
         # Steering 각도는 Pure Pursuit 알고리즘의 각도 계산 수식을 적용하여 조향 각도를 계산합니다.
-        rospy.loginfo(self.forward_point)
+        
         sin_alpha = self.forward_point[1]/sqrt(self.forward_point[0]*self.forward_point[0] + self.forward_point[1]*self.forward_point[1])
         theta = atan2( 2 * self.vehicle_length*sin_alpha ,self.lfd)
         steering = theta
@@ -381,7 +381,7 @@ class velocityPlanning:
             lsmMat = aMatTrans.dot(aMat)
 
             # if Mat doesn't have Reverse, Do not calculate
-            
+
             if np.linalg.det(lsmMat) == 0 :
                 out_vel_plan.append(self.car_max_speed)
                 continue
