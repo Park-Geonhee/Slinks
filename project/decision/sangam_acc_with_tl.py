@@ -35,7 +35,7 @@ class pure_pursuit :
         self.is_object_info = False
         self.is_look_forward_point = False
         self.is_traffic_light_info = False
-        self.is_on_stop_line = False
+        self.on_stop_line = False
 
         self.current_link = String()
         self.stop_line_point = Point()
@@ -57,14 +57,14 @@ class pure_pursuit :
 
         rospy.Subscriber("/current_link", String, self.current_link_callback)
         rospy.Subscriber("/stop_line", Point, self.stop_line_callback)
-        rospy.Subscriber("/is_on_stop_line", Bool, self.is_on_stop_line_callback)
+        rospy.Subscriber("/on_stop_line", Bool, self.is_on_stop_line_callback)
         rospy.Subscriber("/GetTrafficLightStatus", GetTrafficLightStatus, self.traffic_light_callback)
         self.ctrl_cmd_pub = rospy.Publisher('/ctrl_cmd', CtrlCmd, queue_size = 1)
 
 
 
         self.pid = pidControl()
-        self.adaptive_cruise_control = AdaptiveCruiseControl(velocity_gain = 0.5, distance_gain = 1, time_gap = 2, vehicle_length = 2.7)
+        self.adaptive_cruise_control = AdaptiveCruiseControl(velocity_gain = 0.5, distance_gain = 1, time_gap = 2, vehicle_length = 2.7, is_on_stop_line = self.on_stop_line)
         self.vel_planning = velocityPlanning(self.target_velocity/3.6, 0.15)
         
         #setting for traffic light from sim
@@ -114,6 +114,7 @@ class pure_pursuit :
                     rospy.loginfo("no found forward point")
                     self.ctrl_cmd_msg.steering=0.0
 
+                self.adaptive_cruise_control.is_on_stop_line = self.is_on_stop_line
                 self.adaptive_cruise_control.check_object(self.path ,global_npc_info, local_npc_info
                                                                     ,global_ped_info, local_ped_info
                                                                     ,global_obs_info, local_obs_info
@@ -169,8 +170,11 @@ class pure_pursuit :
 
     def stop_line_callback(self, msg):
         self.stop_line_point = msg
+        print(self.is_on_stop_line)
+
     def is_on_stop_line_callback(self, msg):
-        self.is_on_stop_line = msg
+        self.is_on_stop_line = msg.data
+
     def get_current_waypoint(self,ego_status,global_path):
         min_dist = float('inf')        
         currnet_waypoint = -1     
@@ -432,7 +436,7 @@ class velocityPlanning:
         return out_vel_plan
 
 class AdaptiveCruiseControl:
-    def __init__(self, velocity_gain, distance_gain, time_gap, vehicle_length):
+    def __init__(self, velocity_gain, distance_gain, time_gap, vehicle_length, is_on_stop_line):
         self.npc_vehicle=[False,0]
         self.object=[False,0]
         self.Person=[False,0]
@@ -441,11 +445,12 @@ class AdaptiveCruiseControl:
         self.distance_gain = distance_gain
         self.time_gap = time_gap
         self.vehicle_length = vehicle_length
+        self.is_on_stop_line = is_on_stop_line
 
         self.object_type = None
         self.object_distance = 0
         self.object_velocity = 0
-
+        
     def check_object(self,ref_path, global_npc_info, local_npc_info, 
                                     global_ped_info, local_ped_info, 
                                     global_obs_info, local_obs_info,
@@ -561,7 +566,7 @@ class AdaptiveCruiseControl:
             #print("ACC ON Traffic light")
             
 
-            if (local_tl_info[2] == 1 or (local_tl_info[2]== 33) or (local_tl_info[2]== 5)) and local_tl_info[0][0]>0: 
+            if (local_tl_info[2] == 1 or (local_tl_info[2]== 33) or (local_tl_info[2]== 5)) and local_tl_info[0][0]>0 and self.is_on_stop_line: 
                 dis_safe = ego_vel * time_gap*0.25 + default_space
                 dis_rel = sqrt(pow(local_tl_info[0][0],2) + pow(local_tl_info[0][1],2))            
                 vel_rel=(0 - ego_vel)                        

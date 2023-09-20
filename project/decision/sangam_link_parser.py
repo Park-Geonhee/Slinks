@@ -18,7 +18,7 @@ class LinkParser:
         rospy.Subscriber("/odom", Odometry, self.odom_callback)
         self.get_link_pub = rospy.Publisher("/current_link", String, queue_size=1)
         self.stop_line_pub = rospy.Publisher("/stop_line", Point, queue_size=1)
-        self.is_on_stop_line_pub = rospy.Publisher("/is_on_stop_line", Bool, queue_size=1)
+        self.is_on_stop_line_pub = rospy.Publisher("/on_stop_line", Bool, queue_size=1)
 
         # get Mgeo data
         load_path = os.path.normpath(os.path.join(current_path, 'lib/mgeo_data/R_KR_PR_Sangam_NoBuildings'))
