@@ -312,6 +312,7 @@ class pure_pursuit :
         # 제어 입력을 위한 Steering 각도를 계산 합니다.
         # theta 는 전방주시거리(Look Forward Distance) 와 가장 가까운 Path Point 좌표의 각도를 계산 합니다.
         # Steering 각도는 Pure Pursuit 알고리즘의 각도 계산 수식을 적용하여 조향 각도를 계산합니다.
+        rospy.loginfo(self.forward_point)
         sin_alpha = self.forward_point[1]/sqrt(self.forward_point[0]*self.forward_point[0] + self.forward_point[1]*self.forward_point[1])
         theta = atan2( 2 * self.vehicle_length*sin_alpha ,self.lfd)
         steering = theta
@@ -376,12 +377,20 @@ class velocityPlanning:
             # 원의 좌표를 구하는 행렬 계산식, 최소 자승법을 이용하는 방식 등 곡률 반지름을 구하기 위한 식을 적용 합니다.
             
             aMatTrans = np.transpose(aMat)
-            resMat = np.linalg.inv(aMatTrans.dot(aMat)).dot(aMatTrans).dot(bMat)
-            #resMat = np.linalg.inv(((aMatTrans.dot(aMat)).dot(aMatTrans)).dot(bMat))
+
+            lsmMat = aMatTrans.dot(aMat)
+
+            # if Mat doesn't have Reverse, Do not calculate
+            
+            if np.linalg.det(lsmMat) == 0 :
+                out_vel_plan.append(self.car_max_speed)
+                continue
+            
+            resMat = np.linalg.inv(lsmMat).dot(aMatTrans).dot(bMat)
+
 			# 적용한 수식을 통해 곡률 반지름 "r" 을 계산합니다.
 
             r = sqrt(resMat[0]*resMat[0] + resMat[1]*resMat[1] - resMat[2])
-
 
             #TODO: (7) 곡률 기반 속도 계획
             # 계산 한 곡률 반경을 이용하여 최고 속도를 계산합니다.
@@ -391,6 +400,7 @@ class velocityPlanning:
 
             if v_max > self.car_max_speed:
                 v_max = self.car_max_speed
+            
             out_vel_plan.append(v_max)
 
         for i in range(len(gloabl_path.poses) - point_num, len(gloabl_path.poses)-10):
