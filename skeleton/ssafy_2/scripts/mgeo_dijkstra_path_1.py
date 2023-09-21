@@ -109,7 +109,7 @@ class dijkstra_path_pub :
         for node in path['node_path']:
             print(node)
 
-        print("link likst")
+        print("link list")
         for link in path['link_path']:
             print(link)
             
@@ -118,6 +118,7 @@ class dijkstra_path_pub :
             read_pose = PoseStamped()
             read_pose.pose.position.x = float(point[0])
             read_pose.pose.position.y = float(point[1])
+            # Add to max_vel in this point
             read_pose.pose.position.z = float(point[2])
             read_pose.pose.orientation.w = 1
             out_path.poses.append(read_pose)
@@ -277,8 +278,9 @@ class Dijkstra:
                     if link_sharing_from_node.idx.find('-') != -1: continue
                     link_id = link_sharing_from_node.idx
             link = self.links[link_id]
-            for point in link.points:
-                point_path.append([point[0], point[1], 0])
+            for point in link:
+                max_speed = link.max_speed
+                point_path.append([point.points[0], point.points[1], max_speed])
 
         return True, {'node_path': node_path, 'link_path':link_path, 'point_path':point_path}
 
