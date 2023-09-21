@@ -25,7 +25,7 @@ upper_green = np.array([90, 255, 255])
 lower_yellow = np.array([11, 50, 50])
 upper_yellow = np.array([30, 200, 200])
 
-PATH = "/home/leesh/catkin_ws/src/ssafy_ad/S09P22A701/seunghyuk/temp"
+PATH = "/home/leesh/catkin_ws/src/ssafy_ad/S09P22A701/seunghyuk/traffic_light"
 os.chdir(PATH)
 
 def Check_Color(img, traffic_light):
@@ -70,7 +70,7 @@ def Check_Color(img, traffic_light):
     
 class Object_Detect:
     def __init__(self):
-        self.model = torch.hub.load('', 'custom', 'yolov5s.onnx',source='local')
+        self.model = torch.hub.load(PATH, 'custom', 'yolov5s-int8.tflite',source='local')
         # self.model = torch.hub.load('', 'yolov5s', source='local')
         self.image_sub = rospy.Subscriber("/image_jpeg/compressed", CompressedImage, self.callback)
         self.traffic_pub = rospy.Publisher("traffic_data",GetTrafficLightStatus,queue_size=1)
@@ -81,7 +81,7 @@ class Object_Detect:
             if self.imgs is not None:
                 result = self.model(self.imgs)
                 # Only traffic light
-                data=result.pandas().xyxy[0][result.pandas().xyxy[0].name=="traffic light"]
+                data=result.pandas().xyxy[0][result.pandas().xyxy[0].name=="class9"]
 
                 temp = data[data["xmax"] - data["xmin"]>data["ymax"] - data["ymin"]]
                 if(len(temp)>0):
