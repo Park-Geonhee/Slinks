@@ -80,9 +80,9 @@ class Object_Detect:
         while not rospy.is_shutdown():
             if self.imgs is not None:
                 result = self.model(self.imgs)
+                print(result)
                 # Only traffic light
                 data=result.pandas().xyxy[0][result.pandas().xyxy[0].name=="class9"]
-
                 temp = data[data["xmax"] - data["xmin"]>data["ymax"] - data["ymin"]]
                 if(len(temp)>0):
                    maxidx = ((temp["xmax"]-temp["xmin"])*(temp["ymax"]-temp["ymin"])).argmax()
