@@ -112,7 +112,7 @@ class RadarObject:
         rospy.Subscriber('/radar', RadarDetections, self.radar_callback)
         rospy.Subscriber("/image_jpeg/compressed", CompressedImage, self.image_callback)
         self.object_pub = rospy.Publisher('forward_object',ObjectStatusList, queue_size=1)
-        self.model = torch.hub.load(Path,'custom','yolov5n.pt', source='local')  # or yolov5n - yolov5x6, custom
+        self.model =torch.hub.load(Path, 'custom', 'yolov5n.pt',source='local')
         self.radar2VehicleMat = get2VehicleMat(radar_pos, radar_rpy)
         self.radar2CameraMat = get2CameraMat(radar_pos, radar_rpy, camera_pos, camera_rpy)
         self.camera2ImageMat = get2ImageMat(parameters_cam)
