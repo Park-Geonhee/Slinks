@@ -36,10 +36,10 @@ class LinkParser:
             if self.is_odom == True : break
             else : rospy.loginfo("Waiting odometry data")
 
-        rate = rospy.Rate(30) # 30hz
+        rate = rospy.Rate(10)
         while not rospy.is_shutdown():
             # 1. find nearest node
-            near_nodes = self.find_near_5_nodes()
+            near_nodes = self.find_near_3_nodes()
 
             # 2. get link connected to found node
             connected_links = []
@@ -66,24 +66,35 @@ class LinkParser:
             stop_line_point.z = current_to_node.point[2]
 
             is_on_stop_line = current_to_node.on_stop_line
+            if is_on_stop_line == False:
+                next_to_link = current_to_node.to_links
+                if (len(next_to_link) == 1) and (next_to_link[0].get_to_node().on_stop_line):
+                    next_to_node = next_to_link[0].get_to_node()
+                    is_on_stop_line = next_to_node.on_stop_line
+                    stop_line_point.x = next_to_node.point[0]
+                    stop_line_point.y = next_to_node.point[1]
+                    stop_line_point.z = next_to_node.point[2]
+                else:
+                    pass
+
 
             self.stop_line_pub.publish(stop_line_point)
             self.is_on_stop_line_pub.publish(is_on_stop_line)
-
+            rate.sleep()
 
     def odom_callback(self, msg):
         self.is_odom = True
         self.x = msg.pose.pose.position.x
         self.y = msg.pose.pose.position.y
         
-    def find_near_5_nodes(self):
-        result = [[21e8, Node()], [21e8, Node()], [21e8, Node()], [21e8, Node()], [21e8, Node()]]
+    def find_near_3_nodes(self):
+        result = [[21e8, Node()], [21e8, Node()], [21e8, Node()]]
         
         for node_idx, node in self.nodes.items():
             if (self.x - node.point[0]>100) or (self.y-node.point[1])>100 : continue
             ddist = pow(self.x - node.point[0],2) + pow(self.y - node.point[1],2)
-            if ddist < result[4][0]:
-                result[4] = [ddist, node]
+            if ddist < result[2][0]:
+                result[2] = [ddist, node]
                 result.sort(key=lambda x:x[0])
         return result
             

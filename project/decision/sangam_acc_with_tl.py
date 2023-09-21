@@ -39,7 +39,7 @@ class pure_pursuit :
 
         self.current_link = String()
         self.stop_line_point = Point()
-        self.forward_point = Point()
+        self.forward_point = [1,1,1]
         self.current_position = Point()
 
         self.vehicle_length = 2.6
@@ -170,7 +170,7 @@ class pure_pursuit :
 
     def stop_line_callback(self, msg):
         self.stop_line_point = msg
-        print(self.is_on_stop_line)
+        
 
     def is_on_stop_line_callback(self, msg):
         self.is_on_stop_line = msg.data

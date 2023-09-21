@@ -29,7 +29,7 @@ class latticePlanner:
         self.is_status = False
         self.is_obj = False
 
-        rate = rospy.Rate(50) # 30hz
+        rate = rospy.Rate(30) # 30hz
         while not rospy.is_shutdown():
 
             if self.is_path and self.is_status and self.is_obj:

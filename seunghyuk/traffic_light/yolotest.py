@@ -25,15 +25,15 @@ upper_green = np.array([90, 255, 255])
 lower_yellow = np.array([11, 50, 50])
 upper_yellow = np.array([30, 200, 200])
 
-PATH = "/home/leesh/catkin_ws/src/ssafy_ad/S09P22A701/seunghyuk/temp"
+PATH = "/home/seogau/catkin_ws/src/ssafy_ad/S09P22A701/seunghyuk/traffic_light"
 os.chdir(PATH)
 
 def Check_Color(img, traffic_light):
     try:
         img = img[int(traffic_light["ymin"]):int(traffic_light["ymax"]),int(traffic_light["xmin"]):int(traffic_light["xmax"])]
         hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-        cv2.imshow("od",img)
-        cv2.waitKey(1)
+        #cv2.imshow("od",img)
+        #cv2.waitKey(1)
     except:
         return ""
     
