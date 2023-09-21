@@ -1,0 +1,377 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:layout_marginHorizontal="22dp"
+    android:background="@color/bg_grey">
+
+
+    <TextView
+        android:id="@+id/textView4"
+        android:layout_marginTop="46dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="22dp"
+        android:fontFamily="@font/pretendard_bold"
+        android:text="AI 다이어리"
+        android:textSize="20sp"
+        />
+
+    <LinearLayout
+        android:id="@+id/header1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:layout_width="126dp"
+                android:layout_height="40dp"
+
+
+                android:background="@drawable/outline1"
+                android:text="날짜 설정"
+                android:textColor="@color/grey60"
+                android:textSize="14dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+
+                app:layout_constraintTop_toTopOf="parent" />
+
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/button112"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/outline1"
+
+                android:text="캘린더 뷰"
+                android:textColor="@color/grey60"
+                android:textSize="14dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+
+
+        </LinearLayout>
+
+
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:id="@+id/diary_card"
+        android:layout_width="350dp"
+        android:layout_height="480dp"
+
+
+        android:layout_marginBottom="268dp"
+        android:background="@drawable/diary_card"
+        android:orientation="vertical"
+
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.262"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <!--        장소 정보-->
+
+
+        <LinearLayout
+            android:layout_marginTop="10dp"
+            android:id="@+id/place1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+
+            android:orientation="horizontal"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="parent">
+
+
+            <ImageView
+                android:id="@+id/imageView2"
+                android:layout_width="102dp"
+                android:layout_height="82dp"
+                android:src="@drawable/mash"
+
+                app:srcCompat="@drawable/mash" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="200dp"
+                    android:layout_height="30dp"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/textView5"
+                        android:layout_width="80dp"
+                        android:layout_height="30dp"
+                        android:fontFamily="@font/pretendard_semi_bold"
+
+                        android:text="삼진가구"
+                        android:textSize="16dp"
+
+                        android:textColor="@color/grey60" />
+
+                    <TextView
+                        android:id="@+id/textView6"
+                        android:fontFamily="@font/pretendard_medium"
+
+                        android:layout_width="80dp"
+                        android:layout_height="30dp"
+                        android:text="카페"
+                        android:textSize="14dp"
+                        android:textColor="@color/grey60" />
+
+
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/textView7"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="5dp"
+                    android:fontFamily="@font/pretendard_medium"
+                    android:textSize="14dp"
+
+                    android:text="인천 삼화군 강화읍 향나무 5번길" />
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <ImageView
+            android:id="@+id/imageView4"
+            android:layout_width="273dp"
+            android:layout_height="259dp"
+            android:layout_gravity="center"
+
+            android:layout_marginTop="10dp"
+
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/place1"
+            app:srcCompat="@drawable/cakepang" />
+
+        <TextView
+            android:id="@+id/textView8"
+            android:layout_width="265dp"
+            android:layout_height="76dp"
+            android:layout_gravity="center"
+            android:layout_marginTop="10dp"
+            android:maxLines="5"
+            android:fontFamily="@font/pretendard_medium"
+            android:textSize="16dp"
+            android:text="오후에 햇빛을 받으면서 맛잇는 에스프레소 한잔.. 커피는 코로 마시는거다. 레트로와 섞여서 한 층더 갬성과 풍미가 더해지는것 같다.. :D "
+
+            app:layout_constraintBottom_toBottomOf="parent"
+
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/imageView4"
+            app:layout_constraintTop_toTopOf="parent" />
+
+
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:id="@+id/days"
+        android:layout_width="437dp"
+        android:layout_height="60dp"
+        android:layout_marginEnd="36dp"
+
+        android:orientation="horizontal"
+
+
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/diary_card"
+        app:layout_constraintVertical_bias="0.136">
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/button1"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:layout_marginRight="15dp"
+            android:background="@drawable/outline_day"
+            android:text="7"
+            android:textColor="@color/slinks_black"
+            android:textSize="16dp"
+
+            tools:layout_editor_absoluteY="663dp" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/button2"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:layout_marginRight="15dp"
+            android:background="@drawable/outline_day_selected"
+            android:text="8"
+            android:textColor="@color/slinks_black"
+            android:textSize="16dp"
+
+            tools:layout_editor_absoluteY="663dp" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/button3"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:layout_marginRight="15dp"
+            android:background="@drawable/outline_day"
+            android:text="9"
+            android:textColor="@color/slinks_black"
+            android:textSize="16dp"
+
+            tools:layout_editor_absoluteY="663dp" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/button4"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:layout_marginRight="15dp"
+            android:background="@drawable/outline_day"
+            android:text="10"
+            android:textColor="@color/slinks_black"
+            android:textSize="16dp"
+
+            tools:layout_editor_absoluteY="663dp" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/button5"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:layout_marginRight="15dp"
+            android:background="@drawable/outline_day"
+            android:text="11"
+            android:textColor="@color/slinks_black"
+            android:textSize="16dp"
+
+            tools:layout_editor_absoluteY="663dp" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/button6"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:layout_marginRight="15dp"
+            android:background="@drawable/outline_day"
+            android:text="12"
+            android:textColor="@color/slinks_black"
+            android:textSize="16dp"
+
+            tools:layout_editor_absoluteY="663dp" />
+
+
+    </LinearLayout>
+
+    <LinearLayout
+
+        android:id="@+id/footbar"
+        android:layout_width="380dp"
+        android:layout_height="wrap_content"
+
+        android:background="@drawable/footbar"
+
+
+        android:gravity="center"
+        android:orientation="horizontal"
+
+        android:padding="15dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.483"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/days"
+        app:layout_constraintVertical_bias="0.7">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="20dp"
+            android:orientation="vertical"
+
+            app:layout_constraintTop_toBottomOf="@+id/days"
+            tools:layout_editor_absoluteX="164dp">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+
+                android:src="@drawable/diaryblack" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="AI다이어리" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginHorizontal="20dp"
+
+            app:layout_constraintTop_toBottomOf="@+id/days"
+            tools:layout_editor_absoluteX="164dp">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+
+                android:src="@drawable/placesgrey" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="여행플랜" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_marginHorizontal="20dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+
+            app:layout_constraintTop_toBottomOf="@+id/days"
+            tools:layout_editor_absoluteX="164dp">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+
+                android:src="@drawable/planlistsgrey" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="플랜리스트" />
+        </LinearLayout>
+
+
+    </LinearLayout>
+
+
+</LinearLayout>
