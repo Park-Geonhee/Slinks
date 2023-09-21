@@ -16,6 +16,7 @@ import torch
 import numpy as np
 import math
 import time
+import os
 from morai_msgs.msg import RadarDetections, RadarDetection, ObjectStatusList, ObjectStatus
 from sensor_msgs.msg import PointCloud2, CompressedImage, PointCloud
 from geometry_msgs.msg import PoseArray,Pose, Point32
@@ -32,7 +33,7 @@ parameters_radar = {
 }
 parameters_cam ={
     "WIDTH": 640, #image width
-    "HEIGHT": 480, #image height
+    "HEIGHT": 640, #image height
     "FOV": 90, # Field of views
     "X": 3.67, # meter
     "Y": -0.01,
@@ -41,6 +42,8 @@ parameters_cam ={
     "PITCH": np.radians(0),
     "ROLL": np.radians(0)
 }
+PATH= "/home/leesh/catkin_ws/src/ssafy_ad/S09P22A701/seunghyuk/traffic_light"
+os.chdir(PATH)
 lidarPositionOffset = np.array([0, 0, -0.25 ]) # VLP16 사용해야 함
 camPositionOffset = np.array([0.1085, 0, 0])  # Camera Offset  x,y,z
 camera_pos = np.array([parameters_cam.get(i) for i in (["X","Y","Z"])]) + camPositionOffset    
@@ -106,13 +109,12 @@ def get2ImageMat(params_cam):
                           [0, 0, 1]])
     
     return CameraMat
-Path = "/home/euiseon/catkin_ws/src/ssafy_ad/S09P22A701/project/perception/yolov5"
 class RadarObject:
     def __init__(self):
         rospy.Subscriber('/radar', RadarDetections, self.radar_callback)
         rospy.Subscriber("/image_jpeg/compressed", CompressedImage, self.image_callback)
         self.object_pub = rospy.Publisher('forward_object',ObjectStatusList, queue_size=1)
-        self.model =torch.hub.load(Path, 'custom', 'yolov5n.pt',source='local')
+        self.model =torch.hub.load(PATH, 'custom', 'yolov5s-int8.tflite',source='local')
         self.radar2VehicleMat = get2VehicleMat(radar_pos, radar_rpy)
         self.radar2CameraMat = get2CameraMat(radar_pos, radar_rpy, camera_pos, camera_rpy)
         self.camera2ImageMat = get2ImageMat(parameters_cam)
@@ -218,20 +220,18 @@ class RadarObject:
                 coordi = object_list.iloc[i][0:4] #xmin, ymin, xmax, ymax
                 # print("coordi[0]",coordi[0])       
                 if check_list[i] == True : # already mapped with radar point
-                    print("already mapped")
                     continue
                 if image_xy[0] < coordi[0] or image_xy[0] > coordi[2]:
-                    print("x out")
                     continue
                 if image_xy[1] < coordi[1] or image_xy[1] > coordi[3]:
-                    print("y out")
                     continue
                 # this BBOX include this point
                 # fail detect
                 name = object_list.iloc[i]["name"]
-                if name == "train":
+                if name in ["class2","class5","class7"]:
+                    print("object name", "CAR")
+                else:
                     continue
-                print("object name", name)
                 check_list[i] = True
                 is_first = True
                 detection_wrt_vehicle = self.get_detection_wrt_vehicle(detect)
