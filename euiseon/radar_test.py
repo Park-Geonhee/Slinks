@@ -133,7 +133,7 @@ class RadarObject:
             if self.radar_data is None :
                 print("get radar_data")
                 continue
-            # self.get_detection_list_wrt_vehicle()
+            self.get_detection_list_wrt_vehicle()
 
 
     def radar_callback(self, msg):
