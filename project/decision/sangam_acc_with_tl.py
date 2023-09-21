@@ -2,19 +2,20 @@
 # -*- coding: utf-8 -*-
 
 import rospy
-import rospkg
 from math import cos,sin,pi,sqrt,pow,atan2
-from geometry_msgs.msg import Point,PoseWithCovarianceStamped
+
+from geometry_msgs.msg import Point
 from std_msgs.msg import String, Bool
 from nav_msgs.msg import Odometry,Path
 from morai_msgs.msg import CtrlCmd,EgoVehicleStatus,ObjectStatusList,GetTrafficLightStatus
+from ssafy_ad.msg import custom_link_parser
+
 import numpy as np
-import tf
 import sys
 import os
-import time
 from tf.transformations import euler_from_quaternion,quaternion_from_euler
 from lib.mgeo.class_defs import *
+
 current_path = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(current_path)
 
@@ -35,10 +36,10 @@ class pure_pursuit :
         self.is_object_info = False
         self.is_look_forward_point = False
         self.is_traffic_light_info = False
-        self.on_stop_line = False
-
-        self.current_link = String()
-        self.stop_line_point = Point()
+        #self.on_stop_line = False
+        #self.current_link = String()
+        #self.stop_line_point = Point()
+        self.link_info = custom_link_parser()
         self.forward_point = [1,1,1]
         self.current_position = Point()
 
@@ -54,17 +55,18 @@ class pure_pursuit :
         rospy.Subscriber("/odom", Odometry, self.odom_callback )
         rospy.Subscriber("/Ego_topic", EgoVehicleStatus, self.status_callback )
         rospy.Subscriber("/radar_detection", ObjectStatusList, self.object_info_callback )
+        rospy.Subscriber("/link_info", custom_link_parser, self.get_link_info_callback)
 
-        rospy.Subscriber("/current_link", String, self.current_link_callback)
-        rospy.Subscriber("/stop_line", Point, self.stop_line_callback)
-        rospy.Subscriber("/on_stop_line", Bool, self.is_on_stop_line_callback)
+        #rospy.Subscriber("/current_link", String, self.current_link_callback)
+        #rospy.Subscriber("/stop_line", Point, self.stop_line_callback)
+        #rospy.Subscriber("/on_stop_line", Bool, self.is_on_stop_line_callback)
         rospy.Subscriber("/GetTrafficLightStatus", GetTrafficLightStatus, self.traffic_light_callback)
         self.ctrl_cmd_pub = rospy.Publisher('/ctrl_cmd', CtrlCmd, queue_size = 1)
 
 
 
         self.pid = pidControl()
-        self.adaptive_cruise_control = AdaptiveCruiseControl(velocity_gain = 0.5, distance_gain = 1, time_gap = 2, vehicle_length = 2.7, is_on_stop_line = self.on_stop_line)
+        self.adaptive_cruise_control = AdaptiveCruiseControl(velocity_gain = 0.5, distance_gain = 1, time_gap = 2, vehicle_length = 2.7, is_on_stop_line = self.link_info.is_on_stop_line)
         self.vel_planning = velocityPlanning(self.target_velocity/3.6, 0.15)
         
         #setting for traffic light from sim
@@ -74,9 +76,7 @@ class pure_pursuit :
         self.traffic_lights = traffic_light_set.signals
 
         #setting fro traffic light from cam
-
-
-
+        
 
         while True:
             if self.is_global_path == True:
@@ -114,7 +114,7 @@ class pure_pursuit :
                     rospy.loginfo("no found forward point")
                     self.ctrl_cmd_msg.steering=0.0
 
-                self.adaptive_cruise_control.is_on_stop_line = self.is_on_stop_line
+                self.adaptive_cruise_control.is_on_stop_line = self.link_info.is_on_stop_line
                 self.adaptive_cruise_control.check_object(self.path ,global_npc_info, local_npc_info
                                                                     ,global_ped_info, local_ped_info
                                                                     ,global_obs_info, local_obs_info
@@ -130,10 +130,11 @@ class pure_pursuit :
                 else:
                     self.ctrl_cmd_msg.accel = 0.0
                     self.ctrl_cmd_msg.brake = -output
-
+                
+                # traffic info init
+                if len(local_tl_info)>2:
+                    local_tl_info[2] = 0
                 self.ctrl_cmd_pub.publish(self.ctrl_cmd_msg)
-                
-                
 
             rate.sleep()
 
@@ -162,18 +163,22 @@ class pure_pursuit :
 
     def traffic_light_callback(self,msg):
         self.traffic_light_info = msg
-        #print(msg.trafficLightIndex, " : ", msg.trafficLightStatus, time.time())
         self.is_traffic_light_info = True
 
+    def get_link_info_callback(self, msg):
+        self.link_info = msg
+
+    '''
     def current_link_callback(self, msg):
         self.current_link = msg
 
     def stop_line_callback(self, msg):
         self.stop_line_point = msg
-        
-
+    
     def is_on_stop_line_callback(self, msg):
         self.is_on_stop_line = msg.data
+
+    '''
 
     def get_current_waypoint(self,ego_status,global_path):
         min_dist = float('inf')        
@@ -227,9 +232,11 @@ class pure_pursuit :
             for idx, traffic_light in self.traffic_lights.items():
                 if idx != cur_traffic_light_index : continue
                 self.cur_traffic_light = traffic_light
-            global_result = np.array([[self.stop_line_point.x],[self.stop_line_point.y],[1]])
+
+            stop_line_point = self.link_info.stop_line_point
+            global_result = np.array([[stop_line_point[0]],[stop_line_point[1]],[1]])
             local_result = tmp_det_t.dot(global_result)
-            global_tl_info = [[self.stop_line_point.x, self.stop_line_point.y], 
+            global_tl_info = [[stop_line_point[0], stop_line_point[1]], 
                             self.traffic_light_info.trafficLightType,self.traffic_light_info.trafficLightStatus]
             
             local_tl_info = [[local_result[0][0], local_result[1][0]],
@@ -413,7 +420,8 @@ class velocityPlanning:
             resMat = np.linalg.inv(aMatTrans.dot(aMat)).dot(aMatTrans).dot(bMat)
             #resMat = np.linalg.inv(((aMatTrans.dot(aMat)).dot(aMatTrans)).dot(bMat))
 			# 적용한 수식을 통해 곡률 반지름 "r" 을 계산합니다.
-
+            temp_val = resMat[0]*resMat[0] + resMat[1]*resMat[1] - resMat[2]
+            print(temp_val)
             r = sqrt(resMat[0]*resMat[0] + resMat[1]*resMat[1] - resMat[2])
 
 
@@ -578,7 +586,7 @@ class AdaptiveCruiseControl:
         out_vel = min(out_vel, target_vel) * 3.6
 
         #print("now Target_vel = ", out_vel)
-
+        
         return out_vel
 
 

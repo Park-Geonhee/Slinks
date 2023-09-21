@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import os, sys
+import sys
 import rospy
 from math import cos,sin,pi,sqrt,pow,atan2
 from morai_msgs.msg  import EgoVehicleStatus,ObjectStatusList
-from geometry_msgs.msg import Point,PoseStamped, Point32
+from ssafy_ad.msg import custom_link_parser
+from geometry_msgs.msg import PoseStamped
 from nav_msgs.msg import Path
 import numpy as np
 
