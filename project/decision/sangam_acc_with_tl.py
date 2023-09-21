@@ -529,7 +529,7 @@ class AdaptiveCruiseControl:
         x_errgain = self.distance_gain
 
         if self.npc_vehicle[0] and len(local_npc_info) != 0: #ACC ON_vehicle   
-            print("ACC ON NPC_Vehicle")         
+            #print("ACC ON NPC_Vehicle")         
             front_vehicle = [local_npc_info[self.npc_vehicle[1]][1], local_npc_info[self.npc_vehicle[1]][2], local_npc_info[self.npc_vehicle[1]][3]]
             
             dis_safe = ego_vel * time_gap + default_space
@@ -540,7 +540,7 @@ class AdaptiveCruiseControl:
             out_vel = ego_vel + acceleration      
 
         if self.Person[0] and len(local_ped_info) != 0: #ACC ON_Pedestrian
-            print("ACC ON Pedestrian")
+            #print("ACC ON Pedestrian")
             Pedestrian = [local_ped_info[self.Person[1]][1], local_ped_info[self.Person[1]][2], local_ped_info[self.Person[1]][3]]
             
             dis_safe = ego_vel* time_gap + default_space
@@ -551,7 +551,7 @@ class AdaptiveCruiseControl:
             out_vel = ego_vel + acceleration
    
         if self.object[0] and len(local_obs_info) != 0: #ACC ON_obstacle     
-            print("ACC ON Obstacle")                    
+            #print("ACC ON Obstacle")                    
             Obstacle = [local_obs_info[self.object[1]][1], local_obs_info[self.object[1]][2], local_obs_info[self.object[1]][3]]
             
             dis_safe = ego_vel* time_gap + default_space
