@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+
+    android:gravity="center" >
+
+    <ImageView
+        android:id="@+id/imageView12"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:paddingBottom="10dp"
+
+        android:background="@drawable/full_btn"
+        tools:srcCompat="@drawable/cart" />
+
+    <TextView
+        android:id="@+id/textView15"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="리스트가 가득 찼어요!"
+        android:textAlignment="center"
+        android:fontFamily="@font/pretendard_semi_bold"
+        android:textSize="18dp"/>
+
+    <TextView
+        android:id="@+id/textView16"
+        android:layout_width="234dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:text="여행 플랜 리스트에서 경유지를 지운 후에 새로운 경유지를 등록 가능합니다."
+        android:textAlignment="center"
+        android:fontFamily="@font/pretendard_medium"
+        android:textSize="12dp"
+        />
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/button9"
+        android:layout_width="156dp"
+        android:layout_height="40dp"
+        android:layout_marginTop="10dp"
+        android:background="@drawable/timebar"
+        android:text="학인"
+        android:fontFamily="@font/pretendard_medium"
+        />
+</LinearLayout>
