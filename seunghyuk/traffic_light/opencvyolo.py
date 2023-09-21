@@ -130,3 +130,4 @@ if __name__ == '__main__':
             t = TEST()
       except rospy.ROSInterruptException:
             pass
+ 
