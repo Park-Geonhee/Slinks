@@ -37,7 +37,7 @@ params_cam ={
 
 
 class IMGParser:
-    def __init__(self, pkg_name='project'):
+    def __init__(self, pkg_name='ssafy_ad'):
 
         self.image_sub = rospy.Subscriber("/image_jpeg/compressed", CompressedImage, self.callback)
         # self.ego_sub = rospy.Subscriber("/Ego_topic", EgoVehicleStatus, self.ego_callback)

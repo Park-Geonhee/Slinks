@@ -54,11 +54,11 @@ class ObjectDataSet :
     def __init__(self, params_cam, params_lidar, params_radar ) :
         rospy.Subscriber('/clusters', PoseArray, self.cluster_callback)
         rospy.Subscriber('/radar_data',RadarDetections, self.radar_callback)
-        rospy.Subscriber('odom', Odometry, self.odom_callback)
+        rospy.Subscriber('/odom', Odometry, self.odom_callback)
         self.radar_detect_pub = rospy.Publisher('radar_detection',ObjectStatusList, queue_size=1)
         self.lidar_detect_pub = rospy.Publisher('lidar_detection',ObjectStatusList, queue_size=1)
-        #self.radar_pc_pub = rospy.Publisher('radar_pc',PointCloud, queue_size=1)
-        #self.lidar_pc_pub = rospy.Publisher('lidar_pc',PointCloud, queue_size=1)
+        self.radar_pc_pub = rospy.Publisher('radar_pc',PointCloud, queue_size=1)
+        self.lidar_pc_pub = rospy.Publisher('lidar_pc',PointCloud, queue_size=1)
         self.lidar_status = False
         self.radar_status = False
         self.lidar_data = None
@@ -110,6 +110,7 @@ class ObjectDataSet :
                 print(radar_pc)
                 # print("========radar_list")
                 # print(radar_list)
+            rate.sleep()
 
     def cluster_callback(self, msg) :
         self.lidar_data = msg # PoseArray
