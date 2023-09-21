@@ -421,7 +421,6 @@ class velocityPlanning:
             #resMat = np.linalg.inv(((aMatTrans.dot(aMat)).dot(aMatTrans)).dot(bMat))
 			# 적용한 수식을 통해 곡률 반지름 "r" 을 계산합니다.
             temp_val = resMat[0]*resMat[0] + resMat[1]*resMat[1] - resMat[2]
-            print(temp_val)
             r = sqrt(resMat[0]*resMat[0] + resMat[1]*resMat[1] - resMat[2])
 
 
@@ -514,7 +513,7 @@ class AdaptiveCruiseControl:
                             rel_distance = sqrt(pow(local_obs_info[i][1], 2) + pow(local_obs_info[i][2], 2))               
                             if rel_distance < min_rel_distance:
                                 min_rel_distance = rel_distance
-                                self.object=[True,i] 
+                                #self.object=[True,i] 
 
         # 주행 경로 상 Traffic Light 유무 파악
         if global_tl_info:

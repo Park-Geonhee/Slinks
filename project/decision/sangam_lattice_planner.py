@@ -20,15 +20,17 @@ class latticePlanner:
         rospy.Subscriber(object_topic_name,ObjectStatusList, self.object_callback)
         rospy.Subscriber("/local_path", Path, self.path_callback)
         rospy.Subscriber("/Ego_topic", EgoVehicleStatus, self.status_callback)
+        rospy.Subscriber("/link_info", custom_link_parser, self.get_link_info_callback)
         self.lattice_path_pub = rospy.Publisher('/lattice_path', Path, queue_size=10)
 
         self.ref_path = Path()  # Reference path
         self.ego_status = EgoVehicleStatus()  # Ego vehicle's current status
-        
+        self.link_info = custom_link_parser()
 
         self.is_path = False
         self.is_status = False
         self.is_obj = False
+        self.is_link_info = False
 
         rate = rospy.Rate(30) # 30hz
         while not rospy.is_shutdown():
@@ -39,7 +41,12 @@ class latticePlanner:
                     lattice_path_index = self.collision_check(self.object_data, lattice_path)
 
                     #TODO: (7) lattice 경로 메세지 Publish
-                    self.lattice_path_pub.publish(lattice_path[lattice_path_index])
+                    #print(lattice_path_index)
+                    #print(lattice_path)
+                    if lattice_path_index != -1:
+                        self.lattice_path_pub.publish(lattice_path[lattice_path_index])
+                    else:
+                        self.lattice_path_pub.publish(self.local_path)
                 else:
                     self.lattice_path_pub.publish(self.local_path)
             rate.sleep()
@@ -69,7 +76,10 @@ class latticePlanner:
         '''
         
         selected_lane = -1        
-        lane_weight = [3, 2, 1, 1, 2, 3] #reference path 
+        lane_weight = np.array([3, 2, 1, 1, 2, 3]) #reference path 
+        lane_weight = lane_weight[self.link_info.possible_lattice_pathes].tolist()
+        #print(self.link_info.possible_lattice_pathes)
+        #print(lane_weight)
 
         for obstacle in object_data.obstacle_list:                        
             for path_num in range(len(out_path)) :                    
@@ -78,7 +88,8 @@ class latticePlanner:
                     if dis < 1.5:
                         lane_weight[path_num] = lane_weight[path_num] + 100
 
-        selected_lane = lane_weight.index(min(lane_weight))                    
+        if lane_weight != None : 
+            selected_lane = lane_weight.index(min(lane_weight))                    
         return selected_lane
 
     def path_callback(self,msg):
@@ -92,6 +103,11 @@ class latticePlanner:
     def object_callback(self,msg):
         self.is_obj = True
         self.object_data = msg
+
+    def get_link_info_callback(self,msg):
+        self.is_link_info = True
+        self.link_info = msg
+        
 
     def latticePlanner(self,ref_path, vehicle_status):
         out_path = []
@@ -135,9 +151,11 @@ class latticePlanner:
             world_ego_vehicle_position = np.array([[vehicle_pose_x], [vehicle_pose_y], [1]])
             local_ego_vehicle_position = det_trans_matrix.dot(world_ego_vehicle_position)
             lane_off_set = [-10.5, -7.0, -3.5, 3.5, 7.0, 10.5]
+            is_posssible_path = self.link_info.possible_lattice_pathes
             local_lattice_points = []
             
             for i in range(len(lane_off_set)):
+                if is_posssible_path[i] == False: continue
                 local_lattice_points.append([local_end_point[0][0], local_end_point[1][0] + lane_off_set[i], 1])
             
             #TODO: (4) Lattice 충돌 회피 경로 생성

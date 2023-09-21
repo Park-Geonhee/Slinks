@@ -33,8 +33,8 @@ class LinkParser:
 
         while True:
             if self.is_odom == True : break
-            else : rospy.loginfo("Waiting odometry data")
-
+            else : #rospy.loginfo("Waiting odometry data")
+                pass
         rate = rospy.Rate(20)
         while not rospy.is_shutdown():
             
@@ -115,23 +115,25 @@ class LinkParser:
         left_link = current_link.lane_ch_link_left
         right_link = current_link.lane_ch_link_right
 
+        #print(f"left : {left_link.idx}")
+        #print(left_link.can_move_left_lane)
         if left_link != None:
-            result[2] = left_link.can_move_left_lane
+            result[2] = current_link.can_move_left_lane
             left2_link = left_link.lane_ch_link_left
             if left2_link != None:
-                result[1] = left2_link.can_move_left_lane
+                result[1] = left_link.can_move_left_lane
                 left3_link = left_link.lane_ch_link_left
                 if left3_link != None:
-                    result[0] = left3_link.can_move_left_lane
+                    result[0] = left2_link.can_move_left_lane
 
         if right_link != None:
-            result[3] = right_link.can_move_right_lane
+            result[3] = current_link.can_move_right_lane
             right2_link = right_link.lane_ch_link_right
             if right2_link != None:
-                result[1] = right2_link.can_move_right_lane
+                result[1] = right_link.can_move_right_lane
                 right3_link = right_link.lane_ch_link_right
                 if right3_link != None:
-                    result[0] = right3_link.can_move_right_lane
+                    result[0] = right2_link.can_move_right_lane
 
         return result
 
