@@ -394,7 +394,7 @@ class Link(Line):
             # L/3 인 차선 변경 cost를 계산한 다음, 3을 곱하여 전체 차선 변경 penalty를 계산
             lc_num = self.get_number_of_lane_change()
             unit_distance = distance / lc_num
-            lane_change_penalty = lc_num * calc_lane_change_cost(unit_distance)
+            lane_change_penalty = lc_num * calc_lane_change_cost(unit_distance)/10
         else:
             lane_change_penalty = 0            
 
