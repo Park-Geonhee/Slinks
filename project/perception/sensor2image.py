@@ -41,7 +41,7 @@ def getRotMat(RPY):
         # rotMat : 3x3 Rotation Matrix of sensor w.r.t vehicle.
     # Tip : math, numpy
     # reference : https://msl.cs.uiuc.edu/planning/node102.html   
-    print('RPY',RPY) 
+
     cosR = math.cos(RPY[0])
     cosP = math.cos(RPY[1])
     cosY = math.cos(RPY[2])
@@ -60,7 +60,7 @@ def getRotMat(RPY):
                       [0, 0, 1]])
 
     rotMat = rotYaw.dot(rotPitch.dot(rotRoll))    
-    print('rotMat',rotMat)
+
     return rotMat
 
 def getSensorToVehicleMat(sensorRPY, sensorPosition): # 4x4

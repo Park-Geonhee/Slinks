@@ -16,7 +16,7 @@ import torch
 import numpy as np
 import math
 import time
-from morai_msgs.msg import RadarDetections, RadarDetection
+from morai_msgs.msg import RadarDetections, RadarDetection, ObjectStatusList, ObjectStatus
 from sensor_msgs.msg import PointCloud2, CompressedImage, PointCloud
 from geometry_msgs.msg import PoseArray,Pose, Point32
 import sensor_msgs.point_cloud2 as pc2
@@ -111,6 +111,7 @@ class RadarObject:
     def __init__(self):
         rospy.Subscriber('/radar', RadarDetections, self.radar_callback)
         rospy.Subscriber("/image_jpeg/compressed", CompressedImage, self.image_callback)
+        self.object_pub = rospy.Publisher('forward_object',ObjectStatusList, queue_size=1)
         self.model = torch.hub.load(Path,'custom','yolov5n.pt', source='local')  # or yolov5n - yolov5x6, custom
         self.radar2VehicleMat = get2VehicleMat(radar_pos, radar_rpy)
         self.radar2CameraMat = get2CameraMat(radar_pos, radar_rpy, camera_pos, camera_rpy)
@@ -122,16 +123,18 @@ class RadarObject:
         self.origin_detection_list = None
         self.origin_point_list = None
         
+
         rate = rospy.Rate(5)
         while not rospy.is_shutdown():
+            rate.sleep()
             if self.image is None :
                 print("get image")
                 continue
             if self.radar_data is None :
                 print("get radar_data")
                 continue
-            self.get_detection_list_wrt_vehicle()
-            rate.sleep()
+            # self.get_detection_list_wrt_vehicle()
+
 
     def radar_callback(self, msg):
         # 1. local data list wrt radar sensor
@@ -146,16 +149,14 @@ class RadarObject:
         xyz_r = np.array([detect.position.x,detect.position.y, detect.position.z, 1])
         xyz_v = self.radar2VehicleMat.dot(xyz_r.T)
 
-        data = RadarDetection()
-        data.detection_id = detect.detection_id
+        data = ObjectStatus()
+        data.unique_id = detect.detection_id
         data.position.x = xyz_v[0]
         data.position.y = xyz_v[1]
         data.position.z = xyz_v[2]
-        data.azimuth = detect.azimuth
-        data.rangerate = detect.rangerate # relative speed
-        data.amplitude = detect.amplitude
+        data.velocity.x = detect.rangerate # relative speed
         return data
-    
+
     def get_point_wrt_camera(self, detect):
         xyz_r = np.array([detect.position.x,detect.position.y, detect.position.z, 1])
         # 3. radar to vehicle
@@ -183,7 +184,7 @@ class RadarObject:
     
     def get_detection_list_wrt_vehicle(self):
         # 3. get local data wrt vehicle
-        detection_list = RadarDetections()
+        detection_list = ObjectStatusList()
 
         results = self.model(self.image) # yolov5 inference
         object_list = results.pandas().xyxy[0]
@@ -215,31 +216,38 @@ class RadarObject:
             is_first = False
             for i in range(object_cnt) :
                 coordi = object_list.iloc[i][0:4] #xmin, ymin, xmax, ymax
-                # print("coordi[0]",coordi[0])        
+                # print("coordi[0]",coordi[0])       
                 if check_list[i] == True : # already mapped with radar point
+                    print("already mapped")
                     continue
                 if image_xy[0] < coordi[0] or image_xy[0] > coordi[2]:
+                    print("x out")
                     continue
                 if image_xy[1] < coordi[1] or image_xy[1] > coordi[3]:
+                    print("y out")
                     continue
                 # this BBOX include this point
                 # fail detect
                 name = object_list.iloc[i]["name"]
                 if name == "train":
                     continue
-                print("object name", object_list.iloc[i]["name"])
+                print("object name", name)
                 check_list[i] = True
                 is_first = True
                 detection_wrt_vehicle = self.get_detection_wrt_vehicle(detect)
+                detection_wrt_vehicle.name = name
                 break
             if is_first == True :
-                detection_list.detections.append(detection_wrt_vehicle)
+                detection_list.obstacle_list.append(detection_wrt_vehicle)
                 
             # projection_image = self.draw_point_to_image(self.image, image_xy[0], image_xy[1])
             # cv2.imshow("image", projection_image)
             # cv2.waitKey(1)
         self.origin_detection_list = detection_list
+        self.origin_detection_list.header.stamp = time.gmtime()
+        self.object_pub.publish(self.origin_detection_list)
         print("detection_list")
+    
         print(self.origin_detection_list)
 
 if __name__ == '__main__':
