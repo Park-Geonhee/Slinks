@@ -133,4 +133,3 @@ if __name__ == '__main__':
         od = Object_Detect()
     except rospy.ROSInterruptException:
         pass
-

@@ -45,8 +45,12 @@ def load_node_and_link(node_save_info_list, line_save_info_list, global_info):
 
         # 교차로 생성하기 (노드 생성하면서 같이 수행)
         if file_ver >= Version(2,5):
-            junction_list = save_info['junction']
-
+            
+            try:
+                junction_list = save_info['junction']
+            except:
+                junction_list = []
+                
             if junction_list is None:
                 continue
             elif len(junction_list) == 0:
