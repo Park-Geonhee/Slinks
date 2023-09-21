@@ -76,8 +76,8 @@ class latticePlanner:
         '''
         
         selected_lane = -1        
-        lane_weight = np.array([3, 2, 1, 1, 2, 3]) #reference path 
-        lane_weight = lane_weight[self.link_info.possible_lattice_pathes].tolist()
+        lane_weight = [3, 2, 1, 1, 2, 3] #reference path 
+        
         #print(self.link_info.possible_lattice_pathes)
         #print(lane_weight)
 
@@ -151,11 +151,10 @@ class latticePlanner:
             world_ego_vehicle_position = np.array([[vehicle_pose_x], [vehicle_pose_y], [1]])
             local_ego_vehicle_position = det_trans_matrix.dot(world_ego_vehicle_position)
             lane_off_set = [-10.5, -7.0, -3.5, 3.5, 7.0, 10.5]
-            is_posssible_path = self.link_info.possible_lattice_pathes
             local_lattice_points = []
             
             for i in range(len(lane_off_set)):
-                if is_posssible_path[i] == False: continue
+                #if is_posssible_path[i] == False: continue
                 local_lattice_points.append([local_end_point[0][0], local_end_point[1][0] + lane_off_set[i], 1])
             
             #TODO: (4) Lattice 충돌 회피 경로 생성
@@ -238,6 +237,7 @@ class latticePlanner:
             '''
             for i in range(len(out_path)):          
                 # 동적으로 Publisher 객체 생성
+                if self.link_info.possible_lattice_pathes[i] == False: continue
                 globals()['lattice_pub_{}'.format(i+1)] = rospy.Publisher('/lattice_path_{}'.format(i+1), Path, queue_size=1)
                 out_path[i].header.frame_id = 'map'
                
