@@ -10,6 +10,8 @@ from nav_msgs.msg import Odometry,Path
 from morai_msgs.msg import CtrlCmd,EgoVehicleStatus,ObjectStatusList,GetTrafficLightStatus
 from ssafy_ad.msg import custom_link_parser
 
+import time
+
 import numpy as np
 import sys
 import os
@@ -56,10 +58,6 @@ class pure_pursuit :
         rospy.Subscriber("/Ego_topic", EgoVehicleStatus, self.status_callback )
         rospy.Subscriber("/radar_detection", ObjectStatusList, self.object_info_callback )
         rospy.Subscriber("/link_info", custom_link_parser, self.get_link_info_callback)
-
-        #rospy.Subscriber("/current_link", String, self.current_link_callback)
-        #rospy.Subscriber("/stop_line", Point, self.stop_line_callback)
-        #rospy.Subscriber("/on_stop_line", Bool, self.is_on_stop_line_callback)
         rospy.Subscriber("/GetTrafficLightStatus", GetTrafficLightStatus, self.traffic_light_callback)
         self.ctrl_cmd_pub = rospy.Publisher('/ctrl_cmd', CtrlCmd, queue_size = 1)
 
@@ -133,7 +131,8 @@ class pure_pursuit :
                 
                 # traffic info init
                 if len(local_tl_info)>2:
-                    local_tl_info[2] = 0
+                    #self.traffic_light_info.trafficLightStatus = 16
+                    print("###############")
                 self.ctrl_cmd_pub.publish(self.ctrl_cmd_msg)
 
             rate.sleep()
@@ -162,23 +161,12 @@ class pure_pursuit :
         self.object_data = data 
 
     def traffic_light_callback(self,msg):
+        print(msg.trafficLightStatus, time.time())
         self.traffic_light_info = msg
         self.is_traffic_light_info = True
 
     def get_link_info_callback(self, msg):
         self.link_info = msg
-
-    '''
-    def current_link_callback(self, msg):
-        self.current_link = msg
-
-    def stop_line_callback(self, msg):
-        self.stop_line_point = msg
-    
-    def is_on_stop_line_callback(self, msg):
-        self.is_on_stop_line = msg.data
-
-    '''
 
     def get_current_waypoint(self,ego_status,global_path):
         min_dist = float('inf')        
@@ -525,8 +513,7 @@ class AdaptiveCruiseControl:
                         min_rel_distance = rel_distance
                         #print(global_tl_info)               
                         self.tl=[True,0]
-
-        
+    
     def get_target_velocity(self, local_npc_info, local_ped_info, local_obs_info, local_tl_info, ego_vel, target_vel): 
         #TODO: (9) 장애물과의 속도와 거리 차이를 이용하여 ACC 를 진행 목표 속도를 설정
         out_vel =  target_vel
@@ -570,18 +557,17 @@ class AdaptiveCruiseControl:
 
         
         if self.tl[0]: #ACC ON_traffic_light
-            #print("ACC ON Traffic light")
-            
-
+            print("ACC ON Traffic light")
+            print(f"local_tl_info : {local_tl_info[2]}")
             if (local_tl_info[2] == 1 or (local_tl_info[2]== 33) or (local_tl_info[2]== 5)) and local_tl_info[0][0]>0 and self.is_on_stop_line: 
-                dis_safe = ego_vel * time_gap*0.25 + default_space
+                dis_safe = ego_vel * time_gap*0.25 + default_space +2
                 dis_rel = sqrt(pow(local_tl_info[0][0],2) + pow(local_tl_info[0][1],2))            
                 vel_rel=(0 - ego_vel)                        
                 acceleration = vel_rel * v_gain - x_errgain * (dis_safe - dis_rel)
                 out_vel = ego_vel + acceleration
 
             
-
+        
         out_vel = min(out_vel, target_vel) * 3.6
 
         #print("now Target_vel = ", out_vel)
