@@ -560,7 +560,7 @@ class AdaptiveCruiseControl:
             print("ACC ON Traffic light")
             print(f"local_tl_info : {local_tl_info[2]}")
             if (local_tl_info[2] == 1 or (local_tl_info[2]== 33) or (local_tl_info[2]== 5)) and local_tl_info[0][0]>0 and self.is_on_stop_line: 
-                dis_safe = ego_vel * time_gap*0.25 + default_space
+                dis_safe = ego_vel * time_gap*0.25 + default_space +2
                 dis_rel = sqrt(pow(local_tl_info[0][0],2) + pow(local_tl_info[0][1],2))            
                 vel_rel=(0 - ego_vel)                        
                 acceleration = vel_rel * v_gain - x_errgain * (dis_safe - dis_rel)
