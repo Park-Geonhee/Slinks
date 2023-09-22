@@ -53,7 +53,6 @@ class dijkstra_path_pub :
 
         self.global_path_msg = Path()
         self.global_path_msg.header.frame_id = '/map'
-
         self.global_path_msg = self.calc_dijkstra_path_node(self.start_node, self.end_node)
 
 
@@ -67,8 +66,6 @@ class dijkstra_path_pub :
     
     def init_callback(self,msg):
         print("set init node")
-        #TODO: (2) 시작 Node 와 종료 Node 정의
-        # 시작 Node 는 Rviz 기능을 이용해 지정한 위치에서 가장 가까이 있는 Node 로 한다.
 
         min_dist = 21e8
         for node_idx, node in self.nodes.items():
@@ -81,8 +78,6 @@ class dijkstra_path_pub :
 
     def goal_callback(self,msg):
         print("set goal node")
-        #TODO: (2) 시작 Node 와 종료 Node 정의
-        # 종료 Node 는 Rviz 기능을 이용해 지정한 위치에서 가장 가까이 있는 Node 로 한다.
 
         min_dist = 21e8
         for node_idx, node in self.nodes.items():
@@ -97,8 +92,6 @@ class dijkstra_path_pub :
     def calc_dijkstra_path_node(self, start_node, end_node):
 
         result, path = self.global_planner.find_shortest_path(start_node, end_node)
-
-        #TODO: (10) dijkstra 경로 데이터를 ROS Path 메세지 형식에 맞춰 정의
         out_path = Path()
         out_path.header.frame_id = '/map'
 
@@ -130,19 +123,7 @@ class Dijkstra:
         self.lane_change_link_idx = []
 
     def get_weight_matrix(self):
-        #TODO: (3) weight 값 계산
-        '''
-        # weight 값 계산은 각 Node 에서 인접 한 다른 Node 까지의 비용을 계산합니다.
-        # 계산된 weight 값 은 각 노드간 이동시 발생하는 비용(거리)을 가지고 있기 때문에
-        # Dijkstra 탐색에서 중요하게 사용 됩니다.
-        # weight 값은 딕셔너리 형태로 사용 합니다.
-        # 이중 중첩된 딕셔너리 형태로 사용하며 
-        # Key 값으로 Node의 Idx Value 값으로 다른 노드 까지의 비용을 가지도록 합니다.
-        # 아래 코드 중 self.find_shortest_link_leading_to_node 를 완성하여 
-        # Dijkstra 알고리즘 계산을 위한 Node와 Node 사이의 최단 거리를 계산합니다.
 
-        '''
-        # 초기 설정
         weight = dict() 
         for from_node_id, from_node in self.nodes.items():
             # 현재 노드에서 다른 노드로 진행하는 모든 weight
@@ -279,16 +260,16 @@ class Dijkstra:
                     point_path.append([from_link.points[j][0],from_link.points[j][1],0])
 
                 # points of third-order curve
-                start_point_num = 5
-                end_point_num = 20
+                start_point_num = 3
+                end_point_num = 10
                 lane_change_path = self.get_lane_chage_path(from_link, to_link, start_point_num, end_point_num)
                 point_path.extend(lane_change_path)
                 # remains points of to_link
                 for j in range(end_point_num, len_to_link):
                     point_path.append([to_link.points[j][0],to_link.points[j][1],0])
                 
-                print(f"from link : {from_link}")
-                print(f"to link : {to_link}")
+                #print(f"from link : {from_link}")
+                #print(f"to link : {to_link}")
         return True, {'node_path': node_path, 'link_path':link_path, 'point_path':point_path, 'cost' : total_cost}
 
 
