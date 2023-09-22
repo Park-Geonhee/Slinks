@@ -372,21 +372,23 @@ class pidControl:
 
 class velocityPlanning:
     def __init__ (self,car_max_speed, road_friciton):
-        self.car_max_speed = car_max_speed
+        # self.car_max_speed = car_max_speed
         self.road_friction = road_friciton
 
-    def curvedBaseVelocity(self, gloabl_path, point_num):
+    def curvedBaseVelocity(self, global_path, point_num):
         out_vel_plan = []
 
         for i in range(0,point_num):
-            out_vel_plan.append(self.car_max_speed)
+            car_max_speed = global_path.poses[i].pose.position.z / 3.6
+            out_vel_plan.append(car_max_speed)
 
-        for i in range(point_num, len(gloabl_path.poses) - point_num):
+        for i in range(point_num, len(global_path.poses) - point_num):
             x_list = []
             y_list = []
+            car_max_speed = global_path.poses[i].pose.position.z / 3.6
             for box in range(-point_num, point_num):
-                x = gloabl_path.poses[i+box].pose.position.x
-                y = gloabl_path.poses[i+box].pose.position.y
+                x = global_path.poses[i+box].pose.position.x
+                y = global_path.poses[i+box].pose.position.y
                 x_list.append([-2*x, -2*y ,1])
                 y_list.append((-x*x) - (y*y))
 
@@ -418,14 +420,14 @@ class velocityPlanning:
             # 곡률 반경 x 중력가속도 x 도로의 마찰 계수 계산 값의 제곱근이 됩니다.
             v_max =sqrt(r * 9.81 * self.road_friction ) + 1.5
 
-            if v_max > self.car_max_speed:
-                v_max = self.car_max_speed
+            if v_max > car_max_speed:
+                v_max = car_max_speed
             out_vel_plan.append(v_max)
 
-        for i in range(len(gloabl_path.poses) - point_num, len(gloabl_path.poses)-10):
+        for i in range(len(global_path.poses) - point_num, len(global_path.poses)-10):
             out_vel_plan.append(30)
 
-        for i in range(len(gloabl_path.poses) - 10, len(gloabl_path.poses)):
+        for i in range(len(global_path.poses) - 10, len(global_path.poses)):
             out_vel_plan.append(0)
 
         return out_vel_plan

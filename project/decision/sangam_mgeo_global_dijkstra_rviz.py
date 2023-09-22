@@ -242,12 +242,15 @@ class Dijkstra:
             #       link_id = link_sharing_from_node.idx
             if link_id.find('-') != -1:
                 link = self.links[link_id]
+                link_max_speed = link.max_speed
                 for point in link.points:
-                    point_path.append([point[0], point[1], 0])
+                    point_path.append([point[0], point[1], link_max_speed])
             else: #change lane link
                 links = link_id.split('-')
                 from_link = self.links[links[0]]
+                from_link_max_speed = from_link.max_speed
                 to_link = self.links[links[-1]]
+                to_link_max_speed = to_link.max_speed
                 len_from_link = len(from_link.points)
                 len_to_link = len(to_link.points)
                 
@@ -257,7 +260,7 @@ class Dijkstra:
 
                 # five points of from_link 
                 for j in range(5):
-                    point_path.append([from_link.points[j][0],from_link.points[j][1],0])
+                    point_path.append([from_link.points[j][0],from_link.points[j][1],from_link_max_speed])
 
                 # points of third-order curve
                 start_point_num = 3
@@ -266,7 +269,7 @@ class Dijkstra:
                 point_path.extend(lane_change_path)
                 # remains points of to_link
                 for j in range(end_point_num, len_to_link):
-                    point_path.append([to_link.points[j][0],to_link.points[j][1],0])
+                    point_path.append([to_link.points[j][0],to_link.points[j][1],to_link_max_speed])
                 
                 #print(f"from link : {from_link}")
                 #print(f"to link : {to_link}")
@@ -275,6 +278,7 @@ class Dijkstra:
 
     def get_lane_chage_path(self, from_link, to_link, start_point_num, end_point_num):
         change_start_point = from_link.points[0]
+        max_speed = from_link.max_speed
         change_start_next_point = from_link.points[start_point_num]
         end_point_num = min(end_point_num, len(to_link.points)-1)
         change_end_point = to_link.points[end_point_num]
@@ -312,7 +316,7 @@ class Dijkstra:
         for i in range(0,len(waypoints_y)) :
             local_result = np.array([[waypoints_x[i]],[waypoints_y[i]],[1]])
             global_result = trans_matrix.dot(local_result)
-            out_points.append([global_result[0][0],global_result[1][0],0])
+            out_points.append([global_result[0][0],global_result[1][0],max_speed])
         return out_points
     
 if __name__ == '__main__':
