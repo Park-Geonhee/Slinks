@@ -287,8 +287,8 @@ class Dijkstra:
                 for j in range(end_point_num, len_to_link):
                     point_path.append([to_link.points[j][0],to_link.points[j][1],0])
                 
-                print(f"from link : {from_link}")
-                print(f"to link : {to_link}")
+                #print(f"from link : {from_link}")
+                #print(f"to link : {to_link}")
         return True, {'node_path': node_path, 'link_path':link_path, 'point_path':point_path, 'cost' : total_cost}
 
 
