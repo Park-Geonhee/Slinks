@@ -187,7 +187,7 @@ class Dijkstra:
         return shortest_link, min_cost
         
     def find_nearest_node_idx(self, distance, s):        
-        idx_list = self.nodes.keys()
+        idx_list = list(self.nodes.keys())
         min_value = float('inf')
         min_idx = idx_list[-1]
 
@@ -278,9 +278,9 @@ class Dijkstra:
                     if link_sharing_from_node.idx.find('-') != -1: continue
                     link_id = link_sharing_from_node.idx
             link = self.links[link_id]
-            for point in link:
-                max_speed = link.max_speed
-                point_path.append([point.points[0], point.points[1], max_speed])
+            max_speed = link.max_speed
+            for point in link.points:
+                point_path.append([point[0], point[1], max_speed])
 
         return True, {'node_path': node_path, 'link_path':link_path, 'point_path':point_path}
 

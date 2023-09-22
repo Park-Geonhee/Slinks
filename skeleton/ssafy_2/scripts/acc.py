@@ -92,7 +92,8 @@ class pure_pursuit :
                 self.velocity_list = self.vel_planning.curvedBaseVelocity(self.global_path, 50)
                 break
             else:
-                rospy.loginfo('Waiting global path data')
+                pass
+                # rospy.loginfo('Waiting global path data')
         
         self.frequency = 10
 
@@ -140,7 +141,7 @@ class pure_pursuit :
                 
                 # 제어입력 메세지 를 전송하는 publisher 를 만든다.
                 self.ctrl_cmd_pub.publish(self.ctrl_cmd_msg)
-                # rospy.loginfo(self.ctrl_cmd_msg)
+                rospy.loginfo(self.ctrl_cmd_msg)
 
             rate.sleep()
 
@@ -362,7 +363,8 @@ class velocityPlanning:
         for i in range(point_num, len(global_path.poses) - point_num):
             x_list = []
             y_list = []
-            car_max_speed = global_path.poses[i].pose.position.z
+            car_max_speed = global_path.poses[i].pose.position.z / 3.6
+            
             for box in range(-point_num, point_num):
                 x = global_path.poses[i+box].pose.position.x
                 y = global_path.poses[i+box].pose.position.y
@@ -410,7 +412,8 @@ class velocityPlanning:
 
         for i in range(len(global_path.poses) - 10, len(global_path.poses)):
             out_vel_plan.append(0)
-
+        rospy.loginfo("Velocity Planning")
+        rospy.loginfo(out_vel_plan)
         return out_vel_plan
 
 class AdaptiveCruiseControl:
@@ -486,6 +489,7 @@ class AdaptiveCruiseControl:
         
     def get_target_velocity(self, local_npc_info, local_ped_info, local_obs_info, ego_vel, target_vel): 
         #TODO: (9) 장애물과의 속도와 거리 차이를 이용하여 ACC 를 진행 목표 속도를 설정
+        # print("before Target vel : ", target_vel)
         out_vel =  target_vel
         default_space = 8
         time_gap = self.time_gap
