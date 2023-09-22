@@ -357,7 +357,7 @@ class velocityPlanning:
         out_vel_plan = []
 
         for i in range(0,point_num):
-            car_max_speed = global_path.poses[i].pose.position.z
+            car_max_speed = global_path.poses[i].pose.position.z / 3.6
             out_vel_plan.append(car_max_speed)
 
         for i in range(point_num, len(global_path.poses) - point_num):
