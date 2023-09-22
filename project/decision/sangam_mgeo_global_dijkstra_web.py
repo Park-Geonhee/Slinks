@@ -12,7 +12,7 @@ import json
 from math import cos,sin,sqrt,pow,atan2,pi
 from geometry_msgs.msg import Point32,PoseStamped, PoseWithCovarianceStamped
 from nav_msgs.msg import Odometry,Path
-from std_msgs.msg import Float64MultiArray
+from std_msgs.msg import Float64MultiArray, String
 from sensor_msgs.msg import PointCloud
 
 current_path = os.path.dirname(os.path.realpath(__file__))
@@ -258,13 +258,8 @@ class Dijkstra:
         #TODO: (9) point path 생성
         point_path = []        
         for i, link_id in enumerate(link_path):
-            
-            #if link_id.find('-') != -1: #링크 묶음인 경우 idx에 '-'를 포함하고 있음 ex) A219BS010403-A219BS010405
-            #    links_sharing_from_node = self.links[link_id].get_from_node_sharing_links()
-            #    for link_sharing_from_node in links_sharing_from_node:
-            #        if link_sharing_from_node.idx.find('-') != -1: continue
-            #       link_id = link_sharing_from_node.idx
-            if link_id.find('-') != -1:
+
+            if link_id.find('-') == -1:
                 link = self.links[link_id]
                 link_max_speed = link.max_speed
                 for point in link.points:
@@ -278,9 +273,6 @@ class Dijkstra:
                 len_from_link = len(from_link.points)
                 len_to_link = len(to_link.points)
 
-                # End Point 까지의 길이를 Point 간 간격으로 나눠 필요한 Point 의 수를 계산한다.
-                # 계산된 Point 의 숫자 만큼 X 좌표를 생성한다.
-
                 # five points of from_link 
                 for j in range(5):
                     point_path.append([from_link.points[j][0],from_link.points[j][1],from_link_max_speed])
@@ -293,6 +285,8 @@ class Dijkstra:
                 # remains points of to_link
                 for j in range(end_point_num, len_to_link):
                     point_path.append([to_link.points[j][0],to_link.points[j][1],to_link_max_speed])
+
+
                 
         return True, {'node_path': node_path, 'link_path':link_path, 'point_path':point_path, 'cost' : total_cost}
 

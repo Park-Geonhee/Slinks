@@ -5,7 +5,7 @@ import rospy
 from math import cos,sin,pi,sqrt,pow,atan2
 
 from geometry_msgs.msg import Point
-from std_msgs.msg import String, Bool
+from std_msgs.msg import String
 from nav_msgs.msg import Odometry,Path
 from morai_msgs.msg import CtrlCmd,EgoVehicleStatus,ObjectStatusList,GetTrafficLightStatus
 from ssafy_ad.msg import custom_link_parser
@@ -38,13 +38,15 @@ class pure_pursuit :
         self.is_object_info = False
         self.is_look_forward_point = False
         self.is_traffic_light_info = False
-        #self.on_stop_line = False
-        #self.current_link = String()
-        #self.stop_line_point = Point()
+        self.is_link_path = False
+        self.is_link_path_set = False
+
         self.link_info = custom_link_parser()
         self.forward_point = [1,1,1]
         self.current_position = Point()
+        self.link_path = String()
 
+        self.before_waypoint = 0
         self.vehicle_length = 2.6
         self.lfd = 8
         self.min_lfd=3
@@ -59,8 +61,16 @@ class pure_pursuit :
         rospy.Subscriber("/radar_detection", ObjectStatusList, self.object_info_callback )
         rospy.Subscriber("/link_info", custom_link_parser, self.get_link_info_callback)
         rospy.Subscriber("/GetTrafficLightStatus", GetTrafficLightStatus, self.traffic_light_callback)
+        rospy.Subscriber("/link_path", String, self.get_link_path_callback)
         self.ctrl_cmd_pub = rospy.Publisher('/ctrl_cmd', CtrlCmd, queue_size = 1)
 
+        while True:
+            if self.is_link_path == True:
+                self.link_path = self.link_path.split(' ')
+                self.link_path.pop(0)
+                self.is_link_path_set = True
+                #print(self.link_path)
+                break
 
 
         self.pid = pidControl()
@@ -86,6 +96,11 @@ class pure_pursuit :
 
         rate = rospy.Rate(30) # 30hz
         while not rospy.is_shutdown():
+            if self.is_traffic_light_info == True and self.is_link_path_set == True:
+                tl_idx = self.traffic_light_info.trafficLightIndex
+                for tl_link in self.traffic_lights[tl_idx].link_id_list:
+                    if tl_link in self.link_path: 
+                        self.tl_info = self.traffic_light_info
 
             if self.is_path == True and self.is_odom == True and self.is_status == True:
 
@@ -129,10 +144,6 @@ class pure_pursuit :
                     self.ctrl_cmd_msg.accel = 0.0
                     self.ctrl_cmd_msg.brake = -output
                 
-                # traffic info init
-                if len(local_tl_info)>2:
-                    #self.traffic_light_info.trafficLightStatus = 16
-                    print("###############")
                 self.ctrl_cmd_pub.publish(self.ctrl_cmd_msg)
 
             rate.sleep()
@@ -161,7 +172,6 @@ class pure_pursuit :
         self.object_data = data 
 
     def traffic_light_callback(self,msg):
-        print(msg.trafficLightStatus, time.time())
         self.traffic_light_info = msg
         self.is_traffic_light_info = True
 
@@ -183,7 +193,18 @@ class pure_pursuit :
             if min_dist > dist :
                 min_dist = dist
                 currnet_waypoint = i
+
+        if currnet_waypoint == -1:
+            currnet_waypoint = min(self.before_waypoint + 1, len(global_path.poses)-1)
+
+        self.before_waypoint = currnet_waypoint
+
         return currnet_waypoint
+
+    def get_link_path_callback(self, msg):
+        self.is_link_path = True
+        self.link_path = msg.data
+
 
     def calc_vaild_obj(self,status_msg,object_data):
         
@@ -225,10 +246,10 @@ class pure_pursuit :
             global_result = np.array([[stop_line_point[0]],[stop_line_point[1]],[1]])
             local_result = tmp_det_t.dot(global_result)
             global_tl_info = [[stop_line_point[0], stop_line_point[1]], 
-                            self.traffic_light_info.trafficLightType,self.traffic_light_info.trafficLightStatus]
+                            self.tl_info.trafficLightType,self.tl_info.trafficLightStatus]
             
             local_tl_info = [[local_result[0][0], local_result[1][0]],
-                            self.traffic_light_info.trafficLightType, self.traffic_light_info.trafficLightStatus]
+                            self.tl_info.trafficLightType, self.tl_info.trafficLightStatus]
 
         #print(f"traffic light : {cur_traffic_light_index}")
 
@@ -559,8 +580,8 @@ class AdaptiveCruiseControl:
 
         
         if self.tl[0]: #ACC ON_traffic_light
-            print("ACC ON Traffic light")
-            print(f"local_tl_info : {local_tl_info[2]}")
+            #print("ACC ON Traffic light")
+            #print(f"local_tl_info : {local_tl_info[2]}")
             if (local_tl_info[2] == 1 or (local_tl_info[2]== 33) or (local_tl_info[2]== 5)) and local_tl_info[0][0]>0 and self.is_on_stop_line: 
                 dis_safe = ego_vel * time_gap*0.25 + default_space +2
                 dis_rel = sqrt(pow(local_tl_info[0][0],2) + pow(local_tl_info[0][1],2))            
