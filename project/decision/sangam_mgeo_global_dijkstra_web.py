@@ -286,8 +286,8 @@ class Dijkstra:
                     point_path.append([from_link.points[j][0],from_link.points[j][1],from_link_max_speed])
 
                 # points of third-order curve
-                start_point_num = 5
-                end_point_num = 20
+                start_point_num = 3
+                end_point_num = 10
                 lane_change_path = self.get_lane_chage_path(from_link, to_link, start_point_num, end_point_num)
                 point_path.extend(lane_change_path)
                 # remains points of to_link

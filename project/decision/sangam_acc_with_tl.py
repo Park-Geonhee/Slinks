@@ -405,7 +405,7 @@ class velocityPlanning:
             detMat = np.linalg.det(aMatTrans.dot(aMat))
             if detMat ==0:
                 rospy.loginfo("Det is Zero.")
-                out_vel_plan.append(self.car_max_speed)
+                out_vel_plan.append(car_max_speed)
                 continue
             resMat = np.linalg.inv(aMatTrans.dot(aMat)).dot(aMatTrans).dot(bMat)
             #resMat = np.linalg.inv(((aMatTrans.dot(aMat)).dot(aMatTrans)).dot(bMat))

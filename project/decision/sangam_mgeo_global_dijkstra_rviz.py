@@ -51,9 +51,9 @@ class dijkstra_path_pub :
             else:
                 pass
 
-        self.global_path_msg = Path()
-        self.global_path_msg.header.frame_id = '/map'
-        self.global_path_msg = self.calc_dijkstra_path_node(self.start_node, self.end_node)
+        #self.global_path_msg = Path()
+        #self.global_path_msg.header.frame_id = '/map'
+        #self.global_path_msg = self.calc_dijkstra_path_node(self.start_node, self.end_node)
 
 
         rate = rospy.Rate(10) # 10hz
@@ -234,18 +234,20 @@ class Dijkstra:
         #TODO: (9) point path 생성
         point_path = []        
         for i, link_id in enumerate(link_path):
-            
+            print(link_id)
+            print(link_id.find('-'))
             #if link_id.find('-') != -1: #링크 묶음인 경우 idx에 '-'를 포함하고 있음 ex) A219BS010403-A219BS010405
             #    links_sharing_from_node = self.links[link_id].get_from_node_sharing_links()
             #    for link_sharing_from_node in links_sharing_from_node:
             #        if link_sharing_from_node.idx.find('-') != -1: continue
             #       link_id = link_sharing_from_node.idx
-            if link_id.find('-') != -1:
+            if link_id.find('-') == -1:
                 link = self.links[link_id]
                 link_max_speed = link.max_speed
                 for point in link.points:
                     point_path.append([point[0], point[1], link_max_speed])
             else: #change lane link
+
                 links = link_id.split('-')
                 from_link = self.links[links[0]]
                 from_link_max_speed = from_link.max_speed
@@ -266,6 +268,7 @@ class Dijkstra:
                 start_point_num = 3
                 end_point_num = 10
                 lane_change_path = self.get_lane_chage_path(from_link, to_link, start_point_num, end_point_num)
+                print(lane_change_path)
                 point_path.extend(lane_change_path)
                 # remains points of to_link
                 for j in range(end_point_num, len_to_link):
@@ -273,10 +276,13 @@ class Dijkstra:
                 
                 #print(f"from link : {from_link}")
                 #print(f"to link : {to_link}")
+        print('=============================')
+        #print(point_path)
         return True, {'node_path': node_path, 'link_path':link_path, 'point_path':point_path, 'cost' : total_cost}
 
 
     def get_lane_chage_path(self, from_link, to_link, start_point_num, end_point_num):
+        print("in lane change")
         change_start_point = from_link.points[0]
         max_speed = from_link.max_speed
         change_start_next_point = from_link.points[start_point_num]
@@ -317,6 +323,7 @@ class Dijkstra:
             local_result = np.array([[waypoints_x[i]],[waypoints_y[i]],[1]])
             global_result = trans_matrix.dot(local_result)
             out_points.append([global_result[0][0],global_result[1][0],max_speed])
+        print(out_points)
         return out_points
     
 if __name__ == '__main__':
