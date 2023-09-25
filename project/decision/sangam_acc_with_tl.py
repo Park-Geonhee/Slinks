@@ -236,7 +236,7 @@ class pure_pursuit :
         cur_traffic_light_index = None
         if self.is_traffic_light_info == True:
             cur_traffic_light_index = self.traffic_light_info.trafficLightIndex
-
+            
             #traffic_lihgt_set에서 현재 도로에서의 신호등 찾기
             for idx, traffic_light in self.traffic_lights.items():
                 if idx != cur_traffic_light_index : continue

@@ -77,10 +77,12 @@ class latticePlanner:
         
         selected_lane = -1        
         lane_weight = [3, 2, 1, 1, 2, 3] #reference path 
-        
+        for i in range(len(lane_weight)):
+            if self.link_info.possible_lattice_pathes[i] == False:
+                lane_weight[i] = None
         #print(self.link_info.possible_lattice_pathes)
         #print(lane_weight)
-
+        #if self.link_info.possible_lattice_pathes[i] == False
         for obstacle in object_data.obstacle_list:                        
             for path_num in range(len(out_path)) :                    
                 for path_pos in out_path[path_num].poses :                                
