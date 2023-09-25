@@ -19,8 +19,10 @@ import time
 from morai_msgs.msg import RadarDetections, RadarDetection, ObjectStatusList, ObjectStatus
 from sensor_msgs.msg import PointCloud2, CompressedImage, PointCloud
 from geometry_msgs.msg import PoseArray,Pose, Point32
+from nav_msgs.msg import Odometry
 import sensor_msgs.point_cloud2 as pc2
 from numpy.linalg import inv
+from tf.transformations import euler_from_quaternion, quaternion_from_euler
 
 parameters_radar = {
     "X": 3.68, # meter
@@ -82,7 +84,6 @@ def get2CameraMat(r_pos, r_rpy, c_pos, c_rpy):
     camera2vehicle= get2VehicleMat(c_pos, c_rpy)
     vehicle2camera = inv(camera2vehicle)
     mat = vehicle2camera.dot(radar2vehicle)
-
     return mat
 
 def get2ImageMat(params_cam):
@@ -104,13 +105,23 @@ def get2ImageMat(params_cam):
     CameraMat = np.array([[focal_length, 0, principal_x],
                           [0, focal_length, principal_y],
                           [0, 0, 1]])
-    
     return CameraMat
+
+def get2GlobalMat(yaw, x, y, z):
+    trans_matrix = np.array([
+            [np.cos(yaw), -np.sin(yaw), 0, x],
+            [np.sin(yaw), np.cos(yaw), 0, y],
+            [0, 0, 1, z],
+            [0, 0, 0, 1]
+            ])
+    return trans_matrix
+
 Path = "/home/euiseon/catkin_ws/src/ssafy_ad/S09P22A701/project/perception/yolov5"
 class RadarObject:
     def __init__(self):
         rospy.Subscriber('/radar', RadarDetections, self.radar_callback)
         rospy.Subscriber("/image_jpeg/compressed", CompressedImage, self.image_callback)
+        rospy.Subscriber('/odom',Odometry,self.odom_callback)
         self.object_pub = rospy.Publisher('forward_object',ObjectStatusList, queue_size=1)
         self.model =torch.hub.load(Path, 'custom', 'yolov5n.pt',source='local')
         self.radar2VehicleMat = get2VehicleMat(radar_pos, radar_rpy)
@@ -122,17 +133,21 @@ class RadarObject:
         self.radar_data = None
         self.origin_detection_list = None
         self.origin_point_list = None
-        
+        self.is_odom = False
 
         rate = rospy.Rate(5)
         while not rospy.is_shutdown():
             rate.sleep()
+            if self.is_odom == False :
+                print("get odometry")
+                continue
             if self.image is None :
                 print("get image")
                 continue
             if self.radar_data is None :
                 print("get radar_data")
                 continue
+            self.local2GlobalMat = get2GlobalMat(self.vehicle_yaw, self.vehicle_pos_x, self.vehicle_pos_y, self.vehicle_pos_z)
             self.get_detection_list_wrt_vehicle()
 
 
@@ -144,6 +159,33 @@ class RadarObject:
         np_arr = np.frombuffer(msg.data, np.uint8)
         self.image = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
 
+    def odom_callback(self, msg):
+        if self.is_odom == False:
+            print(msg.pose.pose)
+        self.is_odom = True
+        odom_quaternion=(msg.pose.pose.orientation.x, msg.pose.pose.orientation.y,msg.pose.pose.orientation.z, msg.pose.pose.orientation.w)
+        _,_,self.vehicle_yaw = euler_from_quaternion(odom_quaternion)
+        self.vehicle_pos_x = msg.pose.pose.position.x
+        self.vehicle_pos_y = msg.pose.pose.position.y
+        self.vehicle_pos_z = msg.pose.pose.position.z
+
+    def get_global_detection(self, detection):
+        data = RadarDetection()
+        trans_matrix = np.array([
+            [np.cos(self.vehicle_yaw), -np.sin(self.vehicle_yaw), 0, self.vehicle_pos_x],
+            [np.sin(self.vehicle_yaw), np.cos(self.vehicle_yaw), 0, self.vehicle_pos_y],
+            [0, 0, 1, self.vehicle_pos_z],
+            [0, 0, 0, 1]
+            ])
+
+        local_result = np.array([[detection.position.x],[detection.position.y],[detection.position.z],[1]])
+        global_result = trans_matrix.dot(local_result)
+        data.position.x = global_result[0][0]
+        data.position.y = global_result[1][0]
+        data.position.z = global_result[2][0]
+        data.rangerate = detection.rangerate
+        return data
+    
     def get_detection_wrt_vehicle(self, detect):
         # 2. vehicle cal
         xyz_r = np.array([detect.position.x,detect.position.y, detect.position.z, 1])
@@ -151,9 +193,15 @@ class RadarObject:
 
         data = ObjectStatus()
         data.unique_id = detect.detection_id
-        data.position.x = xyz_v[0]
-        data.position.y = xyz_v[1]
-        data.position.z = xyz_v[2]
+        # cal to global
+        print("after radar to vehicle")
+        print(xyz_v)
+        global_result = self.local2GlobalMat.dot(xyz_v.T)
+        print("after local to global")
+        print(global_result)
+        data.position.x = global_result[0]
+        data.position.y = global_result[1]
+        data.position.z = global_result[2]
         data.velocity.x = detect.rangerate # relative speed
         return data
 
