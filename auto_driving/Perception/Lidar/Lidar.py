@@ -27,7 +27,7 @@ parameters_lidar = {
     "PITCH": np.radians(0),
     "ROLL": np.radians(0)
 }
-class SCANCluster:
+class Lidar:
     def __init__(self):
         self.scan_sub = rospy.Subscriber("/lidar3D", PointCloud2, self.callback)
         self.cluster_pub = rospy.Publisher("clusters", PoseArray, queue_size=10) 
@@ -44,11 +44,7 @@ class SCANCluster:
         posX = parameters_lidar['X']
         posY = parameters_lidar['Y']
         posZ = parameters_lidar['Z']
-        # self.trans_matrix = np.array([
-        #             [1, 0, parameters_lidar['X']],
-        #             [0, 1, parameters_lidar['Y']],
-        #             [0, 0, 1]
-        #         ])
+
         self.trans_matrix = np.array([
             [cosY, -sinY, 0, posX],
             [sinY, cosY, 0, posY],
@@ -57,15 +53,12 @@ class SCANCluster:
         ])
     def callback(self, msg):    
         self.pc_np = self.pointcloud2_to_xyz(msg)
-        # print("pc_np",self.pc_np)
         if len(self.pc_np) == 0:
             cluster_msg = PoseArray() # header, poses[]
 
         else:
             pc_xyz = self.pc_np[:, :3] # all rows, 0~1 col -> each point's coordinate
-            # print("pc_xy",pc_xy)
             db = self.dbscan.fit_predict(pc_xyz[:, :2]) # each point's cluster group 
-            # print("db",db)
            
             n_cluster = np.max(db) + 1 # cluster group cnt
            
@@ -80,16 +73,12 @@ class SCANCluster:
                 cluster_center_x = np.mean(cluster_points[:,0])
                 cluster_center_y = np.mean(cluster_points[:,1])
                 cluster_center_z = np.mean(cluster_points[:,2])
-                # print("center_z",cluster_center_z)
-                # DBSCAN으로 Clustering 된 각 Cluster의 위치 값을 계산하는 영역입니다.
-                # Cluster에 해당하는 Point들을 활용하여 Cluster를 대표할 수 있는 위치 값을 계산합니다.
-                # 계산된 위치 값을 ROS geometry_msgs/Pose type으로 입력합니다.
+
                 # Input : cluster
                 # Output : cluster position x,y   
                 local_result = np.array([[cluster_center_x],[cluster_center_y],[cluster_center_z],[1]])
                 local_result = self.trans_matrix.dot(local_result) # local coordi to clusters msg
                
-                # print('cluster', cluster_center_x, ', ',cluster_center_y)
                 tmp_pose=Pose() # Point position (x,y,z), Quaternion orientation(x,y,z,w)
                 tmp_pose.position.x = local_result[0][0]
                 tmp_pose.position.y = local_result[1][0]
@@ -128,7 +117,5 @@ class SCANCluster:
 if __name__ == '__main__':
 
     rospy.init_node('velodyne_clustering', anonymous=True)
-
-    scan_cluster = SCANCluster()
-
+    scan_cluster = Lidar()
     rospy.spin() 
