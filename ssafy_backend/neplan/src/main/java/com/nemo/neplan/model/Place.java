@@ -14,13 +14,14 @@ public class Place {
     private String x;
     private String y;
 
+    @Column(length = 512)
     private String address;
 
     // File과 관련된 필드 선언
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "file_id")
-    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-    private File file;
+//    @ManyToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(name = "file_id")
+//    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+//    private File file;
 
     @Enumerated(EnumType.STRING) // Enum 타입을 문자열로 저장
     private PlaceType placeType;
@@ -65,11 +66,11 @@ public class Place {
         this.address = address;
     }
 
-    public File getFile() {
-        return file;
-    }
-
-    public void setFile(File file) {
-        this.file = file;
-    }
+//    public File getFile() {
+//        return file;
+//    }
+//
+//    public void setFile(File file) {
+//        this.file = file;
+//    }
 }
