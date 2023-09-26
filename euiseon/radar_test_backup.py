@@ -117,7 +117,7 @@ def get2GlobalMat(yaw, x, y, z):
     return trans_matrix
 
 # Path = "$HOME/catkin_ws/src/ssafy_ad/S09P22A701/project/perception/yolov5"
-Path = ""
+Path = "project/perception/yolov5"
 class RadarObject:
     def __init__(self):
         rospy.Subscriber('/radar', RadarDetections, self.radar_callback)
