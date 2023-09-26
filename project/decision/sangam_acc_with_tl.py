@@ -49,7 +49,7 @@ class pure_pursuit :
         self.before_waypoint = 0
         self.vehicle_length = 2.6
         self.lfd = 8
-        self.min_lfd=3
+        self.min_lfd=6
         self.max_lfd=30
         self.lfd_gain = 0.78
         self.target_velocity = 60
@@ -94,6 +94,9 @@ class pure_pursuit :
                 pass
                 #rospy.loginfo('Waiting global path data')
 
+        print("velocity planning is completed")
+        
+        
         rate = rospy.Rate(30) # 30hz
         while not rospy.is_shutdown():
             if self.is_traffic_light_info == True and self.is_link_path_set == True:
@@ -118,7 +121,9 @@ class pure_pursuit :
                 local_tl_info = result[7]
 
                 self.current_waypoint = self.get_current_waypoint([self.current_position.x,self.current_position.y],self.global_path)
-                self.target_velocity = self.velocity_list[self.current_waypoint]*3.6
+                try:
+                    self.target_velocity = self.velocity_list[self.current_waypoint]*3.6
+                except: pass
 
                 steering = self.calc_pure_pursuit()
                 if self.is_look_forward_point :
@@ -393,7 +398,7 @@ class pidControl:
 
         pidValue = p_control + self.i_control + d_control
 
-        output = pidValue / abs(pidValue)
+        output = pidValue
         self.prev_error = error
 
         return output
@@ -430,27 +435,26 @@ class velocityPlanning:
             # 원의 좌표를 구하는 행렬 계산식, 최소 자승법을 이용하는 방식 등 곡률 반지름을 구하기 위한 식을 적용 합니다.
             aMatTrans = np.transpose(aMat)
 
-            detMat = np.linalg.det(aMatTrans.dot(aMat))
-            if detMat ==0:
-                rospy.loginfo("Det is Zero.")
+            try:
+                resMat = np.linalg.inv(aMatTrans.dot(aMat)).dot(aMatTrans).dot(bMat)
+                #resMat = np.linalg.inv(((aMatTrans.dot(aMat)).dot(aMatTrans)).dot(bMat))
+                # 적용한 수식을 통해 곡률 반지름 "r" 을 계산합니다.
+                # temp_val = resMat[0]*resMat[0] + resMat[1]*resMat[1] - resMat[2]
+                r = sqrt(resMat[0]*resMat[0] + resMat[1]*resMat[1] - resMat[2])
+                
+
+                #TODO: (7) 곡률 기반 속도 계획
+                # 계산 한 곡률 반경을 이용하여 최고 속도를 계산합니다.
+                # 평평한 도로인 경우 최대 속도를 계산합니다. 
+                # 곡률 반경 x 중력가속도 x 도로의 마찰 계수 계산 값의 제곱근이 됩니다.
+                v_max =sqrt(r * 9.81 * self.road_friction ) + 1.5
+
+                if v_max > car_max_speed:
+                    v_max = car_max_speed
+                out_vel_plan.append(v_max)
+            except:
                 out_vel_plan.append(car_max_speed)
-                continue
-            resMat = np.linalg.inv(aMatTrans.dot(aMat)).dot(aMatTrans).dot(bMat)
-            #resMat = np.linalg.inv(((aMatTrans.dot(aMat)).dot(aMatTrans)).dot(bMat))
-			# 적용한 수식을 통해 곡률 반지름 "r" 을 계산합니다.
-            temp_val = resMat[0]*resMat[0] + resMat[1]*resMat[1] - resMat[2]
-            r = sqrt(resMat[0]*resMat[0] + resMat[1]*resMat[1] - resMat[2])
 
-
-            #TODO: (7) 곡률 기반 속도 계획
-            # 계산 한 곡률 반경을 이용하여 최고 속도를 계산합니다.
-            # 평평한 도로인 경우 최대 속도를 계산합니다. 
-            # 곡률 반경 x 중력가속도 x 도로의 마찰 계수 계산 값의 제곱근이 됩니다.
-            v_max =sqrt(r * 9.81 * self.road_friction ) + 1.5
-
-            if v_max > car_max_speed:
-                v_max = car_max_speed
-            out_vel_plan.append(v_max)
 
         for i in range(len(global_path.poses) - point_num, len(global_path.poses)-10):
             out_vel_plan.append(30)
@@ -590,7 +594,7 @@ class AdaptiveCruiseControl:
             #print("ACC ON Traffic light")
             #print(f"local_tl_info : {local_tl_info[2]}")
             if (local_tl_info[2] == 1 or (local_tl_info[2]== 33) or (local_tl_info[2]== 5)) and local_tl_info[0][0]>0 and self.is_on_stop_line: 
-                dis_safe = ego_vel * time_gap*0.25 + default_space +2
+                dis_safe = ego_vel * time_gap*0.25 + default_space - 2
                 dis_rel = sqrt(pow(local_tl_info[0][0],2) + pow(local_tl_info[0][1],2))            
                 vel_rel=(0 - ego_vel)                        
                 acceleration = vel_rel * v_gain - x_errgain * (dis_safe - dis_rel)

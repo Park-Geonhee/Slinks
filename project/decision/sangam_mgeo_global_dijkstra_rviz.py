@@ -267,7 +267,7 @@ class Dijkstra:
 
                 # points of third-order curve
                 start_point_num = 3
-                end_point_num = 30
+                end_point_num = 50
                 lane_change_path = self.get_lane_chage_path(from_link, to_link, start_point_num, end_point_num)
                 point_path.extend(lane_change_path)
                 # remains points of to_link
