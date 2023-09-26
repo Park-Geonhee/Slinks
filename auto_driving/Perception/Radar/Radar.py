@@ -9,21 +9,19 @@
 # 6. BBox mapping
 # 7. object detect and delete multi detects
 # 8. global cal
-# 9. XYZ(global)+velocity put in objectStatus 
+# 9. XYZ(global)+velocity put in objectStatus
+
+
 import rospy
 import cv2
-import torch
+# import torch
 import numpy as np
 import math
 import time
-from datetime import datetime
 from morai_msgs.msg import RadarDetections, RadarDetection, ObjectStatusList, ObjectStatus
-from sensor_msgs.msg import PointCloud2, CompressedImage, PointCloud
-from geometry_msgs.msg import PoseArray,Pose, Point32
 from nav_msgs.msg import Odometry
-import sensor_msgs.point_cloud2 as pc2
 from numpy.linalg import inv
-from tf.transformations import euler_from_quaternion, quaternion_from_euler
+from tf.transformations import euler_from_quaternion
 
 parameters_radar = {
     "X": 3.68, # meter
@@ -35,7 +33,7 @@ parameters_radar = {
 }
 parameters_cam ={
     "WIDTH": 640, #image width
-    "HEIGHT": 480, #image height
+    "HEIGHT": 640, #image height
     "FOV": 90, # Field of views
     "X": 3.67, # meter
     "Y": -0.01,
@@ -125,18 +123,16 @@ def getTimeGap():
 
 # Path = "$HOME/catkin_ws/src/ssafy_ad/S09P22A701/project/perception/yolov5"
 Path = ""
-class RadarObject:
+class Radar:
     def __init__(self):
         self.is_odom = False
         self.image = None
         self.radar_data = None
-        self.origin_detection_list = None
-        self.origin_point_list = None
         rospy.Subscriber('/radar', RadarDetections, self.radar_callback)
-        rospy.Subscriber("/image_jpeg/compressed", CompressedImage, self.image_callback)
         rospy.Subscriber('/odom',Odometry,self.odom_callback)
         self.object_pub = rospy.Publisher('forward_object',ObjectStatusList, queue_size=1)
-        self.model =torch.hub.load(Path, 'custom', 'yolov5n.pt',source='local')
+
+        # self.model =torch.hub.load(Path, 'custom', 'yolov5n.pt',source='local')
         self.radar2VehicleMat = get2VehicleMat(radar_pos, radar_rpy)
         self.radar2CameraMat = get2CameraMat(radar_pos, radar_rpy, camera_pos, camera_rpy)
         self.camera2ImageMat = get2ImageMat(parameters_cam)
@@ -145,34 +141,27 @@ class RadarObject:
         self.start_time = time.time()
  
 
-        rate = rospy.Rate(10)
-        while not rospy.is_shutdown():
-            rate.sleep()
-            if self.is_odom == False :
-                print("get odometry")
-                continue
-            if self.image is None :
-                print("get image")
-                continue
-            if self.radar_data is None :
-                print("get radar_data")
-                continue
-            self.local2GlobalMat = get2GlobalMat(self.vehicle_yaw, self.vehicle_pos_x, self.vehicle_pos_y, self.vehicle_pos_z)
-            self.get_detection_list_wrt_vehicle()
+        # rate = rospy.Rate(10)
+        # while not rospy.is_shutdown():
+        #     rate.sleep()
+        #     if self.is_odom == False :
+        #         print("get odometry")
+        #         continue
+        #     if self.image is None :
+        #         print("get image")
+        #         continue
+        #     if self.radar_data is None :
+        #         print("get radar_data")
+        #         continue
+        #     self.local2GlobalMat = get2GlobalMat(self.vehicle_yaw, self.vehicle_pos_x, self.vehicle_pos_y, self.vehicle_pos_z)
+        #     self.get_detection_list_wrt_vehicle()
 
 
     def radar_callback(self, msg):
         # 1. local data list wrt radar sensor
         self.radar_data = msg
 
-    def image_callback(self, msg):
-        np_arr = np.frombuffer(msg.data, np.uint8)
-        self.image = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
-        # print("image get!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-
     def odom_callback(self, msg):
-        if self.is_odom == False:
-            print(msg.pose.pose)
         self.is_odom = True
         odom_quaternion=(msg.pose.pose.orientation.x, msg.pose.pose.orientation.y,msg.pose.pose.orientation.z, msg.pose.pose.orientation.w)
         _,_,self.vehicle_yaw = euler_from_quaternion(odom_quaternion)
@@ -205,11 +194,8 @@ class RadarObject:
         data = ObjectStatus()
         data.unique_id = detect.detection_id
         # cal to global
-        # print("after radar to vehicle")
-        # print(xyz_v)
+        self.local2GlobalMat = get2GlobalMat(self.vehicle_yaw, self.vehicle_pos_x, self.vehicle_pos_y, self.vehicle_pos_z)
         global_result = self.local2GlobalMat.dot(xyz_v.T)
-        # print("after local to global")
-        # print(global_result)
         data.position.x = global_result[0]
         data.position.y = global_result[1]
         data.position.z = global_result[2]
@@ -241,55 +227,51 @@ class RadarObject:
         point_np = cv2.circle(img, (x,y), 3, (0,255,0), -1)
         return point_np
     
-    def get_detection_list_wrt_vehicle(self):
+    def is_valid(self, detect):
+        if detect.position.x == 0 and detect.position.y == 0 and detect.position.z == 0 :
+            return False
+        dist = (detect.position.x**2 + detect.position.y**2)**0.5
+        if dist > 50 : # Too far object skip
+            return False
+        rate = abs(detect.position.x/detect.position.y)
+        if rate < 1 :
+            return False
+        return True
+    
+    # exportation function
+    def get_radar_object_status_list(self, image, result):
         # 3. get local data wrt vehicle
         detection_list = ObjectStatusList()
-
-        results = self.model(self.image) # yolov5 inference
-        object_list = results.pandas().xyxy[0]
+        # results = self.model(self.image) # yolov5 inference
+        object_list = result
         object_cnt = len(object_list)
         check_list = [False for i in range(object_cnt)]
 
-        # print(results.pandas().xyxy[0]["xmax"])   
-        cv2.imshow("image", self.image)
-        cv2.waitKey(1)
-        getTimeGap()
+        # getTimeGap() # check ratency
         for detect in self.radar_data.detections :
-            if detect.position.x == 0 and detect.position.y == 0 and detect.position.z == 0 :
+            if self.is_valid(detect) == False :
                 continue
-            dist = (detect.position.x**2 + detect.position.y**2)**0.5
-            if dist > 50 : # Too far object skip
-                continue
-            rate = abs(detect.position.x/detect.position.y)
-            if rate < 1 :
-                # print("rate x/y", rate)
-                continue
+
             # check if detection is exist and included in image frame
             point_wrt_camera = self.get_point_wrt_camera(detect) # xyz1
             image_xy = self.get_imageXY_from_point(point_wrt_camera)
-            
             if image_xy is None :
-                # print("None because of this point")
                 continue
+
             # it's valid, so needed to remove detections pointing same object 
             is_first = False
             for i in range(object_cnt) :
                 coordi = object_list.iloc[i][0:4] #xmin, ymin, xmax, ymax
                 if check_list[i] == True : # already mapped with radar point
-                    print("already mapped")
                     continue
                 if image_xy[0] < coordi[0] or image_xy[0] > coordi[2]:
-                    print("x out")
                     continue
                 if image_xy[1] < coordi[1] or image_xy[1] > coordi[3]:
-                    print("y out")
                     continue
                 # this BBOX include this point
-                # fail detect
                 name = object_list.iloc[i]["name"]
                 if name == "train":
                     continue
-                # print("object name", name)
                 check_list[i] = True
                 is_first = True
                 detection_wrt_vehicle = self.get_detection_wrt_vehicle(detect)
@@ -298,15 +280,11 @@ class RadarObject:
             if is_first == True :
                 detection_list.obstacle_list.append(detection_wrt_vehicle)
                 
-            projection_image = self.draw_point_to_image(self.image, image_xy[0], image_xy[1])
-            
-        self.origin_detection_list = detection_list
-        self.origin_detection_list.header.stamp = time.gmtime()
-        self.object_pub.publish(self.origin_detection_list)
-        # print("detection_list")
-        # print(self.origin_detection_list)
+            # projection_image = self.draw_point_to_image(self.image, image_xy[0], image_xy[1])
+        # self.object_pub.publish(self.origin_detection_list)
+        return detection_list
 
 if __name__ == '__main__':
     rospy.init_node('radar_test',anonymous=True)
-    detect = RadarObject()
-    # rospy.spin()
+    detect = Radar()
+    rospy.spin()
