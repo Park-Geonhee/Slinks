@@ -141,20 +141,20 @@ class Radar:
         self.start_time = time.time()
  
 
-        rate = rospy.Rate(10)
-        while not rospy.is_shutdown():
-            rate.sleep()
-            if self.is_odom == False :
-                print("get odometry")
-                continue
-            if self.image is None :
-                print("get image")
-                continue
-            if self.radar_data is None :
-                print("get radar_data")
-                continue
-            self.local2GlobalMat = get2GlobalMat(self.vehicle_yaw, self.vehicle_pos_x, self.vehicle_pos_y, self.vehicle_pos_z)
-            self.get_detection_list_wrt_vehicle()
+        # rate = rospy.Rate(10)
+        # while not rospy.is_shutdown():
+        #     rate.sleep()
+        #     if self.is_odom == False :
+        #         print("get odometry")
+        #         continue
+        #     if self.image is None :
+        #         print("get image")
+        #         continue
+        #     if self.radar_data is None :
+        #         print("get radar_data")
+        #         continue
+        #     self.local2GlobalMat = get2GlobalMat(self.vehicle_yaw, self.vehicle_pos_x, self.vehicle_pos_y, self.vehicle_pos_z)
+        #     self.get_detection_list_wrt_vehicle()
 
 
     def radar_callback(self, msg):
@@ -162,8 +162,6 @@ class Radar:
         self.radar_data = msg
 
     def odom_callback(self, msg):
-        if self.is_odom == False:
-            print(msg.pose.pose)
         self.is_odom = True
         odom_quaternion=(msg.pose.pose.orientation.x, msg.pose.pose.orientation.y,msg.pose.pose.orientation.z, msg.pose.pose.orientation.w)
         _,_,self.vehicle_yaw = euler_from_quaternion(odom_quaternion)
@@ -196,6 +194,7 @@ class Radar:
         data = ObjectStatus()
         data.unique_id = detect.detection_id
         # cal to global
+        self.local2GlobalMat = get2GlobalMat(self.vehicle_yaw, self.vehicle_pos_x, self.vehicle_pos_y, self.vehicle_pos_z)
         global_result = self.local2GlobalMat.dot(xyz_v.T)
         data.position.x = global_result[0]
         data.position.y = global_result[1]
@@ -244,7 +243,7 @@ class Radar:
         # 3. get local data wrt vehicle
         detection_list = ObjectStatusList()
         # results = self.model(self.image) # yolov5 inference
-        object_list = result.pandas().xyxy[0]
+        object_list = result
         object_cnt = len(object_list)
         check_list = [False for i in range(object_cnt)]
 

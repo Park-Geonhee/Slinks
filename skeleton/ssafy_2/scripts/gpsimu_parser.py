@@ -73,9 +73,10 @@ class GPSIMUParser:
         while not rospy.is_shutdown():
             if self.is_imu==True and self.is_gps == True:
                 self.convertLL2UTM()
-
+                print("odom")
                 #TODO: (5) Odometry 메세지 Publish
                 self.odom_pub.publish(self.odom_msg)
+                print("fin pub")
                 if self.is_pinpoint:
                     self.pinpoint_utm_list_pub.publish(self.pinpoint_utm_list)
                     self.is_pinpoint = False

@@ -29,7 +29,7 @@ class Main:
 
 
 if __name__ == "__main__":
-    rospy.init("perception", anonymous=True)
+    rospy.init_node("perception", anonymous=True)
     main = Main()
     
     rate = rospy.Rate(5)
@@ -38,9 +38,8 @@ if __name__ == "__main__":
 
         if main.image is None : 
             continue 
-
         result = main.yolo.get_result(main.image)
-        radar_result = main.radar.get_radar_object_status_list(result)
+        radar_result = main.radar.get_radar_object_status_list(main.image,result)
         traffic_light_result = main.traffic_light.get_traffic_light_status(main.image, result)
 
         main.publish()
