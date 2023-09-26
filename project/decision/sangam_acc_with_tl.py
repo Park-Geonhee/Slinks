@@ -245,11 +245,18 @@ class pure_pursuit :
             stop_line_point = self.link_info.stop_line_point
             global_result = np.array([[stop_line_point[0]],[stop_line_point[1]],[1]])
             local_result = tmp_det_t.dot(global_result)
-            global_tl_info = [[stop_line_point[0], stop_line_point[1]], 
-                            self.tl_info.trafficLightType,self.tl_info.trafficLightStatus]
-            
-            local_tl_info = [[local_result[0][0], local_result[1][0]],
-                            self.tl_info.trafficLightType, self.tl_info.trafficLightStatus]
+            try : 
+                global_tl_info = [[stop_line_point[0], stop_line_point[1]], 
+                                self.tl_info.trafficLightType,self.tl_info.trafficLightStatus]
+                
+                local_tl_info = [[local_result[0][0], local_result[1][0]],
+                                self.tl_info.trafficLightType, self.tl_info.trafficLightStatus]
+            except:
+                global_tl_info = [[stop_line_point[0], stop_line_point[1]], 
+                                self.traffic_light_info.trafficLightType,self.traffic_light_info.trafficLightStatus]
+                
+                local_tl_info = [[local_result[0][0], local_result[1][0]],
+                                self.traffic_light_info.trafficLightType, self.traffic_light_info.trafficLightStatus]
 
         #print(f"traffic light : {cur_traffic_light_index}")
 

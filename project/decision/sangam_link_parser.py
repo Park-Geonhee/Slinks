@@ -117,6 +117,10 @@ class LinkParser:
 
         #print(f"left : {left_link.idx}")
         #print(left_link.can_move_left_lane)
+        if left_link == None:
+            print(left_link)
+            
+        
         if left_link != None:
             result[2] = current_link.can_move_left_lane
             left2_link = left_link.lane_ch_link_left
@@ -130,10 +134,10 @@ class LinkParser:
             result[3] = current_link.can_move_right_lane
             right2_link = right_link.lane_ch_link_right
             if right2_link != None:
-                result[1] = right_link.can_move_right_lane
+                result[4] = right_link.can_move_right_lane
                 right3_link = right_link.lane_ch_link_right
                 if right3_link != None:
-                    result[0] = right2_link.can_move_right_lane
+                    result[5] = right2_link.can_move_right_lane
 
         return result
 

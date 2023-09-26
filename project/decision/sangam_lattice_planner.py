@@ -79,19 +79,23 @@ class latticePlanner:
         lane_weight = [3, 2, 1, 1, 2, 3] #reference path 
         for i in range(len(lane_weight)):
             if self.link_info.possible_lattice_pathes[i] == False:
-                lane_weight[i] = None
+                lane_weight[i] = 21e8
         #print(self.link_info.possible_lattice_pathes)
         #print(lane_weight)
+        print(lane_weight)
         #if self.link_info.possible_lattice_pathes[i] == False
-        for obstacle in object_data.obstacle_list:                        
+        for obstacle in object_data.obstacle_list:
             for path_num in range(len(out_path)) :                    
                 for path_pos in out_path[path_num].poses :                                
                     dis = sqrt(pow(obstacle.position.x - path_pos.pose.position.x, 2) + pow(obstacle.position.y - path_pos.pose.position.y, 2))
                     if dis < 1.5:
                         lane_weight[path_num] = lane_weight[path_num] + 100
-
-        if lane_weight != None : 
-            selected_lane = lane_weight.index(min(lane_weight))                    
+        
+        
+        
+        selected_lane = lane_weight.index(min(lane_weight))     
+        print(self.link_info.possible_lattice_pathes) 
+        print(selected_lane)              
         return selected_lane
 
     def path_callback(self,msg):
@@ -166,8 +170,8 @@ class latticePlanner:
             # 생성된 Lattice 경로는 out_path 변수에 List 형식으로 넣습니다.
             # 충돌 회피 경로는 기존 경로를 제외하고 좌 우로 3개씩 총 6개의 경로를 가지도록 합니다.
             for end_point in local_lattice_points :
-
             '''
+
             for end_point in local_lattice_points :
                 waypoints_x = []
                 waypoints_y = []
@@ -202,6 +206,7 @@ class latticePlanner:
 
             # Add_point            
             # 3 차 곡선 경로가 모두 만들어 졌다면 이후 주행 경로를 추가 합니다.
+            out_path = out_path[::-1]
             add_point_size = min(int(vehicle_velocity * 2), len(ref_path.poses) )           
             
             for i in range(look_distance * 2, add_point_size):
@@ -246,6 +251,8 @@ class latticePlanner:
 
                 # 해당 경로를 발행
                 globals()['lattice_pub_{}'.format(i+1)].publish(out_path[i])
+        
+        print(f"out path : {len(out_path)}")
         return out_path
 
 if __name__ == '__main__':
