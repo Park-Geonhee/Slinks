@@ -82,7 +82,7 @@ class latticePlanner:
                 lane_weight[i] = 21e8
         #print(self.link_info.possible_lattice_pathes)
         #print(lane_weight)
-        print(lane_weight)
+    
         #if self.link_info.possible_lattice_pathes[i] == False
         for obstacle in object_data.obstacle_list:
             for path_num in range(len(out_path)) :                    
@@ -94,8 +94,8 @@ class latticePlanner:
         
         
         selected_lane = lane_weight.index(min(lane_weight))     
-        print(self.link_info.possible_lattice_pathes) 
-        print(selected_lane)              
+        # print(self.link_info.possible_lattice_pathes) 
+        # print(selected_lane)              
         return selected_lane
 
     def path_callback(self,msg):
@@ -252,7 +252,7 @@ class latticePlanner:
                 # 해당 경로를 발행
                 globals()['lattice_pub_{}'.format(i+1)].publish(out_path[i])
         
-        print(f"out path : {len(out_path)}")
+        # print(f"out path : {len(out_path)}")
         return out_path
 
 if __name__ == '__main__':
