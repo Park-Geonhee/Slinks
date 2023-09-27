@@ -34,7 +34,7 @@ public class PlanPlaceServiceImpl implements PlanPlaceService {
     public PlanPlace createPlanPlace(PlanPlace planPlace) {
         int count = planPlaceRepository.countByPlanId(planPlace.getPlan().getId());
         System.out.println("현재 플랜에는 "+count+"개의 장소가 저장되어있습니다");
-        planPlace.setPlaceOrder(count);
+//        planPlace.setPlaceOrder(count);
 
         return planPlaceRepository.save(planPlace);
     }
@@ -51,7 +51,7 @@ public class PlanPlaceServiceImpl implements PlanPlaceService {
 
         if (optionalPlanPlace.isPresent()) {
             PlanPlace existingPlanPlace = optionalPlanPlace.get();
-            existingPlanPlace.setPlaceOrder(planPlace.getPlaceOrder());
+//            existingPlanPlace.setPlaceOrder(planPlace.getPlaceOrder());
 
             planPlaceRepository.save(existingPlanPlace);
         } else {
