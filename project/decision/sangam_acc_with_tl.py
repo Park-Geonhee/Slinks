@@ -589,7 +589,21 @@ class AdaptiveCruiseControl:
 
             out_vel = ego_vel + acceleration           
 
-        
+            '''
+            # if you use this block for Obstacle,
+            # you have to use line 514  ~ self.object=[True,i]
+            # and also, you have to comment out right above block (line 557 ~ line 566)
+            if self.object[0] and len(local_obs_info) != 0:
+                for i in range(len(local_obs_info)):
+                    if abs(local_obs_info[i][2]) > 1.5 : continue
+                    # print("ACC ON Obstacle")
+                    dis_rel = sqrt(pow(local_obs_info[i][1], 2) + pow(local_obs_info[i][2], 2))
+                    vel_rel = local_obs_info[i][3] - ego_vel
+                    dis_safe = ego_vel* time_gap + default_space
+                    acceleration = vel_rel * v_gain - x_errgain * (dis_safe - dis_rel)
+                    out_vel = min(out_vel, ego_vel + acceleration)
+            '''
+
         if self.tl[0]: #ACC ON_traffic_light
             #print("ACC ON Traffic light")
             #print(f"local_tl_info : {local_tl_info[2]}")

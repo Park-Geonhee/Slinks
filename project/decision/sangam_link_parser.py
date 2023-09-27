@@ -41,8 +41,8 @@ class LinkParser:
         while True:
             if self.is_odom == True and self.is_node_path == True and self.is_link_path == True:
                 
-                self.node_path = self.node_path.split(' ')
-                self.node_path.pop(0)
+                self.node_path_list = self.node_path.split(' ')
+                self.node_path_list.pop(0)
                 self.is_node_path_set = True
 
                 self.link_path = self.link_path.split(' ')
@@ -54,6 +54,7 @@ class LinkParser:
         while not rospy.is_shutdown():
             
             # get data
+            
             current_link = self.find_current_link()
             current_link_data = self.links[current_link.idx]
             stop_line_point, is_on_stop_line = self.find_stop_line(current_link_data)
@@ -87,7 +88,7 @@ class LinkParser:
     def find_near_3_nodes(self):
         result = [[21e8, Node()], [21e8, Node()], [21e8, Node()]]
         
-        for node_idx in self.node_path:
+        for node_idx in self.node_path_list:
             node = self.nodes[node_idx]
             if (self.x - node.point[0]>100) or (self.y-node.point[1])>100 : continue
             ddist = pow(self.x - node.point[0],2) + pow(self.y - node.point[1],2)
@@ -114,7 +115,7 @@ class LinkParser:
                 if ddist < min_ddist:
                     min_ddist = ddist
                     current_link = link
-
+        print(current_link.idx)
         return current_link
 
     def find_stop_line(self, current_link):

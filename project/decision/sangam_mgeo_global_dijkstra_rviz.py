@@ -103,7 +103,7 @@ class dijkstra_path_pub :
         for node in path['node_path']:
             node_msg += f" {node}"
         self.node_path_pub.publish(node_msg)
-
+        
 
         print("link list")
         link_msg = ''
