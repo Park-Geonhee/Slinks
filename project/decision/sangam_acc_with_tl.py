@@ -74,7 +74,7 @@ class pure_pursuit :
 
 
         self.pid = pidControl()
-        self.adaptive_cruise_control = AdaptiveCruiseControl(velocity_gain = 0.5, distance_gain = 1, time_gap = 2, vehicle_length = 2.7, is_on_stop_line = self.link_info.is_on_stop_line)
+        self.adaptive_cruise_control = AdaptiveCruiseControl(velocity_gain = 0.5, distance_gain = 1, time_gap = 2, vehicle_length = 2.7, is_on_stop_line = self.link_info.is_on_stop_line, link_info = self.link_info)
         self.vel_planning = velocityPlanning(self.target_velocity/3.6, 0.15)
         
         #setting for traffic light from sim
@@ -465,7 +465,7 @@ class velocityPlanning:
         return out_vel_plan
 
 class AdaptiveCruiseControl:
-    def __init__(self, velocity_gain, distance_gain, time_gap, vehicle_length, is_on_stop_line):
+    def __init__(self, velocity_gain, distance_gain, time_gap, vehicle_length, is_on_stop_line, link_info):
         self.npc_vehicle=[False,0]
         self.object=[False,0]
         self.Person=[False,0]
@@ -475,7 +475,7 @@ class AdaptiveCruiseControl:
         self.time_gap = time_gap
         self.vehicle_length = vehicle_length
         self.is_on_stop_line = is_on_stop_line
-
+        self.link_info = link_info
         self.object_type = None
         self.object_distance = 0
         self.object_velocity = 0
@@ -607,13 +607,32 @@ class AdaptiveCruiseControl:
         if self.tl[0]: #ACC ON_traffic_light
             #print("ACC ON Traffic light")
             #print(f"local_tl_info : {local_tl_info[2]}")
+            # 정지선이 있으면
+            if self.is_on_stop_line:
+                # 좌회전일 경우
+                if self.link_info.next_driving.find("left") != -1:
+                    if (((local_tl_info[2]>>5)&1) == 1):
+                        dis_safe = ego_vel * time_gap*0.25 + default_space - 2
+                        dis_rel = sqrt(pow(local_tl_info[0][0],2) + pow(local_tl_info[0][1],2))            
+                        vel_rel=(0 - ego_vel)                        
+                        acceleration = vel_rel * v_gain - x_errgain * (dis_safe - dis_rel)
+                        out_vel = ego_vel + acceleration
+                # 좌회전이 아닐 경우
+                else:
+                    if ((local_tl_info[2]&1) ==1):
+                        dis_safe = ego_vel * time_gap*0.25 + default_space - 2
+                        dis_rel = sqrt(pow(local_tl_info[0][0],2) + pow(local_tl_info[0][1],2))            
+                        vel_rel=(0 - ego_vel)                        
+                        acceleration = vel_rel * v_gain - x_errgain * (dis_safe - dis_rel)
+                        out_vel = ego_vel + acceleration
+            '''
             if (local_tl_info[2] == 1 or (local_tl_info[2]== 33) or (local_tl_info[2]== 5)) and local_tl_info[0][0]>0 and self.is_on_stop_line: 
                 dis_safe = ego_vel * time_gap*0.25 + default_space - 2
                 dis_rel = sqrt(pow(local_tl_info[0][0],2) + pow(local_tl_info[0][1],2))            
                 vel_rel=(0 - ego_vel)                        
                 acceleration = vel_rel * v_gain - x_errgain * (dis_safe - dis_rel)
                 out_vel = ego_vel + acceleration
-
+            '''
             
         
         out_vel = min(out_vel, target_vel) * 3.6

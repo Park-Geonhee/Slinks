@@ -68,7 +68,7 @@ class LinkParser:
             link_info_msg.possible_lattice_pathes = possible_lattice_pathes
             
             # 여기에 새 string type 데이터 추가 후 정보 담기
-            # link_info_msg.next_drive = next_drive
+            link_info_msg.next_drive = next_drive
 
             # publish
             self.link_info_pub.publish(link_info_msg)
@@ -174,7 +174,7 @@ class LinkParser:
                 except:
                     return stop_line_point, is_on_stop_line, next_drive
                 next_to_link = self.links[next_to_link_idx]
-                
+
                 next_to_node = next_to_link.get_to_node()
                 is_on_stop_line = next_to_node.on_stop_line
                 stop_line_point = next_to_node.point
