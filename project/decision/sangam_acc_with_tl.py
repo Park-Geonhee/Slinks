@@ -610,7 +610,7 @@ class AdaptiveCruiseControl:
             # 정지선이 있으면
             if self.is_on_stop_line:
                 # 좌회전일 경우
-                if self.link_info.next_driving.find("left") != -1:
+                if self.link_info.next_drive.find("left") != -1:
                     if (((local_tl_info[2]>>5)&1) == 1):
                         dis_safe = ego_vel * time_gap*0.25 + default_space - 2
                         dis_rel = sqrt(pow(local_tl_info[0][0],2) + pow(local_tl_info[0][1],2))            
