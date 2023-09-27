@@ -157,27 +157,30 @@ class LinkParser:
             if is_on_stop_line:
                 # 경로 상 다음 링크가 있는지 확인
                 try:
-                    next_to_node_idx = self.link_path[current_link_num + 1]
+                    next_to_link_idx = self.link_path[current_link_num + 1]
                 # 없으면 현재 링크의 정지선만 바로 리턴
                 except:
                     return stop_line_point, is_on_stop_line, next_drive
                 # 있으면 다음 링크의 주행 정보를 정지선에 같이 포함
-                next_to_node = self.links[next_to_node_idx]
-                next_drive = next_to_node.related_signal
+                next_to_link= self.links[next_to_link_idx]
+                next_drive = next_to_link.related_signal
+            
             # 정지선이 없으면
-	    # 위의 작업을 다음 번 노드까지 확인하면서 한번 더 수행해준다.
+	        # 위의 작업을 다음 번 노드까지 확인하면서 한번 더 수행해준다.
             else:
                 try:
-                    next_to_node_idx = self.link_path[current_link_num + 1]
-                    next_toto_node_idx = self.link_path[current_link_num + 2]
+                    next_to_link_idx = self.link_path[current_link_num + 1]
+                    next_toto_link_idx = self.link_path[current_link_num + 2]
                 except:
                     return stop_line_point, is_on_stop_line, next_drive
-                next_to_node = self.links[next_to_node_idx]
+                next_to_link = self.links[next_to_link_idx]
+                
+                next_to_node = next_to_link.get_to_node()
                 is_on_stop_line = next_to_node.on_stop_line
                 stop_line_point = next_to_node.point
 
-                next_toto_node = self.links[next_toto_node_idx]
-                next_drive = next_toto_node.related_signal
+                next_toto_link = self.links[next_toto_link_idx]
+                next_drive = next_toto_link.related_signal
 
             return stop_line_point, is_on_stop_line, next_drive
 
