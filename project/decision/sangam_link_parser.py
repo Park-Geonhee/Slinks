@@ -38,6 +38,7 @@ class LinkParser:
         self.is_node_path_set  = False
         self.is_link_path_set  = False
 
+        # global path 생성 시 만들어지는 node_path와 link_path를 사용해야 한다. 
         while True:
             if self.is_odom == True and self.is_node_path == True and self.is_link_path == True:
                 
@@ -52,9 +53,7 @@ class LinkParser:
 
         rate = rospy.Rate(20)
         while not rospy.is_shutdown():
-            
             # get data
-            
             current_link = self.find_current_link()
             current_link_data = self.links[current_link.idx]
             stop_line_point, is_on_stop_line, next_drive = self.find_stop_line(current_link_data)
@@ -65,8 +64,6 @@ class LinkParser:
             link_info_msg.stop_line_point = stop_line_point
             link_info_msg.is_on_stop_line = is_on_stop_line
             link_info_msg.possible_lattice_pathes = possible_lattice_pathes
-            
-            # 여기에 새 string type 데이터 추가 후 정보 담기
             link_info_msg.next_drive = next_drive
 
             # publish
@@ -87,6 +84,7 @@ class LinkParser:
         self.is_node_path = True
         self.node_path = msg.data
         
+    # node_path에 포함된 node들 중 가장 가까운 3개의 노드를 반환한다.
     def find_near_3_nodes(self):
         result = [[21e8, Node()], [21e8, Node()], [21e8, Node()]]
         
@@ -99,6 +97,7 @@ class LinkParser:
                 result.sort(key=lambda x:x[0])
         return result
 
+    # 찾은 3개의 노드에 연결된 링크들 중 현재 위치와 가장 가까운 포인트를 가지고 있는 링크를 반환한다.
     def find_current_link(self):
         # 1. find nearest node
         near_nodes = self.find_near_3_nodes()
@@ -135,6 +134,7 @@ class LinkParser:
 
             return stop_line_point, is_on_stop_line
     '''
+    # 정지선의 위치 찾기. acc_with_tl에서 신호등 데이터와 조합하여 사용.
     def find_stop_line(self, current_link):
         current_to_node = current_link.get_to_node()
         stop_line_point = current_to_node.point
@@ -184,8 +184,9 @@ class LinkParser:
             next_drive = " "
         return stop_line_point, is_on_stop_line, next_drive
 
-
+    # 차선 변경이 가능한 도로인지 판단한 뒤 가능하다면 회피경로를 생성한다.
     def find_possible_lattice_pathes(self, current_link):
+        # 좌 3, 우 3 회피경로 중 차선 변경이 가능한지 판단
         result = [False, False, False, False, False, False]
         
         left_link = current_link.lane_ch_link_left

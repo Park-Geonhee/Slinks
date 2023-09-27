@@ -99,6 +99,7 @@ class pure_pursuit :
         rate = rospy.Rate(30) # 30hz
         while not rospy.is_shutdown():
             if self.is_traffic_light_info == True and self.is_link_path_set == True:
+                # 가져오는 신호등 데이터가 경로 상에 있는 신호등인지 확인하는 작업. 
                 tl_idx = self.traffic_light_info.trafficLightIndex
                 for tl_link in self.traffic_lights[tl_idx].link_id_list:
                     if tl_link in self.link_path: 
@@ -249,6 +250,9 @@ class pure_pursuit :
             stop_line_point = self.link_info.stop_line_point
             global_result = np.array([[stop_line_point[0]],[stop_line_point[1]],[1]])
             local_result = tmp_det_t.dot(global_result)
+
+            # tl_info는 전역 경로 상에 존재하는 링크의 신호등인지 판단 후 생성되기 때문에
+            # 출발지의 신호등 정보가 undetected인 경우 오류가 발생하므로 try catch 구문을 사용한다. 
             try : 
                 global_tl_info = [[stop_line_point[0], stop_line_point[1]], 
                                 self.tl_info.trafficLightType,self.tl_info.trafficLightStatus]
@@ -603,8 +607,12 @@ class AdaptiveCruiseControl:
         if self.tl[0]: #ACC ON_traffic_light
             # 정지선이 있으면
             if self.link_info.is_on_stop_line:
+                
+                # 현재 링크에서의 신호등 정보가 없는 경우는 넘어감
+                if local_tl_info[0][0] == 0 : pass
+
                 # 좌회전일 경우
-                if self.link_info.next_drive.find("left") != -1:
+                elif self.link_info.next_drive.find("left") != -1:
                     if (((local_tl_info[2]>>5)&1) == 0):
                         dis_safe = ego_vel * time_gap*0.25 + default_space - 2
                         dis_rel = sqrt(pow(local_tl_info[0][0],2) + pow(local_tl_info[0][1],2))            
