@@ -8,12 +8,14 @@ import os
 import copy
 import numpy as np
 import json
+import pyproj
 
 from math import cos,sin,sqrt,pow,atan2,pi
 from geometry_msgs.msg import Point32,PoseStamped, PoseWithCovarianceStamped
 from nav_msgs.msg import Odometry,Path
 from std_msgs.msg import Float64MultiArray, String
 from sensor_msgs.msg import PointCloud
+from morai_msgs.msg import GPSMessage
 
 current_path = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(current_path)
@@ -23,9 +25,20 @@ from lib.mgeo.class_defs import *
 class dijkstra_path_pub :
     def __init__(self):
         rospy.init_node('dijkstra_path_pub', anonymous=True)
+        #rospy.Subscriber("/gps", GPSMessage, self.navsat_callback)
 
         self.global_path_pub = rospy.Publisher('/global_path',Path, queue_size = 1)
-        #self.pin_point_pub = rospy.Publisher('/pinpoints_cp', PointCloud, queue_size=1)
+        self.pin_point_pub = rospy.Publisher('/pinpoints_cp', PointCloud, queue_size=1)
+        self.road_point_pub = rospy.Publisher('/road_point', String, queue_size=10)
+
+        self.node_path_pub = rospy.Publisher('/node_path', String, queue_size = 1)
+        self.link_path_pub = rospy.Publisher('/link_path', String, queue_size = 1)
+
+
+        
+        self.proj_latlon = pyproj.Proj(proj='latlong', datum='WGS84')
+        self.proj_UTM = pyproj.Proj(proj='utm', zone=52, ellps='WGS84', preserve_units=True)
+
         #TODO: (1) Mgeo data 읽어온 후 데이터 확인
         load_path = os.path.normpath(os.path.join(current_path, 'lib/mgeo_data/R_KR_PR_Sangam_NoBuildings'))
         mgeo_planner_map = MGeo.create_instance_from_json(load_path)
@@ -57,13 +70,54 @@ class dijkstra_path_pub :
                 pass
 
         #self.global_path_msg = self.calc_dijkstra_path_node(self.start_node, self.end_node)
-        
+    
+
         rate = rospy.Rate(10) # 10hz
         while not rospy.is_shutdown():
             if self.is_global_path == False : continue
             self.global_path_pub.publish(self.global_path_msg)
+            #self.publish_road_points(self.global_path_msg)
             rate.sleep()
+    '''
+    def navsat_callback(self, gps_msg):
+
+        #self.lat = gps_msg.latitude
+        #self.lon = gps_msg.longitude
+        self.e_o = gps_msg.eastOffset
+        self.n_o = gps_msg.northOffset
+
+        self.is_gps=True
+    '''
+    '''
+    def publish_road_points(self, path_msg):
+        road_points_str = ""
+        for pose in path_msg.poses:
+            x, y = pose.pose.position.x+313008.5581900857, pose.pose.position.y+4161698.628368007
+            #lon, lat = transform(self.proj_UTM, self.proj_WGS84, pp_utm_x, pp_utm_y)
+            #lon_W, lat_W = self.proj_UTM(x, y, inverse = True)
+            #transformer = pyproj.Transformer.from_proj(self.proj_UTM, self.proj_latlon, always_xy=True)
+            #lon, lat = self.proj_UTM(x, y, inverse = True)
+            road_points_str += "{}, {}; ".format(x, y)
+        self.road_point_pub.publish(road_points_str)
+        313008.5581900857
+        4161698.628368007
+    '''
+    def publish_road_points(self, path_msg):
+        road_points_str = ""
+        
+        # 짝수 인덱스의 좌표만 선택하여 사용합니다.
+        for idx, pose in enumerate(path_msg.poses):
+            if idx % 30 == 0:
+                x, y = pose.pose.position.x+313008.5581900857, pose.pose.position.y+4161698.628368007
+                road_points_str += "{:.6f}, {:.6f}; ".format(x, y)
+        
+        self.road_point_pub.publish(road_points_str)
+
     
+    
+
+
+
     def pinpoint_list_callback(self, msg):
         pinpoints_cp = PointCloud()
         pinpoints_cp.header.frame_id='map'
@@ -99,6 +153,7 @@ class dijkstra_path_pub :
 
         self.pin_point_pub.publish(pinpoints_cp)
         print(f"total cost : {self.total_total_cost}")
+        self.publish_road_points(self.global_path_msg)
         self.is_global_path = True
 
 
@@ -110,15 +165,22 @@ class dijkstra_path_pub :
         out_path = Path()
         out_path.header.frame_id = '/map'
 
-        '''
-        print("node list")
+        node_msg = ''
         for node in path['node_path']:
-            print(node)
+            node_msg += f" {node}"
+        self.node_path_pub.publish(node_msg)
+        #print(node_msg)
 
-        print("link likst")
+        link_msg = ''
         for link in path['link_path']:
-            print(link)
-        '''
+            idx = link.find('-')
+            if idx != -1:
+                link_msg += f" {link[:idx]}"
+                link_msg += f" {link[idx+1:]}"
+            else : link_msg += f" {link}"
+        self.link_path_pub.publish(link_msg)
+
+
 
         self.total_total_cost += path['cost']
 
@@ -140,18 +202,7 @@ class Dijkstra:
         self.lane_change_link_idx = []
 
     def get_weight_matrix(self):
-        #TODO: (3) weight 값 계산
-        '''
-        # weight 값 계산은 각 Node 에서 인접 한 다른 Node 까지의 비용을 계산합니다.
-        # 계산된 weight 값 은 각 노드간 이동시 발생하는 비용(거리)을 가지고 있기 때문에
-        # Dijkstra 탐색에서 중요하게 사용 됩니다.
-        # weight 값은 딕셔너리 형태로 사용 합니다.
-        # 이중 중첩된 딕셔너리 형태로 사용하며 
-        # Key 값으로 Node의 Idx Value 값으로 다른 노드 까지의 비용을 가지도록 합니다.
-        # 아래 코드 중 self.find_shortest_link_leading_to_node 를 완성하여 
-        # Dijkstra 알고리즘 계산을 위한 Node와 Node 사이의 최단 거리를 계산합니다.
-
-        '''
+        
         # 초기 설정
         weight = dict() 
         for from_node_id, from_node in self.nodes.items():
@@ -174,12 +225,7 @@ class Dijkstra:
         return weight
 
     def find_shortest_link_leading_to_node(self, from_node,to_node):
-        """현재 노드에서 to_node로 연결되어 있는 링크를 찾고, 그 중에서 가장 빠른 링크를 찾아준다"""
-        #TODO: (3) weight 값 계산
-        '''
-        # 최단거리 Link 인 shortest_link 변수와
-        # shortest_link 의 min_cost 를 계산 합니다.
-        '''
+
         connected_links = from_node.get_to_links()
         shortest_link = None
         min_cost = 21e8
@@ -203,9 +249,7 @@ class Dijkstra:
         return min_idx
 
     def find_shortest_path(self, start_node_idx, end_node_idx): 
-        #TODO: (4) Dijkstra Path 초기화 로직
-        # s 초기화         >> s = [False] * len(self.nodes)
-        # from_node 초기화 >> from_node = [start_node_idx] * len(self.nodes)
+       
 
         s = dict()
         from_node = dict() 
@@ -258,13 +302,13 @@ class Dijkstra:
         #TODO: (9) point path 생성
         point_path = []        
         for i, link_id in enumerate(link_path):
-
             if link_id.find('-') == -1:
                 link = self.links[link_id]
                 link_max_speed = link.max_speed
                 for point in link.points:
                     point_path.append([point[0], point[1], link_max_speed])
             else: #change lane link
+
                 links = link_id.split('-')
                 from_link = self.links[links[0]]
                 from_link_max_speed = from_link.max_speed
@@ -272,6 +316,10 @@ class Dijkstra:
                 to_link_max_speed = to_link.max_speed
                 len_from_link = len(from_link.points)
                 len_to_link = len(to_link.points)
+                
+
+                # End Point 까지의 길이를 Point 간 간격으로 나눠 필요한 Point 의 수를 계산한다.
+                # 계산된 Point 의 숫자 만큼 X 좌표를 생성한다.
 
                 # five points of from_link 
                 for j in range(5):
@@ -279,16 +327,15 @@ class Dijkstra:
 
                 # points of third-order curve
                 start_point_num = 3
-                end_point_num = 10
+                end_point_num = 50
                 lane_change_path = self.get_lane_chage_path(from_link, to_link, start_point_num, end_point_num)
                 point_path.extend(lane_change_path)
                 # remains points of to_link
                 for j in range(end_point_num, len_to_link):
                     point_path.append([to_link.points[j][0],to_link.points[j][1],to_link_max_speed])
-
-
                 
         return True, {'node_path': node_path, 'link_path':link_path, 'point_path':point_path, 'cost' : total_cost}
+
 
 
     def get_lane_chage_path(self, from_link, to_link, start_point_num, end_point_num):
