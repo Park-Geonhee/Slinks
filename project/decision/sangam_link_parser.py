@@ -17,6 +17,9 @@ class LinkParser:
     def __init__(self):
         rospy.init_node('LinkParser', anonymous=True)
         rospy.Subscriber("/odom", Odometry, self.odom_callback)
+        rospy.Subscriber("/link_path", String, self.link_path_callback)
+        rospy.Subscriber("/node_path", String, self.node_path_callback)
+        
         self.link_info_pub = rospy.Publisher("link_info", custom_link_parser, queue_size=1)
 
         # get Mgeo data
@@ -30,11 +33,23 @@ class LinkParser:
         self.links = link_set.lines
 
         self.is_odom = False
+        self.is_node_path = False
+        self.is_link_path = False
+        self.is_node_path_set  = False
+        self.is_link_path_set  = False
 
         while True:
-            if self.is_odom == True : break
-            else : #rospy.loginfo("Waiting odometry data")
-                pass
+            if self.is_odom == True and self.is_node_path == True and self.is_link_path == True:
+                
+                self.node_path = self.node_path.split(' ')
+                self.node_path.pop(0)
+                self.is_node_path_set = True
+
+                self.link_path = self.link_path.split(' ')
+                self.link_path.pop(0)
+                self.is_link_path_set = True
+                break
+
         rate = rospy.Rate(20)
         while not rospy.is_shutdown():
             
@@ -61,17 +76,26 @@ class LinkParser:
         self.x = msg.pose.pose.position.x
         self.y = msg.pose.pose.position.y
         
+    def link_path_callback(self, msg):
+        self.is_link_path = True
+        self.link_path = msg.data
+
+    def node_path_callback(self, msg):
+        self.is_node_path = True
+        self.node_path = msg.data
+        
     def find_near_3_nodes(self):
         result = [[21e8, Node()], [21e8, Node()], [21e8, Node()]]
         
-        for node_idx, node in self.nodes.items():
+        for node_idx in self.node_path:
+            node = self.nodes[node_idx]
             if (self.x - node.point[0]>100) or (self.y-node.point[1])>100 : continue
             ddist = pow(self.x - node.point[0],2) + pow(self.y - node.point[1],2)
             if ddist < result[2][0]:
                 result[2] = [ddist, node]
                 result.sort(key=lambda x:x[0])
         return result
-            
+
     def find_current_link(self):
         # 1. find nearest node
         near_nodes = self.find_near_3_nodes()
@@ -114,11 +138,8 @@ class LinkParser:
         
         left_link = current_link.lane_ch_link_left
         right_link = current_link.lane_ch_link_right
-
-        #print(f"left : {left_link.idx}")
-        #print(left_link.can_move_left_lane)
-        # if left_link == None:
-            # print(left_link)          
+        #print(current_link.idx)
+        #print(right_link.idx)
         
         if left_link != None:
             result[2] = current_link.can_move_left_lane
@@ -138,6 +159,8 @@ class LinkParser:
                 if right3_link != None:
                     result[5] = right2_link.can_move_right_lane
 
+
+        #print(f"in parser : {result}")
         return result
 
 if __name__ == '__main__':

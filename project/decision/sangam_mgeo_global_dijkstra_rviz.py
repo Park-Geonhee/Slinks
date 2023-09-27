@@ -23,6 +23,7 @@ class dijkstra_path_pub :
         rospy.init_node('dijkstra_path_pub', anonymous=True)
 
         self.global_path_pub = rospy.Publisher('/global_path',Path, queue_size = 1)
+        self.node_path_pub = rospy.Publisher('/node_path', String, queue_size = 1)
         self.link_path_pub = rospy.Publisher('/link_path', String, queue_size = 1)
 
         rospy.Subscriber('/move_base_simple/goal', PoseStamped, self.goal_callback)
@@ -98,8 +99,11 @@ class dijkstra_path_pub :
         out_path.header.frame_id = '/map'
 
         print("node list")
+        node_msg = ''
         for node in path['node_path']:
-            print(node)
+            node_msg += f" {node}"
+        self.node_path_pub.publish(node_msg)
+
 
         print("link list")
         link_msg = ''

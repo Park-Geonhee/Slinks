@@ -49,7 +49,7 @@ class pure_pursuit :
         self.before_waypoint = 0
         self.vehicle_length = 2.6
         self.lfd = 8
-        self.min_lfd=6
+        self.min_lfd=5
         self.max_lfd=30
         self.lfd_gain = 0.78
         self.target_velocity = 60
