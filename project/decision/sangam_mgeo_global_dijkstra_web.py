@@ -144,7 +144,6 @@ class dijkstra_path_pub :
             self.target_node_list.append(nearest_node)
         self.is_node_list = True
 
-        print(self.target_node_list)
         self.global_path_msg.poses = []
         for i in range(len(self.target_node_list)-1):
             now_path = Path()
@@ -169,7 +168,6 @@ class dijkstra_path_pub :
         for node in path['node_path']:
             node_msg += f" {node}"
         self.node_path_pub.publish(node_msg)
-        #print(node_msg)
 
         link_msg = ''
         for link in path['link_path']:

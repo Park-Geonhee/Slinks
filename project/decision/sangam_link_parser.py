@@ -59,7 +59,6 @@ class LinkParser:
             current_link_data = self.links[current_link.idx]
             stop_line_point, is_on_stop_line, next_drive = self.find_stop_line(current_link_data)
             possible_lattice_pathes = self.find_possible_lattice_pathes(current_link_data)
-            print(next_drive)
             # set msg
             link_info_msg = custom_link_parser()
             link_info_msg.link_idx = current_link.idx
@@ -118,7 +117,6 @@ class LinkParser:
                 if ddist < min_ddist:
                     min_ddist = ddist
                     current_link = link
-        print(current_link.idx)
         return current_link
     '''
     def find_stop_line(self, current_link):
@@ -146,7 +144,7 @@ class LinkParser:
         current_link_num = 0
         
         # link path 에서 현재 링크가 몇 번째 인덱스인지 탐색
-        for num, link in enumerate(self.link_path):
+        for num, link in enumerate(self.link_path_list):
             if link == current_link_idx:
                 current_link_num = num
                 break
@@ -158,7 +156,6 @@ class LinkParser:
             # 경로 상 다음 링크가 있는지 확인
             try:
                 next_to_link_idx = self.link_path_list[current_link_num + 1]
-                print(next_to_link_idx)
             # 없으면 현재 링크의 정지선만 바로 리턴
             except:
                 return stop_line_point, is_on_stop_line, next_drive
@@ -174,7 +171,6 @@ class LinkParser:
                 next_toto_link_idx = self.link_path_list[current_link_num + 2]
             except:
                 return stop_line_point, is_on_stop_line, next_drive
-            #print(next_to_link_idx)
             next_to_link = self.links[next_to_link_idx]
 
             next_to_node = next_to_link.get_to_node()
@@ -194,8 +190,6 @@ class LinkParser:
         
         left_link = current_link.lane_ch_link_left
         right_link = current_link.lane_ch_link_right
-        #print(current_link.idx)
-        #print(right_link.idx)
         
         if left_link != None:
             result[2] = current_link.can_move_left_lane
@@ -216,7 +210,6 @@ class LinkParser:
                     result[5] = right2_link.can_move_right_lane
 
 
-        #print(f"in parser : {result}")
         return result
 
 if __name__ == '__main__':

@@ -69,12 +69,11 @@ class pure_pursuit :
                 self.link_path = self.link_path.split(' ')
                 self.link_path.pop(0)
                 self.is_link_path_set = True
-                #print(self.link_path)
                 break
 
 
         self.pid = pidControl()
-        self.adaptive_cruise_control = AdaptiveCruiseControl(velocity_gain = 0.5, distance_gain = 1, time_gap = 2, vehicle_length = 2.7, is_on_stop_line = self.link_info.is_on_stop_line, link_info = self.link_info)
+        self.adaptive_cruise_control = AdaptiveCruiseControl(velocity_gain = 0.5, distance_gain = 1, time_gap = 2, vehicle_length = 2.7, link_info = self.link_info)
         self.vel_planning = velocityPlanning(self.target_velocity/3.6, 0.15)
         
         #setting for traffic light from sim
@@ -132,7 +131,7 @@ class pure_pursuit :
                     rospy.loginfo("no found forward point")
                     self.ctrl_cmd_msg.steering=0.0
 
-                self.adaptive_cruise_control.is_on_stop_line = self.link_info.is_on_stop_line
+                self.adaptive_cruise_control.link_info = self.link_info
                 self.adaptive_cruise_control.check_object(self.path ,global_npc_info, local_npc_info
                                                                     ,global_ped_info, local_ped_info
                                                                     ,global_obs_info, local_obs_info
@@ -263,7 +262,6 @@ class pure_pursuit :
                 local_tl_info = [[local_result[0][0], local_result[1][0]],
                                 self.traffic_light_info.trafficLightType, self.traffic_light_info.trafficLightStatus]
 
-        #print(f"traffic light : {cur_traffic_light_index}")
 
         num_of_object = self.all_object.num_of_npcs + self.all_object.num_of_obstacle + self.all_object.num_of_pedestrian + 1
         if num_of_object > 0:
@@ -465,7 +463,7 @@ class velocityPlanning:
         return out_vel_plan
 
 class AdaptiveCruiseControl:
-    def __init__(self, velocity_gain, distance_gain, time_gap, vehicle_length, is_on_stop_line, link_info):
+    def __init__(self, velocity_gain, distance_gain, time_gap, vehicle_length, link_info):
         self.npc_vehicle=[False,0]
         self.object=[False,0]
         self.Person=[False,0]
@@ -474,7 +472,6 @@ class AdaptiveCruiseControl:
         self.distance_gain = distance_gain
         self.time_gap = time_gap
         self.vehicle_length = vehicle_length
-        self.is_on_stop_line = is_on_stop_line
         self.link_info = link_info
         self.object_type = None
         self.object_distance = 0
@@ -545,7 +542,6 @@ class AdaptiveCruiseControl:
                     rel_distance = sqrt(pow(local_tl_info[0][0], 2) + pow(local_tl_info[0][1], 2))           
                     if rel_distance < min_rel_distance:
                         min_rel_distance = rel_distance
-                        #print(global_tl_info)               
                         self.tl=[True,0]
     
     def get_target_velocity(self, local_npc_info, local_ped_info, local_obs_info, local_tl_info, ego_vel, target_vel): 
@@ -605,13 +601,11 @@ class AdaptiveCruiseControl:
             '''
 
         if self.tl[0]: #ACC ON_traffic_light
-            #print("ACC ON Traffic light")
-            #print(f"local_tl_info : {local_tl_info[2]}")
             # 정지선이 있으면
-            if self.is_on_stop_line:
+            if self.link_info.is_on_stop_line:
                 # 좌회전일 경우
                 if self.link_info.next_drive.find("left") != -1:
-                    if (((local_tl_info[2]>>5)&1) == 1):
+                    if (((local_tl_info[2]>>5)&1) == 0):
                         dis_safe = ego_vel * time_gap*0.25 + default_space - 2
                         dis_rel = sqrt(pow(local_tl_info[0][0],2) + pow(local_tl_info[0][1],2))            
                         vel_rel=(0 - ego_vel)                        
@@ -637,7 +631,6 @@ class AdaptiveCruiseControl:
         
         out_vel = min(out_vel, target_vel) * 3.6
 
-        #print("now Target_vel = ", out_vel)
         
         return out_vel
 

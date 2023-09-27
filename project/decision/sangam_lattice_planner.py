@@ -41,8 +41,6 @@ class latticePlanner:
                     lattice_path_index = self.collision_check(self.object_data, lattice_path)
 
                     #TODO: (7) lattice 경로 메세지 Publish
-                    #print(lattice_path_index)
-                    #print(lattice_path)
                     if lattice_path_index != -1:
                         self.lattice_path_pub.publish(lattice_path[lattice_path_index])
                     else:
@@ -80,8 +78,6 @@ class latticePlanner:
         for i in range(len(lane_weight)):
             if self.link_info.possible_lattice_pathes[i] == False:
                 lane_weight[i] = int(21e8)
-        print(self.link_info.possible_lattice_pathes)
-        print(lane_weight)
     
         #if self.link_info.possible_lattice_pathes[i] == False
 
@@ -95,8 +91,6 @@ class latticePlanner:
         
         
         selected_lane = lane_weight.index(min(lane_weight))     
-        # print(self.link_info.possible_lattice_pathes) 
-        # print(selected_lane)              
         return selected_lane
 
     def path_callback(self,msg):
@@ -253,7 +247,6 @@ class latticePlanner:
                 # 해당 경로를 발행
                 globals()['lattice_pub_{}'.format(i+1)].publish(out_path[i])
         
-        # print(f"out path : {len(out_path)}")
         return out_path
 
 if __name__ == '__main__':
