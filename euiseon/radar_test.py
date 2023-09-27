@@ -117,7 +117,7 @@ def get2GlobalMat(yaw, x, y, z):
     return trans_matrix
 
 # Path = "$HOME/catkin_ws/src/ssafy_ad/S09P22A701/project/perception/yolov5"
-Path = ""
+Path = "yolov5"
 class RadarObject:
     def __init__(self):
         rospy.Subscriber('/radar', RadarDetections, self.radar_callback)
@@ -289,9 +289,9 @@ class RadarObject:
             if is_first == True :
                 detection_list.obstacle_list.append(detection_wrt_vehicle)
                 
-            # projection_image = self.draw_point_to_image(self.image, image_xy[0], image_xy[1])
-            # cv2.imshow("image", projection_image)
-            # cv2.waitKey(1)
+            projection_image = self.draw_point_to_image(self.image, image_xy[0], image_xy[1])
+            cv2.imshow("image", projection_image)
+            cv2.waitKey(1)
         self.origin_detection_list = detection_list
         self.origin_detection_list.header.stamp = time.gmtime()
         self.object_pub.publish(self.origin_detection_list)
