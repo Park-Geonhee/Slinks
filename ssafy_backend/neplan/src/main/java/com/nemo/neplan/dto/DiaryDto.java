@@ -13,14 +13,15 @@ public class DiaryDto {
     private String content;
     private User user;
     private Place place;
-    private File file;
+//    private File file;
+    //, File file
 
-    public DiaryDto(Long id, String content, User user, Place place, File file) {
+    public DiaryDto(Long id, String content, User user, Place place) {
         this.id = id;
         this.content = content;
         this.user = user;
         this.place = place;
-        this.file = file;
+//        this.file = file;
     }
 
     // Getter 및 Setter 메소드들
@@ -57,13 +58,13 @@ public class DiaryDto {
         this.place = place;
     }
 
-    public File getFile() {
-        return file;
-    }
-
-    public void setFile(File file) {
-        this.file = file;
-    }
+//    public File getFile() {
+//        return file;
+//    }
+//
+//    public void setFile(File file) {
+//        this.file = file;
+//    }
 
 
     //수정할 때 다이어리의 이미지 아이디를 저장하는 리스트
@@ -74,7 +75,7 @@ public class DiaryDto {
 
     //일기 수정시에 사용함
     public Diary toEntity(){
-        return new Diary(id, content, user, place, file);
+        return new Diary(id, content, user, place);
     }
 
 }
