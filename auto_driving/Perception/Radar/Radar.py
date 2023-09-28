@@ -84,6 +84,7 @@ def get2CameraMat(r_pos, r_rpy, c_pos, c_rpy):
     radar2vehicle = get2VehicleMat(r_pos, r_rpy)
     camera2vehicle= get2VehicleMat(c_pos, c_rpy)
     vehicle2camera = inv(camera2vehicle)
+    # mat = radar2vehicle.dot(vehicle2camera)
     mat = vehicle2camera.dot(radar2vehicle)
     return mat
 
@@ -283,9 +284,9 @@ class Radar:
             if is_first == True :
                 detection_list.obstacle_list.append(detection_wrt_vehicle)
                 
-            # projection_image = self.draw_point_to_image(image, image_xy[0], image_xy[1])
-            # cv2.imshow("test",projection_image)
-            # cv2.waitKey(1)
+            projection_image = self.draw_point_to_image(image, image_xy[0], image_xy[1])
+            cv2.imshow("test",projection_image)
+            cv2.waitKey(1)
         # self.object_pub.publish(self.origin_detection_list)
         return detection_list
 
