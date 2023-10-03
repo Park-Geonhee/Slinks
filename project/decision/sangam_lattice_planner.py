@@ -88,14 +88,12 @@ class latticePlanner:
                     if dis < 1.5:
                         lane_weight[path_num] = lane_weight[path_num] + 100
         
-        
-        
         selected_lane = lane_weight.index(min(lane_weight))     
         return selected_lane
 
     def path_callback(self,msg):
         self.is_path = True
-        self.local_path = msg  
+        self.local_path = msg
         
     def status_callback(self,msg): ## Vehicl Status Subscriber 
         self.is_status = True
@@ -108,7 +106,6 @@ class latticePlanner:
     def get_link_info_callback(self,msg):
         self.is_link_info = True
         self.link_info = msg
-        
 
     def latticePlanner(self,ref_path, vehicle_status):
         out_path = []
@@ -242,11 +239,11 @@ class latticePlanner:
                 if self.link_info.possible_lattice_pathes[i] == False: continue
                 globals()['lattice_pub_{}'.format(i+1)] = rospy.Publisher('/lattice_path_{}'.format(i+1), Path, queue_size=1)
                 out_path[i].header.frame_id = 'map'
-               
 
                 # 해당 경로를 발행
                 globals()['lattice_pub_{}'.format(i+1)].publish(out_path[i])
-        
+
+        print(len(out_path))
         return out_path
 
 if __name__ == '__main__':

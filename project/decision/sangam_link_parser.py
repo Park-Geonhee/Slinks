@@ -116,6 +116,7 @@ class LinkParser:
                 if ddist < min_ddist:
                     min_ddist = ddist
                     current_link = link
+
         return current_link
     '''
     def find_stop_line(self, current_link):
