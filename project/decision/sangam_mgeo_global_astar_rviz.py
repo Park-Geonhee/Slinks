@@ -134,11 +134,11 @@ class Astar:
         self.weight = self.get_weight_matrix()
         self.lane_change_link_idx = []
 
-    class Node:
+    class MyNode:
         def __init__(self, parent = None, id = None, node = None):
             self.parent = parent
             self.id = id
-            self.position = [node["point"][0], node["point"][1]]
+            self.position = [node.point[0], node.point[1]]
 
             self.g = 0
             self.h = 0
@@ -234,8 +234,8 @@ class Astar:
                         from_node[to_node_idx] = selected_node_idx
         '''
         # 시작 노드, 끝 노드의 Node 객체 생성
-        startNode = Node(None, start_node_idx, self.nodes[start_node_idx])
-        endNode = Node(None, end_node_idx, self.nodes[end_node_idx])
+        startNode = self.MyNode(None, start_node_idx, self.nodes[start_node_idx])
+        endNode = self.MyNode(None, end_node_idx, self.nodes[end_node_idx])
         
         # openList, closedList 초기화
         openList = []
@@ -246,7 +246,7 @@ class Astar:
 
         # openList가 빌 때까지 무한루프
         while openList:
-            
+            print(len(openList))
             # 현재 노드 지정
             currentNode = openList[0]
             currentIdx = 0
@@ -260,13 +260,13 @@ class Astar:
 
             # openList 에서 제거하고 closedList 에 추가
             openList.pop(currentIdx)
-            closedList.append(currentNode)
+            closedList.append(currentNode.id)
 
             # 현재 노드가 목적지면 current.position 추가
             # current의 부모로 이동
             # current 부모를 역추적하며
             # node path 경로 생성, 반복문 탈출
-            if currentNode == endNode:
+            if currentNode.id == endNode.id:
                 path = []
                 current = currentNode
                 while current is not None:
@@ -280,13 +280,13 @@ class Astar:
             for nextIdx, nextVal in self.weight[currentNode.id].items():
                 if nextVal == float('inf'):
                     continue
-                new_node = Node(currentNode, nextIdx, self.nodes[nextIdx])
+                new_node = self.MyNode(currentNode, nextIdx, self.nodes[nextIdx])
                 children.append(new_node)
             
             # 자식들 모두 검사
             for child in children:
                 # 자식이 closedList에 있으면 continue
-                if child in closedList:
+                if child.id in closedList:
                     continue
                 # f, g, h 값 업데이트
                 child.g = currentNode.g + self.weight[currentNode.id][child.id]
