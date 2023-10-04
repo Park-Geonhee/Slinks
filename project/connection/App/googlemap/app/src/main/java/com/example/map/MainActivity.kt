@@ -136,6 +136,10 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
                             println("$points")
                             // 경로를 그리기 위한 PolylineOptions 객체 생성
                             val polylineOptions = PolylineOptions()
+
+                            val skippedPoints = 2
+                            var count = 0
+
                             for (point in points) {
                                 val coordinates = point.trim().split(",")
                                 if (coordinates.size == 2) {
@@ -143,13 +147,19 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
                                     val northing = coordinates[1].trim().toDouble()
                                     val latLng = convertUTMToLatLong(easting, northing, "52") // replace "33T" with your UTM zone if different
                                     //println("$latLng")
+                                    //if (count >= skippedPoints) {
+                                        //polylineOptions.add(latLng)
+                                    //}
+
                                     polylineOptions.add(latLng)
                                     pointList.add(latLng)
-                                    println("Received latLngList: $pointList")
+                                   // count += 1
+
 
                                     //println("add latlong to polyline")
                                 }
                             }
+                            println("Received latLngList: $pointList")
                             println("$polylineOptions")
                             polylineOptions.color(ContextCompat.getColor(this@MainActivity, android.R.color.holo_red_dark))
                             polylineOptions.width(10f)
@@ -203,7 +213,9 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
 
         val messageData = JSONObject()  // 메시지 형식을 {data: (string)}의 json형식으로 보낸다
         //messageData.put("data", pointList.joinToString(",")) // 위도와 경도를 쉼표로 구분한 문자열로 변환
-        messageData.put("data", "37.582011495162206, 126.88994707387491,37.5809249336608, 126.88417050346895, 37.58008498101408, 126.88719808863462")
+        //messageData.put("data", pointList.joinToString(",") { "${it.latitude},${it.longitude}" })
+
+        messageData.put("data", "37.582011495162206, 126.88994707387491,37.5809249336608, 126.88417050346895, 37.579406885912356, 126.88830023397516")
 
         dataJson.put("msg", messageData)
 

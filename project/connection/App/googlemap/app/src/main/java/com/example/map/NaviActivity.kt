@@ -264,6 +264,20 @@ class NaviActivity : AppCompatActivity(), OnMapReadyCallback {
         }
 
          */
+        /*
+        latLngList?.let { list ->
+
+            if (list.size > 2) { // 리스트에 최소 3개의 좌표가 있는 경우만 처리
+                val sublist = list.subList(2, list.size) // 앞의 두 좌표를 제외한 새로운 리스트 생성
+                val polylineOptions = PolylineOptions()
+                polylineOptions.addAll(sublist)
+                polylineOptions.width(20f)
+                polylineOptions.color(ContextCompat.getColor(this, android.R.color.holo_red_dark))
+                googleMap.addPolyline(polylineOptions)
+            }
+
+        }
+         */
         latLngList?.let { list ->
             val polylineOptions = PolylineOptions()
             polylineOptions.addAll(list)
@@ -271,6 +285,7 @@ class NaviActivity : AppCompatActivity(), OnMapReadyCallback {
             polylineOptions.color(ContextCompat.getColor(this, android.R.color.holo_red_dark))
             googleMap.addPolyline(polylineOptions)
         }
+
         initWebSocket()
     }
     /*
