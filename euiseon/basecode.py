@@ -5,6 +5,8 @@ import torch
 import cv2
 import rospy
 import numpy as np
+import time
+import os
 from sensor_msgs.msg import CompressedImage
 
 # Model
@@ -21,7 +23,7 @@ from sensor_msgs.msg import CompressedImage
 # results.print()
 # results.show()
 # results.save()  # or .show()
-Path = "/home/euiseon/catkin_ws/src/ssafy_ad/S09P22A701/project/perception/yolov5"
+Path = os.path.dirname(os.path.realpath(__file__)) + "/yolov5/"
 class YoloObject :
     def __init__(self):
         self.model = torch.hub.load(Path,'custom','yolov5n.pt', source='local')  # or yolov5n - yolov5x6, custom
@@ -31,8 +33,10 @@ class YoloObject :
         while not rospy.is_shutdown():
             if self.image is not None:
                 results =self.model(self.image)
-                print(results.pandas().xyxy[0]["xmin"][0])
-                print(results.pandas().xyxy[0]["xmax"])                    
+                results.show()
+                time.sleep(1000)
+                # print(results.pandas().xyxy[0]["xmin"][0])
+                # print(results.pandas().xyxy[0]["xmax"])                    
             rate.sleep()
 
     def callback(self, msg):

@@ -61,6 +61,14 @@ public class PlaceController {
         }
     }
 
+    @GetMapping("/search")
+    public List<Place> searchPlaces(@RequestParam String keyword) {
+        // 검색어를 이용하여 PlaceService의 메서드 호출
+        return placeService.searchPlaceByKeyword(keyword);
+    }
+
+
+
 
 
 

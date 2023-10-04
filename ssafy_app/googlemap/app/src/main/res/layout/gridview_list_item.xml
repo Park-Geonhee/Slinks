@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="5dp"
+        android:layout_marginBottom="10dp">
+
+        <ImageView
+            android:id="@+id/list_thumbnail"
+            android:layout_width="178dp"
+            android:layout_height="148dp"
+            android:src="@drawable/root5" />
+
+        <TextView
+            android:id="@+id/list_name"
+            android:layout_marginLeft="12dp"
+            android:layout_marginTop="12dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="나의 작년이 담긴 갬성 코스"
+            android:textColor="@color/sliknks_white"
+            android:fontFamily="@font/pretendard_bold" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="start|bottom"
+            android:layout_marginBottom="2dp"
+            android:layout_marginLeft="10dp"
+            android:orientation="horizontal">
+
+            <FrameLayout
+                android:id="@+id/btn_list_start_guide"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:background="@drawable/list_btn">
+
+                <ImageView
+                    android:layout_marginLeft="2dp"
+                    android:layout_marginBottom="2dp"
+                    android:layout_gravity="center"
+                    android:layout_width="16dp"
+                    android:layout_height="12dp"
+                    android:src="@drawable/list_play" />
+
+            </FrameLayout>
+
+            <FrameLayout
+                android:id="@+id/btn_list_detail"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:layout_marginBottom="10dp"
+                android:layout_marginStart="10dp"
+                android:background="@drawable/list_btn">
+
+                <ImageView
+                    android:layout_marginBottom="2dp"
+                    android:layout_gravity="center"
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:src="@drawable/list_plus" />
+
+            </FrameLayout>
+        </LinearLayout>
+    </FrameLayout>
+</LinearLayout>

@@ -7,8 +7,10 @@ import java.util.List;
 
 public interface FileService {
   //파일업로드
-    String uploadFiles(String uploadPath, String originalName, byte[] fileData) throws Exception;
+   Long uploadFiles(MultipartFile file) throws Exception;
     void deleteFile(String filePath) throws Exception;
+
+    File getFileById(long id);
 
 
 }

@@ -30,7 +30,6 @@ class TrafficLight:
             traffic_light_data = traffic_datas.iloc[maxidx]
             return traffic_light_data
         except:
-            print(traffic_datas)
             return None
 
     ## Find Traffic Light Status with HSV
@@ -39,7 +38,7 @@ class TrafficLight:
         if(traffic_light_data is None):
             return 0
         
-        image = img[int(traffic_light_data["ymin"]):int(traffic_light_data["ymax"]),int(traffic_light_data["xmin"]):int(traffic_light_data["xmax"])]
+        image = img[int(traffic_light_data["ymin"])+3:int(traffic_light_data["ymax"])-3,int(traffic_light_data["xmin"])+5:int(traffic_light_data["xmax"])-5]
         hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
             
         red_mask = cv2.inRange(hsv, self.lower_red, self.upper_red)
@@ -59,6 +58,7 @@ class TrafficLight:
             flag+=2
         if np.any(yellow_areas):
             flag+=4
+
         return flag
 
     ## Return Traffic Light Status

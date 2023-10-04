@@ -14,6 +14,10 @@ public interface PlaceService {
     public Place modifyPlace(Place place);
     public int deletePlace(long id);
 
+    public Place searchAndSavePlace(String keyword);
     List<Place> searchByAddress(String address);
+
+    public
+    List<Place> searchPlaceByKeyword(String keyword);
 
 }
