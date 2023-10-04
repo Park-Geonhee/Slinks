@@ -31,17 +31,7 @@ parameters_lidar = {
 }
 
 def getRotMat(RPY):        
-    #TODO: (2.1.1) Rotation Matrix 계산 함수 구현
-    
-    # Rotation Matrix를 계산하는 영역입니다.
-    # 각 회전에 대한 Rotation Matrix를 계산하면 됩니다.
-    # Input
-        # RPY : sensor orientation w.r.t vehicle. (Roll, Pitch, Yaw)
-    # Output
-        # rotMat : 3x3 Rotation Matrix of sensor w.r.t vehicle.
-    # Tip : math, numpy
-    # reference : https://msl.cs.uiuc.edu/planning/node102.html   
-
+    print('RPY',RPY) 
     cosR = math.cos(RPY[0])
     cosP = math.cos(RPY[1])
     cosY = math.cos(RPY[2])
@@ -60,7 +50,7 @@ def getRotMat(RPY):
                       [0, 0, 1]])
 
     rotMat = rotYaw.dot(rotPitch.dot(rotRoll))    
-
+    print('rotMat',rotMat)
     return rotMat
 
 def getSensorToVehicleMat(sensorRPY, sensorPosition): # 4x4
@@ -74,46 +64,21 @@ def getSensorToVehicleMat(sensorRPY, sensorPosition): # 4x4
     sensorTranslationMat[:3,3] = insert_col
     for i in range(4):
         sensorTranslationMat[i, i] = 1
-    # print("Rot",sensorRotationMat)
-    # print("Tr",sensorTranslationMat)
-    Tr_sensor_to_vehicle = sensorTranslationMat.dot(sensorRotationMat)
 
-    # sensorRotationMat = getRotMat(sensorRPY)
-    # sensorTranslationMat = np.array([sensorPosition])
-    # Tr_sensor_to_vehicle = np.concatenate((sensorRotationMat,sensorTranslationMat.T),axis = 1)
-    # Tr_sensor_to_vehicle = np.insert(Tr_sensor_to_vehicle, 3, values=[0,0,0,1],axis = 0)
-    
-    # print("sensorToveh",Tr_sensor_to_vehicle)
+    Tr_sensor_to_vehicle = sensorTranslationMat.dot(sensorRotationMat)
     return Tr_sensor_to_vehicle
 
 def getLiDARTOCameraTransformMat(camRPY, camPosition, lidarRPY, lidarPosition):
     #TODO: (2.2) LiDAR to Camera Transformation Matrix 계산
     # LiDAR to Camera Transformation Matrix를 계산하는 영역입니다.
-    # 아래 순서대로 계산하면 됩니다.
-        # 1. LiDAR to Vehicle Transformation Matrix 계산        
-        # 2. Camera to Vehicle Transformation Matrix 계산
-        # 3. Vehicle to Camera Transformation Matrix 계산
-        # 3. LiDAR to Camera Transformation Matrix 계산
-    # Input
-        # camRPY : Orientation
-        # camPosition
-        # lidarRPY
-        # lidarPosition
-    # Output
-        # Tr_lidar_to_cam
-    # Tip : getSensorToVehicleMat, inv 사용 필요
-    # inv : matrix^-1
-
-    # lidar = np.array([1.58,-0.01,1.07,1])
+    # 아래  
     Tr_lidar_to_vehicle = getSensorToVehicleMat(lidarRPY, lidarPosition)
     # print("lidar X Tr_lidar_to_vehicle",lidar.dot(Tr_lidar_to_vehicle))
     Tr_cam_to_vehicle = getSensorToVehicleMat(camRPY, camPosition)
     Tr_vehicle_to_cam = inv(Tr_cam_to_vehicle)
-    print("v to c", Tr_vehicle_to_cam)
-    exit(1)
     Tr_lidar_to_cam = Tr_vehicle_to_cam.dot(Tr_lidar_to_vehicle)
     # Tr_lidar_to_cam = np.cross(Tr_lidar_to_vehicle,Tr_vehicle_to_cam)
-    
+ 
     return Tr_lidar_to_cam
 
 
@@ -129,21 +94,9 @@ def getTransformMat(params_cam, params_lidar):
     lidarPosition = np.array([params_lidar.get(i) for i in (["X","Y","Z"])]) + lidarPositionOffset
     lidarRPY = np.array([params_lidar.get(i) for i in (["ROLL","PITCH","YAW"])]) + np.array([0,0,0])   
     Tr_lidar_to_cam = getLiDARTOCameraTransformMat(camRPY, camPosition, lidarRPY, lidarPosition)
-
     return Tr_lidar_to_cam
 
 def getCameraMat(params_cam):
-    #TODO: (3) Intrinsic : Camera Matrix (Camera to Image Plane) 계산
-
-    # Camera의 Intrinsic parameter로 이루어진 Camera Matrix를 계산하는 영역입니다.
-    # Camera의 width, height, fov 값을 활용하여 focal length, principal point를 계산한 뒤,
-    # 이를 조합하여 Camera Matrix를 생성합니다.
-    # Camera Model은 Lens 왜곡이 없는 Pinhole Model임을 참고하시기 바랍니다.
-    # Input
-        # params_cam : camera parameters
-    # Output
-        # CameraMat : 3x3 Intrinsic Matrix(a.k.a. Camera Matrix)    
-
     camera_width = params_cam['WIDTH']
     camera_height = params_cam['HEIGHT']
     fov = params_cam['FOV']
@@ -216,6 +169,7 @@ class LiDARToCameraTransform:
         for point in msg.points:
             point_list.append((point.x, point.y, point.z, 1))
         self.radar_pc = np.array(point_list, np.float32)
+
     #TODO : (5.1) LiDAR Pointcloud to Camera Frame
     # Input
         # pc_lidar : pointcloud data w.r.t. lidar frame
@@ -242,7 +196,7 @@ class LiDARToCameraTransform:
         # print("img after transform2",pc_proj_to_img) # 3
         pc_proj_to_img = np.delete(pc_proj_to_img,np.where(pc_proj_to_img[0,:]>self.width),axis=1)
         pc_proj_to_img = np.delete(pc_proj_to_img,np.where(pc_proj_to_img[1,:]>self.height),axis=1)
-        # print("img after transform",pc_proj_to_img) # 3
+        # print("img after transform3",pc_proj_to_img) # 3
         return pc_proj_to_img
 
     
@@ -262,6 +216,7 @@ if __name__ == '__main__':
     while not rospy.is_shutdown():
 
         # xyz_p = Transformer.pc_np[:, 0:3] # for all rows, 0~2 col datas -> create new array
+        # print("xyz_p",type(xyz_p))
         # xyz_p = np.insert(xyz_p,3,1,axis=1).T # insert value 1 to col 3
         # xyz_p = np.delete(xyz_p,np.where(xyz_p[0,:]<0),axis=1) # for all points, x < 0 -> delete behind vehicle
 
@@ -272,7 +227,7 @@ if __name__ == '__main__':
         # xy_i = xy_i.astype(np.int32)
         # projectionImage = draw_pts_img(Transformer.img, xy_i[0,:], xy_i[1,:])   
         if not len(Transformer.lidar_pc) == 0:
-            # print("lidar_pc", len(Transformer.lidar_pc))
+            print("lidar_pc", len(Transformer.lidar_pc))
             lidar_p = Transformer.lidar_pc[:, 0:3]
             lidar_p = np.insert(lidar_p,3,1,axis=1).T
             lidar_p = Transformer.vehicleToCameraMat.dot(lidar_p) # 4x4
@@ -281,21 +236,16 @@ if __name__ == '__main__':
             lidar_xy = lidar_xy.astype(np.int32)
             
         if not len(Transformer.radar_pc) ==0 :
+            print("radar_pc", len(Transformer.radar_pc))
             radar_p = Transformer.radar_pc[:, 0:3]
-            print("radar to vehicle",radar_p)
             radar_p = np.insert(radar_p,3,1,axis=1).T
             radar_p = Transformer.vehicleToCameraMat.dot(radar_p) # 4x4
-            print("vehicle to camera", radar_p)
             radar_p = np.delete(radar_p, 3, axis=0)
             radar_xy = Transformer.transformCameraToImage(radar_p)
-            print("after image cal",radar_xy)
-            exit(1)
             radar_xy = radar_xy.astype(np.int32)
         if Transformer.img_status == False :
             continue
         projectionImage = draw_pts_img(Transformer.img, lidar_xy[0,:], lidar_xy[1,:],(0,255,0))
-        projectionImage = draw_pts_img(projectionImage, radar_xy[0,:], radar_xy[1,:],(255,0,0))
+        # projectionImage = draw_pts_img(projectionImage, radar_xy[0,:], radar_xy[1,:],(255,0,0))
         cv2.imshow("LidartoCameraProjection", projectionImage)
         cv2.waitKey(1)
-
-

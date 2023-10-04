@@ -203,6 +203,7 @@ class LiDARToCameraTransform:
 
     def lidar_pc_callback(self, msg):
         point_list = []
+        print("received lidar")
         for point in msg.points:
             point_list.append((point.x, point.y, point.z, 1))
         self.lidar_pc = np.array(point_list, np.float32)
@@ -268,7 +269,11 @@ if __name__ == '__main__':
 
         #TODO: (6) PointCloud가 Image에 투영된 Processed Image 시각화
         # xy_i = xy_i.astype(np.int32)
+        
         # projectionImage = draw_pts_img(Transformer.img, xy_i[0,:], xy_i[1,:])   
+        if Transformer.lidar_pc is None :
+            print("get lidar")
+            continue
         obj_p = Transformer.lidar_pc[:, 0:3]
         print("lidar_pc", obj_p)
         obj_p = np.insert(obj_p,3,1,axis=1).T
@@ -282,11 +287,10 @@ if __name__ == '__main__':
         # print("lidar_image_xy",obj_xy)
         obj_xy = obj_xy.astype(np.int32)
         if Transformer.img_status == False :
+            print("get image")
             continue
         projectionImage = draw_pts_img(Transformer.img, obj_xy[0,:], obj_xy[1,:])
-        if cnt >= 10 :
-            cv2.imshow("LidartoCameraProjection", projectionImage)
-            cv2.waitKey(1)
-            cnt=0
-        cnt = cnt + 1
+        cv2.imshow("LidartoCameraProjection", projectionImage)
+        cv2.waitKey(1)
+
 

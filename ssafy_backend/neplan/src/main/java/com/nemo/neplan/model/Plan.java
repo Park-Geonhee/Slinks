@@ -28,7 +28,7 @@ public class Plan implements Serializable {
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "createdDate", "modifiedDate"})
     private User user;
 
-    // File과 관련된 필드 선언
+//     File과 관련된 필드 선언
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "file_id")
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
@@ -94,17 +94,17 @@ public class Plan implements Serializable {
         this.file = file;
     }
 
-    public int getMaxPlaceOrder() {
-        EntityManager entityManager = Persistence.createEntityManagerFactory("your-persistence-unit-name").createEntityManager();
-
-        // 해당 Plan에 속한 PlanPlace 엔티티 중 가장 큰 placeOrder 값을 조회합니다.
-        Query query = entityManager.createQuery("SELECT MAX(pp.placeOrder) FROM PlanPlace pp WHERE pp.plan = :plan");
-        query.setParameter("plan", this);
-
-        Integer maxPlaceOrder = (Integer) query.getSingleResult();
-
-        // maxPlaceOrder 값이 null인 경우(플레이리스트가 비어있는 경우) 0을 반환합니다.
-        return maxPlaceOrder != null ? maxPlaceOrder : 0;
-    }
+//    public int getMaxPlaceOrder() {
+//        EntityManager entityManager = Persistence.createEntityManagerFactory("your-persistence-unit-name").createEntityManager();
+//
+//        // 해당 Plan에 속한 PlanPlace 엔티티 중 가장 큰 placeOrder 값을 조회합니다.
+//        Query query = entityManager.createQuery("SELECT MAX(pp.placeOrder) FROM PlanPlace pp WHERE pp.plan = :plan");
+//        query.setParameter("plan", this);
+//
+//        Integer maxPlaceOrder = (Integer) query.getSingleResult();
+//
+//        // maxPlaceOrder 값이 null인 경우(플레이리스트가 비어있는 경우) 0을 반환합니다.
+//        return maxPlaceOrder != null ? maxPlaceOrder : 0;
+//    }
 
 }

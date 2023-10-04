@@ -10,17 +10,15 @@ public class Place {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    private String name;
+    private String address;
+    private String phone;
 
     private String x;
     private String y;
 
-    private String address;
 
-    // File과 관련된 필드 선언
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "file_id")
-    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-    private File file;
+
 
     @Enumerated(EnumType.STRING) // Enum 타입을 문자열로 저장
     private PlaceType placeType;
@@ -61,15 +59,41 @@ public class Place {
         return address;
     }
 
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public Place() {
+    }
+
+    public Place(String name, String address, String x, String y) {
+        this.name = name;
+        this.address = address;
+        this.x = x;
+        this.y = y;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
     public void setAddress(String address) {
         this.address = address;
     }
 
-    public File getFile() {
-        return file;
-    }
-
-    public void setFile(File file) {
-        this.file = file;
-    }
+//    public File getFile() {
+//        return file;
+//    }
+//
+//    public void setFile(File file) {
+//        this.file = file;
+//    }
 }

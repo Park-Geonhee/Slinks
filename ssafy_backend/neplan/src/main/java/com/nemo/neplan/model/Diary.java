@@ -11,6 +11,9 @@ public class Diary extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String content;
 
     // User와 관련된 필드 선언
@@ -32,7 +35,8 @@ public class Diary extends BaseTimeEntity {
     private File file;
 
     public Diary(){}
-    public Diary(Long id, String content, User user, Place place, File file) {
+    //, File file
+    public Diary(File file, Long id, String content, User user, Place place) {
         this.id = id;
         this.content = content;
         this.user = user;
@@ -92,8 +96,9 @@ public class Diary extends BaseTimeEntity {
     }
 
     //다이어리를 찾을 때 사용함
+    //, file
     public DiaryDto toDto(){
-        return new DiaryDto(id, content, user, place, file);
+        return new DiaryDto(id, content, user, place);
     }
 
 

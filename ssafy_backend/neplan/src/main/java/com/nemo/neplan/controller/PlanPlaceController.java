@@ -1,5 +1,6 @@
 package com.nemo.neplan.controller;
 
+import com.nemo.neplan.model.Place;
 import com.nemo.neplan.model.Plan;
 import com.nemo.neplan.model.PlanPlace;
 import com.nemo.neplan.repository.PlanPlaceRepository;
@@ -18,7 +19,9 @@ import com.nemo.neplan.model.KakaoApiResponse;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/planplaces")
@@ -58,29 +61,49 @@ public class PlanPlaceController {
         return ResponseEntity.noContent().build();
     }
 
-    @PutMapping("/changeOrder/{planId}")
-    public ResponseEntity<List<PlanPlace>> changeOrder(
-            @PathVariable Long planId,
-            @RequestParam int who,
-            @RequestParam int where) {
+
+    @GetMapping("/getPlacesByPlanId/{planId}")
+    public ResponseEntity<Map<String, double[][]>> GettingPlaces(
+            @PathVariable Long planId) {
+
+        //,
+        //            @RequestParam int who,
+        //            @RequestParam int where
 
         List<PlanPlace> planPlaces = planPlaceService.getPlanPlacesByPlanId(planId);
+        // Update placeOrder values
 
-        if (who >= 0 && who < planPlaces.size() && where >= 0 && where < planPlaces.size()) {
-            PlanPlace planPlaceToMove = planPlaces.get(who);
-            planPlaces.remove(who); // Remove from original position
-            planPlaces.add(where, planPlaceToMove); // Add to new position
+        double[][] coordination=new double[planPlaces.size()][2];
 
-            // Update placeOrder values
             for (int i = 0; i < planPlaces.size(); i++) {
-                planPlaces.get(i).setPlaceOrder(i);
-                planPlaceService.createPlanPlace(planPlaces.get(i));
+
+                PlanPlace p=planPlaces.get(i);
+                coordination[i][0]=Double.parseDouble(p.getPlace().getX());
+                coordination[i][1]=Double.parseDouble(p.getPlace().getY());
+
             }
 
-            return ResponseEntity.ok(planPlaces);
-        } else {
-            return ResponseEntity.badRequest().build();
-        }
+        Map<String, double[][]> response = new HashMap<>();
+        response.put("coordination", coordination);
+
+        return ResponseEntity.ok(response);
+
+
+//        if (who >= 0 && who < planPlaces.size() && where >= 0 && where < planPlaces.size()) {
+//            PlanPlace planPlaceToMove = planPlaces.get(who);
+//            planPlaces.remove(who); // Remove from original position
+//            planPlaces.add(where, planPlaceToMove); // Add to new position
+
+//            // Update placeOrder values
+//            for (int i = 0; i < planPlaces.size(); i++) {
+////                planPlaces.get(i).setPlaceOrder(i);
+//                planPlaceService.createPlanPlace(planPlaces.get(i));
+//            }
+//
+//            return ResponseEntity.ok(planPlaces);
+//        } else {
+//            return ResponseEntity.badRequest().build();
+//        }
     }
 
 

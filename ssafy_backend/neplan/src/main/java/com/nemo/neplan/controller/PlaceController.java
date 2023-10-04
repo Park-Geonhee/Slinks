@@ -62,40 +62,14 @@ public class PlaceController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<List<Place>> searchPlaces(
-            @RequestParam(required = false) String city,
-            @RequestParam(required = false) String district,
-            @RequestParam(required = false) String neighborhood,
-            @RequestParam(required = false) String street,
-            @RequestParam(required = false) String buildingNumber
-    ) {
-        List<Place> places;
-
-        if (buildingNumber != null) {
-            // 모든 검색어가 제공된 경우
-            places = placeService.searchByCityAndDistrictAndNeighborhoodAndStreetAndBuildingNumber(
-                    city, district, neighborhood, street, buildingNumber);
-        } else if (street != null) {
-            // 건물번호를 제외한 검색어가 제공된 경우
-            places = placeService.searchByCityAndDistrictAndNeighborhoodAndStreet(
-                    city, district, neighborhood, street);
-        } else if (neighborhood != null) {
-            // 거리와 건물번호를 제외한 검색어가 제공된 경우
-            places = placeService.searchByCityAndDistrictAndNeighborhood(
-                    city, district, neighborhood);
-        } else if (district != null) {
-            // 동네부터 검색어가 제공된 경우
-            places = placeService.searchByCityAndDistrict(city, district);
-        } else if (city != null) {
-            // 도시만 검색어가 제공된 경우
-            places = placeService.searchByCity(city);
-        } else {
-            // 검색어 없이 요청이 들어온 경우
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
-
-        return new ResponseEntity<>(places, HttpStatus.OK);
+    public List<Place> searchPlaces(@RequestParam String keyword) {
+        // 검색어를 이용하여 PlaceService의 메서드 호출
+        return placeService.searchPlaceByKeyword(keyword);
     }
+
+
+
+
 
 
 

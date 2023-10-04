@@ -7,52 +7,52 @@
 
 
 
-    <TextView
-        android:id="@+id/textView23"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="조양방직"
-        tools:layout_editor_absoluteX="145dp"
-        tools:layout_editor_absoluteY="73dp" />
+<!--    <TextView-->
+<!--        android:id="@+id/textView23"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:text="조양방직"-->
+<!--        tools:layout_editor_absoluteX="145dp"-->
+<!--        tools:layout_editor_absoluteY="73dp" />-->
 
-    <ImageView
-        android:id="@+id/imageView27"
-        android:layout_width="94dp"
-        android:layout_height="96dp"
-        tools:layout_editor_absoluteX="31dp"
-        tools:layout_editor_absoluteY="73dp"
-        tools:srcCompat="@tools:sample/avatars" />
+<!--    <ImageView-->
+<!--        android:id="@+id/imageView27"-->
+<!--        android:layout_width="94dp"-->
+<!--        android:layout_height="96dp"-->
+<!--        tools:layout_editor_absoluteX="31dp"-->
+<!--        tools:layout_editor_absoluteY="73dp"-->
+<!--        tools:srcCompat="@drawable/cakepang" />-->
 
-    <TextView
-        android:id="@+id/textView24"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="갤러리 카페"
-        tools:layout_editor_absoluteX="218dp"
-        tools:layout_editor_absoluteY="71dp" />
+<!--    <TextView-->
+<!--        android:id="@+id/textView24"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:text="갤러리 카페"-->
+<!--        tools:layout_editor_absoluteX="218dp"-->
+<!--        tools:layout_editor_absoluteY="71dp" />-->
 
-    <TextView
-        android:id="@+id/textView25"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="강화군 강화읍 향나무 5번길 12"
-        tools:layout_editor_absoluteX="153dp"
-        tools:layout_editor_absoluteY="114dp" />
+<!--    <TextView-->
+<!--        android:id="@+id/textView25"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:text="강화군 강화읍 향나무 5번길 12"-->
+<!--        tools:layout_editor_absoluteX="153dp"-->
+<!--        tools:layout_editor_absoluteY="114dp" />-->
 
-    <ProgressBar
-        android:id="@+id/progressBar"
-        style="?android:attr/progressBarStyleHorizontal"
-        android:layout_width="194dp"
-        android:layout_height="0dp"
-        tools:layout_editor_absoluteX="159dp"
-        tools:layout_editor_absoluteY="151dp" />
+<!--    <ProgressBar-->
+<!--        android:id="@+id/progressBar"-->
+<!--        style="?android:attr/progressBarStyleHorizontal"-->
+<!--        android:layout_width="194dp"-->
+<!--        android:layout_height="0dp"-->
+<!--        tools:layout_editor_absoluteX="159dp"-->
+<!--        tools:layout_editor_absoluteY="151dp" />-->
 
-    <TextView
-        android:id="@+id/textView26"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="다음 목적지 4"
-        tools:layout_editor_absoluteX="65dp"
-        tools:layout_editor_absoluteY="701dp" />
+<!--    <TextView-->
+<!--        android:id="@+id/textView26"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:text="다음 목적지 4"-->
+<!--        tools:layout_editor_absoluteX="65dp"-->
+<!--        tools:layout_editor_absoluteY="701dp" />-->
 
 </androidx.constraintlayout.widget.ConstraintLayout>
