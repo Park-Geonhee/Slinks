@@ -24,28 +24,33 @@ import java.util.UUID;
 @Service
 public class FileServiceImpl implements FileService {
 
+    @Autowired
+    private FileRepository fileRepository;
+
     @Override
-    public String uploadFiles(String uploadPath, String originalName, byte[] fileData) throws Exception {
+    public Long uploadFiles(MultipartFile file) throws IOException {
+        // 랜덤한 파일 이름 생성
+        String fileName = StringUtils.cleanPath(file.getOriginalFilename());
+        String extension = fileName.substring(fileName.lastIndexOf("."));
 
-        //랜덤한 id값 생성
-        UUID uuid=UUID.randomUUID();
+        UUID uuid = UUID.randomUUID();
+        String storedFileName = uuid.toString() + extension;
 
-        // .이후의 문자열은 제거
-        String extension=originalName.substring(originalName.lastIndexOf("."));
+        // 파일을 저장할 경로 설정
+        Path uploadPath = Path.of("C:\\Users\\SSAFY\\Desktop\\temppp\\S09P22A701\\ssafy_backend\\upload-dir\\" + storedFileName);
 
-        //랜덤 id값 + 파일 확장자
-        String saveFileName=uuid.toString()+extension;
-        //파일 업로드 경로= 업로드경로/랜덤 id값.파일 확장자
-        String fileUploadFullUrl=uploadPath+"/"+saveFileName;
+        // 파일 처리 및 리소스 자동 닫기
+        try (var inputStream = file.getInputStream()) {
+            Files.copy(inputStream, uploadPath, StandardCopyOption.REPLACE_EXISTING);
+        }
 
-        //파일이 저장된 위치와 파일 이름을 파라미터로 넣어서 파일에 쓸 파일 출력 스트림 생성
-        FileOutputStream fos=new FileOutputStream(fileUploadFullUrl);
-        fos.write(fileData);
-        fos.close();
+        // 데이터베이스에 파일 정보 저장
+        com.nemo.neplan.model.File uploadedFile = new com.nemo.neplan.model.File(storedFileName, fileName, uploadPath.toString());
+        fileRepository.save(uploadedFile);
 
-        //saveFile(랜덤 id+파일 확장자) 반환
-        return saveFileName;
 
+        // 새로 생성된 파일의 ID 값을 반환
+        return uploadedFile.getId();
     }
 
     @Override
@@ -61,5 +66,10 @@ public class FileServiceImpl implements FileService {
         else{
             System.out.println("파일이 없습니다.");
         }
+    }
+
+    @Override
+    public com.nemo.neplan.model.File getFileById(long id) {
+        return fileRepository.getReferenceById(id);
     }
 }

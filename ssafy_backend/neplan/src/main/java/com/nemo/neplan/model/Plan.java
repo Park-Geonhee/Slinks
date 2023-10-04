@@ -28,11 +28,11 @@ public class Plan implements Serializable {
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "createdDate", "modifiedDate"})
     private User user;
 
-    // File과 관련된 필드 선언
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "file_id")
-//    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-//    private File file;
+//     File과 관련된 필드 선언
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "file_id")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    private File file;
 
     @PrePersist
     public void setDepDatetimeOnCreate() {
@@ -86,13 +86,13 @@ public class Plan implements Serializable {
         this.user = user;
     }
 
-//    public File getFile() {
-//        return file;
-//    }
-//
-//    public void setFile(File file) {
-//        this.file = file;
-//    }
+    public File getFile() {
+        return file;
+    }
+
+    public void setFile(File file) {
+        this.file = file;
+    }
 
 //    public int getMaxPlaceOrder() {
 //        EntityManager entityManager = Persistence.createEntityManagerFactory("your-persistence-unit-name").createEntityManager();

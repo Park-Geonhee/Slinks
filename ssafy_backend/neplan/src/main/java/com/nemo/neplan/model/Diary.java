@@ -11,6 +11,9 @@ public class Diary extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String content;
 
     // User와 관련된 필드 선언
@@ -26,19 +29,19 @@ public class Diary extends BaseTimeEntity {
     private Place place;
 
     // File과 관련된 필드 선언
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "file_id")
-//    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-//    private File file;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "file_id")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    private File file;
 
     public Diary(){}
     //, File file
-    public Diary(Long id, String content, User user, Place place) {
+    public Diary(File file, Long id, String content, User user, Place place) {
         this.id = id;
         this.content = content;
         this.user = user;
         this.place = place;
-//        this.file = file;
+        this.file = file;
     }
 
     public Long getId() {
@@ -73,13 +76,13 @@ public class Diary extends BaseTimeEntity {
         this.place = place;
     }
 
-//    public File getFile() {
-//        return file;
-//    }
-//
-//    public void setFile(File file) {
-//        this.file = file;
-//    }
+    public File getFile() {
+        return file;
+    }
+
+    public void setFile(File file) {
+        this.file = file;
+    }
 
     //일기 수정 메소드
     public void diaryPathch(Diary diary){

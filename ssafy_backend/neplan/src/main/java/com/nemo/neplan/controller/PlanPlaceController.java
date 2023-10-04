@@ -61,6 +61,7 @@ public class PlanPlaceController {
         return ResponseEntity.noContent().build();
     }
 
+
     @GetMapping("/getPlacesByPlanId/{planId}")
     public ResponseEntity<Map<String, double[][]>> GettingPlaces(
             @PathVariable Long planId) {
