@@ -17,7 +17,7 @@ class Main:
         try:
             self.yolo = YOLO(sys.argv[1])
         except:
-            self.yolo=YOLO("yolov5s_openvino_model")
+            self.yolo=YOLO("yolov5s_openvino_model/")
         self.radar = Radar()
         self.traffic_light = TrafficLight()
         

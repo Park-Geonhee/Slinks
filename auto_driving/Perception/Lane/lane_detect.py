@@ -4,8 +4,6 @@
 import rospy
 import cv2
 import numpy as np
-import os, rospkg
-import json
 import math
 import random
 import tf
@@ -16,7 +14,6 @@ from sklearn import linear_model
 from nav_msgs.msg import Odometry, Path
 from sensor_msgs.msg import CompressedImage
 from geometry_msgs.msg import PoseStamped, Point
-from morai_msgs.msg import CtrlCmd, EgoVehicleStatus
 import warnings
 
 warnings.filterwarnings("ignore")
@@ -26,7 +23,7 @@ params_cam ={
         "TYPE": "JPG",
         "WIDTH": 640,
         "HEIGHT": 480,
-        "FOV": 90,
+        "FOV": 60,
         "X": 3.50,
         "Y": 0,
         "Z": 0.50,
@@ -38,7 +35,7 @@ params_cam ={
 
 class IMGParser:
     def __init__(self, pkg_name='ssafy_ad'):
-
+        print("Image Parser INIT!")
         self.image_sub = rospy.Subscriber("/image_jpeg/compressed", CompressedImage, self.callback)
         # self.ego_sub = rospy.Subscriber("/Ego_topic", EgoVehicleStatus, self.ego_callback)
         rospy.Subscriber("/odom", Odometry, self.odom_callback)
@@ -67,8 +64,8 @@ class IMGParser:
         #self.crop_pts = np.array([[[0,350],[280,200],[360,200],[640,350]]])
 
         bev_op = BEVTransform(params_cam=params_cam)
-        curve_learner = CURVEFit(order=3, lane_width=5, dx=0.2, y_margin=0.7, x_range=12, min_pts=2,alpha=1)
-        rate = rospy.Rate(10)
+        curve_learner = CURVEFit(order=3, lane_width=4, dx=0.2, y_margin=0.7, x_range=12, min_pts=3,alpha=1)
+        rate = rospy.Rate(5)
 
         while not rospy.is_shutdown():
             if self.img_bgr is not None and self.is_status == True:
@@ -81,26 +78,11 @@ class IMGParser:
                     x_pred, y_pred_l, y_pred_r,self.edges = curve_learner.fit_curve(lane_pts)
                     curve_learner.set_vehicle_status(self.status_msg)
                     lane_path = curve_learner.write_path_msg(x_pred, y_pred_l, y_pred_r)
+                    self.path_pub.publish(lane_path)
                     left_lane = y_pred_l.mean()
                     right_lane = y_pred_r.mean()
-                    print(x_pred)
-                    if(abs(abs(left_lane) - abs(right_lane)) <0.35):
-                        print("차선 중앙 유지 중")
-                    else:
-                        if(abs(left_lane) > abs(right_lane)):
-                            print("오른쪽 차선 붙었다")
-                        else:
-                            print("왼쪽 차선 붙었다")
-
-                    
-                    xyl, xyr = bev_op.project_lane2img(x_pred, y_pred_l, y_pred_r)
-                    img_f = self.draw_lane_img(img_lane, xyl[:, 0].astype(np.int32),
-                                               xyl[:, 1].astype(np.int32),
-                                               xyr[:, 0].astype(np.int32),
-                                               xyr[:, 1].astype(np.int32))
-                    
                     if self.edges:
-                        print("차선 이탈했다!")
+                        print("#########차선 이탈##########")
                         font = cv2.FONT_HERSHEY_SIMPLEX  # 폰트 선택
                         font_scale = 0.5  # 폰트 크기
                         font_color = (0, 0, 255)  # 폰트 색상 (BGR 포맷, 초록색)
@@ -110,13 +92,29 @@ class IMGParser:
                         text = "Lane Department"  # 작성할 텍스트 내용
                         position = (200, 300)  # 텍스트를 작성할 위치 (x, y 좌표)
                         cv2.putText(img_f, text, position, font, font_scale, font_color, font_thickness)
+                    else:
+                        if(abs(abs(left_lane) - abs(right_lane)) <0.35):
+                            print("=======중앙 유지 중=======")
+                        else:
+                            if(abs(left_lane) > abs(right_lane)):
+                                print("==============오른쪽 치우침")
+                            else:
+                                print("왼쪽 치우침==============")
+                        
+                    xyl, xyr = bev_op.project_lane2img(x_pred, y_pred_l, y_pred_r)
+                    img_f = self.draw_lane_img(img_lane, xyl[:, 0].astype(np.int32),
+                                               xyl[:, 1].astype(np.int32),
+                                               xyr[:, 0].astype(np.int32),
+                                               xyr[:, 1].astype(np.int32))
+                    
+                    
                 except:
                     continue
-                self.path_pub.publish(lane_path)
                 cv2.imshow("Received Image", img_f)
                 cv2.waitKey(1)
-
-                rate.sleep()
+            else:
+                print("Waiting IMG")
+            rate.sleep()
 
     def odom_callback(self, msg):  ## Vehicl Status Subscriber
         self.status_msg = msg
@@ -172,6 +170,10 @@ class IMGParser:
         # Right Lane
         for ctr in zip(rightx, righty):
             point_np = cv2.circle(point_np, ctr, 2, (0, 0, 255), -1)
+
+        for ctr in zip(rightx+leftx, righty+lefty):
+            point_np = cv2.circle(point_np, (int(ctr[0]/2),int(ctr[1]/2)), 2, (255, 255, 255), -1)
+
 
         return point_np
 
@@ -593,4 +595,5 @@ if __name__ == '__main__':
     image_parser = IMGParser()
 
     rospy.spin()
+
 

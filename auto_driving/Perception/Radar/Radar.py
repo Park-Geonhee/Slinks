@@ -285,8 +285,8 @@ class Radar:
                 detection_list.obstacle_list.append(detection_wrt_vehicle)
                 
             projection_image = self.draw_point_to_image(image, image_xy[0], image_xy[1])
-            cv2.imshow("test",projection_image)
-            cv2.waitKey(1)
+            # cv2.imshow("test",projection_image)
+            # cv2.waitKey(1)
         # self.object_pub.publish(self.origin_detection_list)
         return detection_list
 
