@@ -95,7 +95,7 @@ class latticePlanner:
         self.is_path = True
         self.local_path = msg
         
-    def status_callback(self,msg): ## Vehicl Status Subscriber 
+    def status_callback(self,msg): ## Vehicl Status Subscriber
         self.is_status = True
         self.status_msg = msg
 
