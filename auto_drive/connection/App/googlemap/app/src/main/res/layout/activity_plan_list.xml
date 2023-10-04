@@ -1,0 +1,712 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:layout_marginHorizontal="22dp"
+    >
+
+
+    <LinearLayout
+
+        android:id="@+id/header1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="46dp"
+        android:orientation="horizontal"
+
+        >
+
+        <TextView
+            android:id="@+id/textView4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+
+            android:fontFamily="@font/pretendard_bold"
+            android:text="플랜리스트"
+            android:textSize="20dp" />
+
+        <ImageView
+
+            android:id="@+id/imageView23"
+            android:layout_width="31dp"
+            android:layout_height="35dp"
+            android:background="@drawable/outline_day"
+            android:padding="5dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            tools:layout_editor_absoluteY="30dp"
+            tools:srcCompat="@drawable/solarsettingsbold" />
+
+
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:id="@+id/search_bar"
+        android:layout_width="370dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="24dp"
+
+        android:orientation="horizontal"
+
+        >
+
+        <androidx.appcompat.widget.SearchView
+            android:id="@+id/search_view"
+            android:layout_width="360dp"
+            android:layout_height="wrap_content"
+            android:background="@drawable/outline1"
+            app:iconifiedByDefault="false"
+            app:queryHint="성북군 강화읍" />
+
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/buttons"
+        android:layout_width="400dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="10dp"
+
+
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/search_bar">
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/button13"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="15dp"
+
+
+            android:background="@drawable/outline1"
+            android:text="MY 리스트"
+            app:layout_constraintEnd_toStartOf="@+id/button14"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textView22" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/button14"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+
+            android:background="@drawable/outline1"
+            android:text="공유 리스트"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:orientation="horizontal">
+
+
+
+        <!--        <GridView-->
+        <!--            android:id="@+id/gridview"-->
+        <!--            android:layout_width="match_parent"-->
+        <!--            android:numColumns="2"-->
+        <!--            android:layout_height="wrap_content" />-->
+        <LinearLayout
+
+            android:id="@+id/image_left"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/buttons">
+
+            <FrameLayout
+                android:layout_width="178dp"
+                android:layout_height="148dp"
+                android:layout_marginRight="5dp"
+                android:layout_marginBottom="10dp"
+                >
+
+
+
+                <ImageView
+                    android:id="@+id/list_thumbnail"
+                    android:layout_width="178dp"
+                    android:layout_height="148dp"
+
+                    android:src="@drawable/root1" />
+
+                <TextView
+                    android:layout_marginLeft="12dp"
+                    android:layout_marginTop="12dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="인천 당일 부수기"
+                    android:textColor="@color/sliknks_white"
+                    android:fontFamily="@font/pretendard_bold"
+                    />
+
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+
+                    android:layout_gravity="start|bottom"
+                    android:layout_marginBottom="2dp"
+                    android:layout_marginLeft="10dp"
+                    android:orientation="horizontal">
+
+
+                    <FrameLayout
+
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+
+
+                        android:background="@drawable/list_btn">
+
+                        <ImageView
+                            android:layout_marginLeft="2dp"
+                            android:layout_marginBottom="2dp"
+                            android:layout_gravity="center"
+                            android:layout_width="16dp"
+                            android:layout_height="12dp"
+                            android:src="@drawable/list_play"/>
+
+
+                    </FrameLayout>
+
+                    <FrameLayout
+
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:layout_marginBottom="10dp"
+                        android:layout_marginLeft="10dp"
+
+                        android:background="@drawable/list_btn">
+
+                        <ImageView
+                            android:layout_marginBottom="2dp"
+                            android:layout_gravity="center"
+                            android:layout_width="16dp"
+                            android:layout_height="16dp"
+                            android:src="@drawable/list_plus"/>
+
+
+                    </FrameLayout>
+
+                </LinearLayout>
+            </FrameLayout>
+            <FrameLayout
+                android:layout_width="178dp"
+                android:layout_height="148dp"
+                android:layout_marginRight="5dp"
+                android:layout_marginBottom="10dp"
+                >
+
+
+
+                <ImageView
+                    android:layout_width="178dp"
+                    android:layout_height="148dp"
+
+                    android:src="@drawable/root3" />
+
+                <TextView
+                    android:layout_marginLeft="12dp"
+                    android:layout_marginTop="12dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="다함께 공원 고"
+                    android:textColor="@color/sliknks_white"
+                    android:fontFamily="@font/pretendard_bold"
+                    />
+
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+
+                    android:layout_gravity="start|bottom"
+                    android:layout_marginBottom="2dp"
+                    android:layout_marginLeft="10dp"
+                    android:orientation="horizontal">
+
+
+                    <FrameLayout
+
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+
+
+                        android:background="@drawable/list_btn">
+
+                        <ImageView
+                            android:layout_marginLeft="2dp"
+                            android:layout_marginBottom="2dp"
+                            android:layout_gravity="center"
+                            android:layout_width="16dp"
+                            android:layout_height="12dp"
+                            android:src="@drawable/list_play"/>
+
+
+                    </FrameLayout>
+
+                    <FrameLayout
+
+                        android:id="@+id/plus_btn"
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:layout_marginBottom="10dp"
+                        android:layout_marginLeft="10dp"
+
+                        android:background="@drawable/list_btn">
+
+                        <ImageView
+                            android:layout_marginBottom="2dp"
+                            android:layout_gravity="center"
+                            android:layout_width="16dp"
+                            android:layout_height="16dp"
+                            android:src="@drawable/list_plus"/>
+
+
+                    </FrameLayout>
+
+                </LinearLayout>
+            </FrameLayout>
+            <FrameLayout
+                android:layout_width="178dp"
+                android:layout_height="148dp"
+                android:layout_marginRight="5dp"
+                android:layout_marginBottom="10dp"
+                >
+
+
+
+                <ImageView
+                    android:layout_width="178dp"
+                    android:layout_height="148dp"
+
+                    android:src="@drawable/root5" />
+
+                <TextView
+                    android:layout_marginLeft="12dp"
+                    android:layout_marginTop="12dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="나의 작년이 담긴 갬성 코스"
+                    android:textColor="@color/sliknks_white"
+                    android:fontFamily="@font/pretendard_bold"
+                    />
+
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+
+                    android:layout_gravity="start|bottom"
+                    android:layout_marginBottom="2dp"
+                    android:layout_marginLeft="10dp"
+                    android:orientation="horizontal">
+
+
+                    <FrameLayout
+
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+
+
+                        android:background="@drawable/list_btn">
+
+                        <ImageView
+                            android:layout_marginLeft="2dp"
+                            android:layout_marginBottom="2dp"
+                            android:layout_gravity="center"
+                            android:layout_width="16dp"
+                            android:layout_height="12dp"
+                            android:src="@drawable/list_play"/>
+
+
+                    </FrameLayout>
+
+                    <FrameLayout
+
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:layout_marginBottom="10dp"
+                        android:layout_marginLeft="10dp"
+
+                        android:background="@drawable/list_btn">
+
+                        <ImageView
+                            android:layout_marginBottom="2dp"
+                            android:layout_gravity="center"
+                            android:layout_width="16dp"
+                            android:layout_height="16dp"
+                            android:src="@drawable/list_plus"/>
+
+
+                    </FrameLayout>
+
+                </LinearLayout>
+            </FrameLayout>
+
+
+
+
+        </LinearLayout>
+
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent">
+
+            <FrameLayout
+                android:layout_width="178dp"
+                android:layout_height="148dp"
+                android:layout_marginRight="5dp"
+                android:layout_marginBottom="10dp"
+                >
+
+
+
+                <ImageView
+                    android:layout_width="178dp"
+                    android:layout_height="148dp"
+
+                    android:src="@drawable/root6" />
+
+                <TextView
+                    android:layout_marginLeft="12dp"
+                    android:layout_marginTop="12dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="강화 유적지 탐방"
+                    android:textColor="@color/sliknks_white"
+                    android:fontFamily="@font/pretendard_bold"
+                    />
+
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+
+                    android:layout_gravity="start|bottom"
+                    android:layout_marginBottom="2dp"
+                    android:layout_marginLeft="10dp"
+                    android:orientation="horizontal">
+
+
+                    <FrameLayout
+
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+
+
+                        android:background="@drawable/list_btn">
+
+                        <ImageView
+                            android:layout_marginLeft="2dp"
+                            android:layout_marginBottom="2dp"
+                            android:layout_gravity="center"
+                            android:layout_width="16dp"
+                            android:layout_height="12dp"
+                            android:src="@drawable/list_play"/>
+
+
+                    </FrameLayout>
+
+                    <FrameLayout
+
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:layout_marginBottom="10dp"
+                        android:layout_marginLeft="10dp"
+
+                        android:background="@drawable/list_btn">
+
+                        <ImageView
+                            android:layout_marginBottom="2dp"
+                            android:layout_gravity="center"
+                            android:layout_width="16dp"
+                            android:layout_height="16dp"
+                            android:src="@drawable/list_plus"/>
+
+
+                    </FrameLayout>
+
+                </LinearLayout>
+            </FrameLayout>
+            <FrameLayout
+                android:layout_width="178dp"
+                android:layout_height="148dp"
+                android:layout_marginRight="5dp"
+                android:layout_marginBottom="10dp"
+                >
+
+
+
+                <ImageView
+                    android:layout_width="178dp"
+                    android:layout_height="148dp"
+
+                    android:src="@drawable/root4" />
+
+                <TextView
+                    android:layout_marginLeft="12dp"
+                    android:layout_marginTop="12dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="흥이 절로 나는 드라이브 "
+                    android:textColor="@color/sliknks_white"
+                    android:fontFamily="@font/pretendard_bold"
+                    />
+
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+
+                    android:layout_gravity="start|bottom"
+                    android:layout_marginBottom="2dp"
+                    android:layout_marginLeft="10dp"
+                    android:orientation="horizontal">
+
+
+                    <FrameLayout
+
+                        android:id="@+id/play_btn"
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+
+
+                        android:background="@drawable/list_btn">
+
+                        <ImageView
+                            android:layout_marginLeft="2dp"
+                            android:layout_marginBottom="2dp"
+                            android:layout_gravity="center"
+                            android:layout_width="16dp"
+                            android:layout_height="12dp"
+                            android:src="@drawable/list_play"/>
+
+
+                    </FrameLayout>
+
+                    <FrameLayout
+
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:layout_marginBottom="10dp"
+                        android:layout_marginLeft="10dp"
+
+                        android:background="@drawable/list_btn">
+
+                        <ImageView
+                            android:layout_marginBottom="2dp"
+                            android:layout_gravity="center"
+                            android:layout_width="16dp"
+                            android:layout_height="16dp"
+                            android:src="@drawable/list_plus"/>
+
+
+                    </FrameLayout>
+
+                </LinearLayout>
+            </FrameLayout>
+            <FrameLayout
+                android:layout_width="178dp"
+                android:layout_height="148dp"
+                android:layout_marginRight="5dp"
+                android:layout_marginBottom="10dp"
+                >
+
+
+
+                <ImageView
+                    android:layout_width="178dp"
+                    android:layout_height="148dp"
+
+                    android:src="@drawable/root6" />
+
+                <TextView
+                    android:layout_marginLeft="12dp"
+                    android:layout_marginTop="12dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="바다부터 내륙까지\n인천
+크로스"
+                    android:textColor="@color/sliknks_white"
+                    android:fontFamily="@font/pretendard_bold"
+                    />
+
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+
+                    android:layout_gravity="start|bottom"
+                    android:layout_marginBottom="2dp"
+                    android:layout_marginLeft="10dp"
+                    android:orientation="horizontal">
+
+
+                    <FrameLayout
+
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+
+
+                        android:background="@drawable/list_btn">
+
+                        <ImageView
+                            android:layout_marginLeft="2dp"
+                            android:layout_marginBottom="2dp"
+                            android:layout_gravity="center"
+                            android:layout_width="16dp"
+                            android:layout_height="12dp"
+                            android:src="@drawable/list_play"/>
+
+
+                    </FrameLayout>
+
+                    <FrameLayout
+
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:layout_marginBottom="10dp"
+                        android:layout_marginLeft="10dp"
+
+                        android:background="@drawable/list_btn">
+
+                        <ImageView
+                            android:layout_marginBottom="2dp"
+                            android:layout_gravity="center"
+                            android:layout_width="16dp"
+                            android:layout_height="16dp"
+                            android:src="@drawable/list_plus"/>
+
+
+                    </FrameLayout>
+
+                </LinearLayout>
+            </FrameLayout>
+
+
+        </LinearLayout>
+
+
+    </LinearLayout>
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="33dp"
+        android:layout_marginBottom="22dp"
+        android:src="@drawable/more1" />
+
+    <LinearLayout
+
+        android:id="@+id/footbar"
+        android:layout_width="370dp"
+        android:layout_height="wrap_content"
+
+        android:background="@drawable/footbar"
+
+
+        android:gravity="center"
+        android:orientation="horizontal"
+
+        android:padding="15dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.483"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/days"
+        app:layout_constraintVertical_bias="0.7">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="20dp"
+            android:orientation="vertical"
+
+            app:layout_constraintTop_toBottomOf="@+id/days"
+            tools:layout_editor_absoluteX="164dp">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+
+                android:src="@drawable/diarygrey" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="AI다이어리" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="20dp"
+            android:orientation="vertical"
+
+            app:layout_constraintTop_toBottomOf="@+id/days"
+            tools:layout_editor_absoluteX="164dp">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+
+                android:src="@drawable/placesgrey" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="여행플랜" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="20dp"
+            android:orientation="vertical"
+            app:layout_constraintTop_toBottomOf="@+id/days"
+            tools:layout_editor_absoluteX="164dp">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:src="@drawable/planlistblack" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="플랜리스트" />
+        </LinearLayout>
+
+
+    </LinearLayout>
+
+
+</LinearLayout>

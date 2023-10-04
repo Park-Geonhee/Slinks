@@ -1,0 +1,13 @@
+<launch>
+
+    <node pkg="ssafy_ad" type="sangam_mgeo_pub.py" name="sangam_mgeo_pub" />
+    <node pkg="ssafy_ad" type="sangam_gpsimu_parser.py" name="sangam_gpsimu_parser" output="screen"/>
+    <node pkg="ssafy_ad" type="sangam_link_parser.py" name="sangam_link_parser" output="screen"/>
+
+    <node pkg="ssafy_ad" type="sangam_local_path_pub.py" name="local_path_pub" /> 
+    <node pkg="ssafy_ad" type="sangam_mgeo_global_astar_web.py" name="mgeo_global_dijkstra_rviz" output="screen" />
+    
+    <node pkg="ssafy_ad" type="sangam_lattice_planner.py" name="lattice_planner" args="/radar_detection" output="screen"/>
+    <node pkg="ssafy_ad" type="sangam_acc_with_tl.py" name="acc_with_tl"  args="/lattice_path" output="screen" />
+
+</launch>
