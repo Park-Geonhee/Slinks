@@ -37,7 +37,7 @@ public class FileServiceImpl implements FileService {
         String storedFileName = uuid.toString() + extension;
 
         // 파일을 저장할 경로 설정
-        Path uploadPath = Path.of("C:\\Users\\SSAFY\\Desktop\\temppp\\S09P22A701\\ssafy_backend\\upload-dir\\" + storedFileName);
+        Path uploadPath = Path.of("/usr/local/lib/upload-dir/" + storedFileName);
 
         // 파일 처리 및 리소스 자동 닫기
         try (var inputStream = file.getInputStream()) {

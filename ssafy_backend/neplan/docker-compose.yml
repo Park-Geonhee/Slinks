@@ -5,7 +5,6 @@ services:
     build:
       context: .
       dockerfile: DockerfileFix
-    image: neplan-backend:latest
     container_name: neplan-backend
     networks:
       - deploy
