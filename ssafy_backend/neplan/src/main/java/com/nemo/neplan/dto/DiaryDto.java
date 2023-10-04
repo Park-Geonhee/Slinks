@@ -71,11 +71,11 @@ public class DiaryDto {
     private List<Long> diaryFileIdList=new ArrayList<>();
 
     //수정할 때 다이어리 안의 이미지 정보를 저장하는 리스트
-    private List<FileDto> diaryImgDtoList=new ArrayList<>();
 
-    //일기 수정시에 사용함
-    public Diary toEntity(){
-        return new Diary(id, content, user, place);
-    }
+
+//    //일기 수정시에 사용함
+//    public Diary toEntity(){
+//        return new Diary(id, content, user, place);
+//    }
 
 }

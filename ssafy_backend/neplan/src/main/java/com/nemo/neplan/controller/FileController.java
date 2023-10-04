@@ -17,17 +17,18 @@ public class FileController {
     @Autowired
     private FileService fileService;
 
-//    @PostMapping("/upload")
-//    public ResponseEntity<File> uploadFile(@RequestParam("file") MultipartFile file) {
-//        File uploadedFile = fileService.uploadFiles(file);
-//        return ResponseEntity.ok(uploadedFile);
-//    }
-//
-//    @GetMapping("/download/{fileName:.+}")
-//    public ResponseEntity<Resource> downloadFile(@PathVariable String fileName) {
-//        Resource resource = fileService.loadFileAsResource(fileName);
-//        return ResponseEntity.ok(resource);
-//    }
+    @PostMapping("/upload")
+    public ResponseEntity<Long> uploadFile(
+            @RequestParam("file") MultipartFile file) {
 
 
+        try {
+            Long fileId = fileService.uploadFiles(file);
+            return ResponseEntity.ok(fileId);
+        } catch (Exception e) {
+            // 예외 처리 코드 추가
+            e.printStackTrace();
+            return ResponseEntity.status(500).build(); // Internal Server Error
+        }
+    }
 }

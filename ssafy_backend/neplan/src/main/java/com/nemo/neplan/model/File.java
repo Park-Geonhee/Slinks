@@ -1,7 +1,5 @@
 package com.nemo.neplan.model;
 
-import com.nemo.neplan.dto.FileDto;
-
 import javax.persistence.*;
 
 @Entity
@@ -17,7 +15,11 @@ public class File {
     //업로드 결과 로컬에 저장된 이미지 파일을 불러올 결과
     private String imgUrl;
 
+    public File() {
+    }
+
     public File(String imgName, String originalFilename, String imgUrl) {
+
         this.imgName = imgName;
         this.originalFilename = originalFilename;
         this.imgUrl = imgUrl;
@@ -32,11 +34,6 @@ public class File {
 //        this.originalFilename = originalFilename;
 //        this.imgUrl = imgUrl;
 //    }
-
-    //이미지를 찾을 때 사용
-    public FileDto toDto(){
-        return new FileDto(id, imgName, originalFilename);
-    }
 
 
 
