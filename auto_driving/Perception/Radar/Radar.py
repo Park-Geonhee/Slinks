@@ -79,13 +79,13 @@ def get2VehicleMat(pos,rpy):
     return Tr_sensor_to_vehicle
 
 def get2CameraMat(r_pos, r_rpy, c_pos, c_rpy):
-    
 
     radar2vehicle = get2VehicleMat(r_pos, r_rpy)
     camera2vehicle= get2VehicleMat(c_pos, c_rpy)
     vehicle2camera = inv(camera2vehicle)
     # mat = radar2vehicle.dot(vehicle2camera)
     mat = vehicle2camera.dot(radar2vehicle)
+
     return mat
 
 def get2ImageMat(params_cam):
@@ -109,14 +109,16 @@ def get2ImageMat(params_cam):
                           [0, 0, 1]])
     return CameraMat
 
-def get2GlobalMat(yaw, x, y, z):
-    trans_matrix = np.array([
-            [np.cos(yaw), -np.sin(yaw), 0, x],
-            [np.sin(yaw), np.cos(yaw), 0, y],
-            [0, 0, 1, z],
-            [0, 0, 0, 1]
-            ])
-    return trans_matrix
+def get2GlobalMat(roll,pitch,yaw, x, y, z):
+    pos = np.array([x,y,z]) 
+    rpy = np.array([roll, pitch, yaw])  
+
+    rotMat = getRotMat(rpy)
+    trMat = np.array([pos])
+    local2global = np.concatenate((rotMat,trMat.T),axis = 1)
+    local2global = np.insert(local2global, 3, values=[0,0,0,1],axis = 0)
+    return local2global
+
 start_time = time.time()
 def getTimeGap():
     global start_time
@@ -142,27 +144,12 @@ class Radar:
         self.width = parameters_cam["WIDTH"]
         self.height = parameters_cam["HEIGHT"]
         self.start_time = time.time()
- 
-
-        # rate = rospy.Rate(10)
-        # while not rospy.is_shutdown():
-        #     rate.sleep()
-        #     if self.is_odom == False :
-        #         print("get odometry")
-        #         continue
-        #     if self.image is None :
-        #         print("get image")
-        #         continue
-        #     if self.radar_data is None :
-        #         print("get radar_data")
-        #         continue
-        #     self.local2GlobalMat = get2GlobalMat(self.vehicle_yaw, self.vehicle_pos_x, self.vehicle_pos_y, self.vehicle_pos_z)
-        #     self.get_detection_list_wrt_vehicle()
 
 
     def radar_callback(self, msg):
         # 1. local data list wrt radar sensor
         self.radar_data = msg
+
 
     def odom_callback(self, msg):
         self.is_odom = True
@@ -172,33 +159,16 @@ class Radar:
         self.vehicle_pos_y = msg.pose.pose.position.y
         self.vehicle_pos_z = msg.pose.pose.position.z
 
-    def get_global_detection(self, detection):
-        data = RadarDetection()
-        trans_matrix = np.array([
-            [np.cos(self.vehicle_yaw), -np.sin(self.vehicle_yaw), 0, self.vehicle_pos_x],
-            [np.sin(self.vehicle_yaw), np.cos(self.vehicle_yaw), 0, self.vehicle_pos_y],
-            [0, 0, 1, self.vehicle_pos_z],
-            [0, 0, 0, 1]
-            ])
-
-        local_result = np.array([[detection.position.x],[detection.position.y],[detection.position.z],[1]])
-        global_result = trans_matrix.dot(local_result)
-        data.position.x = global_result[0][0]
-        data.position.y = global_result[1][0]
-        data.position.z = global_result[2][0]
-        data.rangerate = detection.rangerate
-        return data
-    
     def get_detection_wrt_vehicle(self, detect):
         # 2. vehicle cal
-        xyz_r = np.array([detect.position.x,detect.position.y, detect.position.z, 1])
-        xyz_v = self.radar2VehicleMat.dot(xyz_r.T)
+        xyz_r = np.array([detect.position.x,detect.position.y, detect.position.z, 1]) # radar
+        # xyz_v = self.radar2VehicleMat.dot(xyz_r.T)
 
         data = ObjectStatus()
         data.unique_id = detect.detection_id
         # cal to global
-        self.local2GlobalMat = get2GlobalMat(self.vehicle_yaw, self.vehicle_pos_x, self.vehicle_pos_y, self.vehicle_pos_z)
-        global_result = self.local2GlobalMat.dot(xyz_v.T)
+        self.local2GlobalMat = get2GlobalMat(0,0,self.vehicle_yaw, self.vehicle_pos_x, self.vehicle_pos_y, self.vehicle_pos_z)
+        global_result = self.local2GlobalMat.dot(xyz_r.T)
         data.position.x = global_result[0]
         data.position.y = global_result[1]
         data.position.z = global_result[2]
@@ -211,6 +181,7 @@ class Radar:
         # 4. vehicle to camera
         xyz_v = self.radar2CameraMat.dot(xyz_r.T)
         point = np.array([xyz_v[0],xyz_v[1],xyz_v[2],1],np.float32)
+
         return point
   
     def get_imageXY_from_point(self, point):
@@ -236,8 +207,8 @@ class Radar:
         dist = (detect.position.x**2 + detect.position.y**2)**0.5
         if dist > 50 : # Too far object skip
             return False
-        rate = abs(detect.position.x/detect.position.y)
-        if rate < 1 :
+        
+        if abs(detect.position.y) > 10 : # x = 50 일때, y 10까지 가능
             return False
         return True
     
@@ -248,46 +219,65 @@ class Radar:
         # results = self.model(self.image) # yolov5 inference
         object_list = result
         object_cnt = len(object_list)
-        check_list = [False for i in range(object_cnt)]
-
-        # getTimeGap() # check ratency
+        check_cnt = 0
+        BBOX2RADAR = [-1 for i in range(object_cnt)]
+        cnt = -1
         for detect in self.radar_data.detections :
+            cnt = cnt + 1
             if self.is_valid(detect) == False :
                 continue
-
+        
             # check if detection is exist and included in image frame
             point_wrt_camera = self.get_point_wrt_camera(detect) # xyz1
             image_xy = self.get_imageXY_from_point(point_wrt_camera)
             if image_xy is None :
                 continue
 
+            detection_wrt_vehicle = self.get_detection_wrt_vehicle(detect)
             # it's valid, so needed to remove detections pointing same object 
-            is_first = False
             for i in range(object_cnt) :
                 coordi = object_list.iloc[i][0:4] #xmin, ymin, xmax, ymax
-                if check_list[i] == True : # already mapped with radar point
-                    continue
+
                 if image_xy[0] < coordi[0] or image_xy[0] > coordi[2]:
                     continue
                 if image_xy[1] < coordi[1] or image_xy[1] > coordi[3]:
                     continue
-                # this BBOX include this point
-                name = object_list.iloc[i]["name"]
-                if name == "train":
-                    continue
-            
-                check_list[i] = True
-                is_first = True
-                detection_wrt_vehicle = self.get_detection_wrt_vehicle(detect)
-                detection_wrt_vehicle.name = name
-                break
-            if is_first == True :
-                detection_list.obstacle_list.append(detection_wrt_vehicle)
-                
-            projection_image = self.draw_point_to_image(image, image_xy[0], image_xy[1])
-            # cv2.imshow("test",projection_image)
-            # cv2.waitKey(1)
-        # self.object_pub.publish(self.origin_detection_list)
+
+                if BBOX2RADAR[i] == -1: # first time
+                    BBOX2RADAR[i] = cnt
+                    check_cnt = check_cnt + 1
+                    break
+
+                if self.radar_data.detections[BBOX2RADAR[i]].position.x > detect.position.x:
+                    BBOX2RADAR[i] = cnt
+                    break
+            # image = self.draw_point_to_image(image, image_xy[0], image_xy[1])
+        
+        cnt = 0 
+        for i in range(object_cnt):
+            if BBOX2RADAR[i] == -1 : # 아무것도 할당되지 않은 BBOX
+                continue
+            cnt = cnt + 1
+            detect = self.radar_data.detections[BBOX2RADAR[i]]
+
+            point_wrt_camera = self.get_point_wrt_camera(detect) # xyz1
+            image_xy = self.get_imageXY_from_point(point_wrt_camera)
+            if image_xy is None : 
+                continue
+            image = self.draw_point_to_image(image, image_xy[0], image_xy[1])
+
+            detection_wrt_vehicle = self.get_detection_wrt_vehicle(detect)
+            name = object_list.iloc[i]["name"]
+            detection_wrt_vehicle.name = name 
+            detection_list.obstacle_list.append(detection_wrt_vehicle)
+
+        # print("유효한 radar point 개수", check_cnt)
+        # print("유효한 BBOX 개수", cnt)
+            # image = self.draw_point_to_image(image, image_xy[0], image_xy[1])
+        cv2.imshow("test",image)
+        cv2.waitKey(1)
+
+        print(detection_list.obstacle_list)
         return detection_list
 
 if __name__ == '__main__':

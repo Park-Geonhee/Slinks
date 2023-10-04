@@ -22,9 +22,9 @@ parameters_cam ={
     "ROLL": np.radians(0)
 }
 parameters_lidar = {
-    "X": 1., # meter
-    "Y": 0.,
-    "Z": 1.3,
+    "X": 3.68, # meter
+    "Y": -0.14,
+    "Z": 0.51,
     "YAW": np.radians(0), # radian
     "PITCH": np.radians(0),
     "ROLL": np.radians(0)
@@ -32,7 +32,7 @@ parameters_lidar = {
 
 def getRotMat(RPY):        
     #TODO: (2.1.1) Rotation Matrix 계산 함수 구현
-    
+    print(RPY)
     # Rotation Matrix를 계산하는 영역입니다.
     # 각 회전에 대한 Rotation Matrix를 계산하면 됩니다.
     # Input
@@ -65,23 +65,22 @@ def getRotMat(RPY):
 
 def getSensorToVehicleMat(sensorRPY, sensorPosition): # 4x4
     # Sensor To Vehicle Transformation Matrix를 계산하는 영역입니다.
-    sensorRotationMat = np.zeros((4, 4))
-    sensorRotationMat[:3, :3] = getRotMat(sensorRPY)
-    sensorRotationMat[3, 3] = 1
+    # sensorRotationMat = np.zeros((4, 4))
+    # sensorRotationMat[:3, :3] = getRotMat(sensorRPY)
+    # sensorRotationMat[3, 3] = 1
+    # sensorTranslationMat = np.zeros((4, 4))
+    # insert_col = [sensorPosition[0], sensorPosition[1], sensorPosition[2]]
+    # sensorTranslationMat[:3,3] = insert_col
+    # for i in range(4):
+    #     sensorTranslationMat[i, i] = 1
+    # # print("Rot",sensorRotationMat)
+    # # print("Tr",sensorTranslationMat)
+    # Tr_sensor_to_vehicle = sensorTranslationMat.dot(sensorRotationMat)
 
-    sensorTranslationMat = np.zeros((4, 4))
-    insert_col = [sensorPosition[0], sensorPosition[1], sensorPosition[2]]
-    sensorTranslationMat[:3,3] = insert_col
-    for i in range(4):
-        sensorTranslationMat[i, i] = 1
-    # print("Rot",sensorRotationMat)
-    # print("Tr",sensorTranslationMat)
-    Tr_sensor_to_vehicle = sensorTranslationMat.dot(sensorRotationMat)
-
-    # sensorRotationMat = getRotMat(sensorRPY)
-    # sensorTranslationMat = np.array([sensorPosition])
-    # Tr_sensor_to_vehicle = np.concatenate((sensorRotationMat,sensorTranslationMat.T),axis = 1)
-    # Tr_sensor_to_vehicle = np.insert(Tr_sensor_to_vehicle, 3, values=[0,0,0,1],axis = 0)
+    sensorRotationMat = getRotMat(sensorRPY)
+    sensorTranslationMat = np.array([sensorPosition])
+    Tr_sensor_to_vehicle = np.concatenate((sensorRotationMat,sensorTranslationMat.T),axis = 1)
+    Tr_sensor_to_vehicle = np.insert(Tr_sensor_to_vehicle, 3, values=[0,0,0,1],axis = 0)
     
     # print("sensorToveh",Tr_sensor_to_vehicle)
     return Tr_sensor_to_vehicle
@@ -106,12 +105,16 @@ def getLiDARTOCameraTransformMat(camRPY, camPosition, lidarRPY, lidarPosition):
 
     # lidar = np.array([1.58,-0.01,1.07,1])
     Tr_lidar_to_vehicle = getSensorToVehicleMat(lidarRPY, lidarPosition)
+    print("type",type(Tr_lidar_to_vehicle[0][0]))
+    print("l to v", Tr_lidar_to_vehicle)
     # print("lidar X Tr_lidar_to_vehicle",lidar.dot(Tr_lidar_to_vehicle))
     Tr_cam_to_vehicle = getSensorToVehicleMat(camRPY, camPosition)
     Tr_vehicle_to_cam = inv(Tr_cam_to_vehicle)
     print("v to c", Tr_vehicle_to_cam)
-    exit(1)
     Tr_lidar_to_cam = Tr_vehicle_to_cam.dot(Tr_lidar_to_vehicle)
+    print("l to c", Tr_lidar_to_cam)
+    print("test", Tr_lidar_to_cam.dot(np.array([14.72,-1.4,0,1]).T))
+    exit(1)
     # Tr_lidar_to_cam = np.cross(Tr_lidar_to_vehicle,Tr_vehicle_to_cam)
     
     return Tr_lidar_to_cam
@@ -126,7 +129,7 @@ def getTransformMat(params_cam, params_lidar):
 
     camPosition = np.array([params_cam.get(i) for i in (["X","Y","Z"])]) + camPositionOffset    
     camRPY = np.array([params_cam.get(i) for i in (["ROLL","PITCH","YAW"])]) + np.array([-90*math.pi/180,0,-90*math.pi/180])
-    lidarPosition = np.array([params_lidar.get(i) for i in (["X","Y","Z"])]) + lidarPositionOffset
+    lidarPosition = np.array([params_lidar.get(i) for i in (["X","Y","Z"])]) 
     lidarRPY = np.array([params_lidar.get(i) for i in (["ROLL","PITCH","YAW"])]) + np.array([0,0,0])   
     Tr_lidar_to_cam = getLiDARTOCameraTransformMat(camRPY, camPosition, lidarRPY, lidarPosition)
 

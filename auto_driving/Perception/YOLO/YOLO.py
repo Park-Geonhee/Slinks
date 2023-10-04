@@ -4,6 +4,7 @@ import os
 
 PATH = os.path.dirname(os.path.realpath(__file__)) + '/YOLOv5/'
 class YOLO:
+
     def __init__(self,MODEL):
         self.model = torch.hub.load(PATH, 'custom', MODEL, source='local')
 
