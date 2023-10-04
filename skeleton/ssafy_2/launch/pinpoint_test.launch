@@ -1,7 +1,0 @@
-<launch>
-    <node pkg="ssafy_ad" type="mgeo_pub.py" name="mgeo_pub"  />
-    <node pkg="ssafy_ad" type="gpsimu_parser.py" name="gpsimu_parser" />
-    <node pkg="ssafy_ad" type="mgeo_dijkstra_path_3.py" name="mgeo_dijkstra_path" output="screen" />
-
-    <!-- <node pkg="rviz" type="rviz" name="rviz" args="-d $(find ssafy_2)/rviz/kcity_rviz.rviz" /> -->
-</launch>
