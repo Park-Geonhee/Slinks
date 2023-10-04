@@ -46,12 +46,15 @@ if __name__ == "__main__":
         rate.sleep()
 
         if main.image is None : 
+            print("need to get image")
             continue 
         if main.radar.is_odom is False:
+            print("need to get odom")
             continue
         if main.radar.radar_data is None:
+            print("need to get radar")
             continue
-  
+        # print("test")
         result = main.yolo.get_result(main.image)        
         radar_result = main.radar.get_radar_object_status_list(main.image,result)
         traffic_light_result = main.traffic_light.get_traffic_light_status(main.image, result)
