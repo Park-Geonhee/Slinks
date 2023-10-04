@@ -52,6 +52,8 @@ public class DiaryController {
     public ResponseEntity<List<Diary>> getDiariesByUserAndDateRange(
             @PathVariable Long userId,
             @PathVariable @DateTimeFormat(pattern = "yyyyMMdd") String date) {
+
+        System.out.println("오늘 다이어리 조회합니다잉");
         List<Diary> diaries = diaryService.getDiariesByUserAndCreatedDate(userId, date);
         return ResponseEntity.ok(diaries);
     }
@@ -66,7 +68,7 @@ public class DiaryController {
     }
 
 
-    @GetMapping("/user/{userId")
+    @GetMapping("/user/{userId}")
     public ResponseEntity<List<Place>> getDiaryByUserId(@PathVariable Long userId){
         List<Diary> diaries=diaryService.getDiaryByUserId(userId);
 
