@@ -3,7 +3,6 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/PROS-Backend-main.iml" filepath="$PROJECT_DIR$/.idea/PROS-Backend-main.iml" />
-      <module fileurl="file://$PROJECT_DIR$/neplan/neplan.iml" filepath="$PROJECT_DIR$/neplan/neplan.iml" />
     </modules>
   </component>
 </project>
