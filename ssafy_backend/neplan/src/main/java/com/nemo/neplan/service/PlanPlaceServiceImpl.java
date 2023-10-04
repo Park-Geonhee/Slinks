@@ -1,5 +1,6 @@
 package com.nemo.neplan.service;
 
+import com.nemo.neplan.model.Place;
 import com.nemo.neplan.model.Plan;
 import com.nemo.neplan.model.PlanPlace;
 import com.nemo.neplan.repository.PlanPlaceRepository;
@@ -44,6 +45,8 @@ public class PlanPlaceServiceImpl implements PlanPlaceService {
     public void deletePlanPlace(Long id) {
         planPlaceRepository.deleteById(id);
     }
+
+
 
     @Override
     public void editPlanPlace(PlanPlace planPlace) {

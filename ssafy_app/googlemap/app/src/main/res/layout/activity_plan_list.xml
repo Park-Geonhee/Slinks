@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:layout_marginHorizontal="22dp"
+    android:gravity="center_horizontal"
     >
 
 
@@ -18,9 +18,11 @@
         android:layout_marginTop="46dp"
         android:orientation="horizontal"
 
+
         >
 
         <TextView
+            android:layout_marginLeft="22dp"
             android:id="@+id/textView4"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -30,16 +32,7 @@
             android:text="플랜리스트"
             android:textSize="20dp" />
 
-        <ImageView
 
-            android:id="@+id/imageView23"
-            android:layout_width="31dp"
-            android:layout_height="35dp"
-            android:background="@drawable/outline_day"
-            android:padding="5dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            tools:layout_editor_absoluteY="30dp"
-            tools:srcCompat="@drawable/solarsettingsbold" />
 
 
     </LinearLayout>
@@ -74,8 +67,8 @@
 
 
         android:orientation="horizontal"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+
+        android:layout_marginLeft="22dp"
         app:layout_constraintTop_toBottomOf="@+id/search_bar">
 
         <androidx.appcompat.widget.AppCompatButton
@@ -104,6 +97,22 @@
 
     </LinearLayout>
 
+<!--    <GridView-->
+<!--        xmlns:android="http://schemas.android.com/apk/res/android"-->
+<!--        android:id="@+id/gridView"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="match_parent"-->
+<!--        android:columnWidth="100dp"-->
+<!--        android:numColumns="2"-->
+
+<!--        android:verticalSpacing="10dp"-->
+<!--        android:horizontalSpacing="10dp"-->
+<!--        android:stretchMode="columnWidth"-->
+<!--        android:gravity="center"-->
+<!--        />-->
+
+
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -111,13 +120,8 @@
         android:orientation="horizontal">
 
 
-
-        <!--        <GridView-->
-        <!--            android:id="@+id/gridview"-->
-        <!--            android:layout_width="match_parent"-->
-        <!--            android:numColumns="2"-->
-        <!--            android:layout_height="wrap_content" />-->
         <LinearLayout
+            android:layout_marginLeft="22dp"
 
             android:id="@+id/image_left"
             android:layout_width="wrap_content"
@@ -130,6 +134,7 @@
             app:layout_constraintTop_toBottomOf="@+id/buttons">
 
             <FrameLayout
+                android:id="@+id/btn_detail"
                 android:layout_width="178dp"
                 android:layout_height="148dp"
                 android:layout_marginRight="5dp"
@@ -175,6 +180,7 @@
                         android:background="@drawable/list_btn">
 
                         <ImageView
+                            android:contentDescription="시작 이미지"
                             android:layout_marginLeft="2dp"
                             android:layout_marginBottom="2dp"
                             android:layout_gravity="center"
@@ -190,7 +196,7 @@
                         android:layout_width="28dp"
                         android:layout_height="28dp"
                         android:layout_marginBottom="10dp"
-                        android:layout_marginLeft="10dp"
+                        android:layout_marginStart="10dp"
 
                         android:background="@drawable/list_btn">
 
@@ -209,7 +215,7 @@
             <FrameLayout
                 android:layout_width="178dp"
                 android:layout_height="148dp"
-                android:layout_marginRight="5dp"
+                android:layout_marginEnd="5dp"
                 android:layout_marginBottom="10dp"
                 >
 
@@ -286,7 +292,7 @@
             <FrameLayout
                 android:layout_width="178dp"
                 android:layout_height="148dp"
-                android:layout_marginRight="5dp"
+                android:layout_marginEnd="5dp"
                 android:layout_marginBottom="10dp"
                 >
 
@@ -343,7 +349,7 @@
                         android:layout_width="28dp"
                         android:layout_height="28dp"
                         android:layout_marginBottom="10dp"
-                        android:layout_marginLeft="10dp"
+                        android:layout_marginStart="10dp"
 
                         android:background="@drawable/list_btn">
 
@@ -378,7 +384,7 @@
             <FrameLayout
                 android:layout_width="178dp"
                 android:layout_height="148dp"
-                android:layout_marginRight="5dp"
+                android:layout_marginEnd="5dp"
                 android:layout_marginBottom="10dp"
                 >
 
@@ -402,12 +408,12 @@
 
 
                 <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_width="165dp"
+                    android:layout_height="43dp"
 
                     android:layout_gravity="start|bottom"
-                    android:layout_marginBottom="2dp"
                     android:layout_marginLeft="10dp"
+                    android:layout_marginBottom="2dp"
                     android:orientation="horizontal">
 
 
@@ -420,12 +426,12 @@
                         android:background="@drawable/list_btn">
 
                         <ImageView
-                            android:layout_marginLeft="2dp"
-                            android:layout_marginBottom="2dp"
-                            android:layout_gravity="center"
                             android:layout_width="16dp"
                             android:layout_height="12dp"
-                            android:src="@drawable/list_play"/>
+                            android:layout_gravity="center"
+                            android:layout_marginLeft="2dp"
+                            android:layout_marginBottom="2dp"
+                            android:src="@drawable/list_play" />
 
 
                     </FrameLayout>
@@ -434,17 +440,17 @@
 
                         android:layout_width="28dp"
                         android:layout_height="28dp"
+                        android:layout_marginStart="10dp"
                         android:layout_marginBottom="10dp"
-                        android:layout_marginLeft="10dp"
 
                         android:background="@drawable/list_btn">
 
                         <ImageView
-                            android:layout_marginBottom="2dp"
-                            android:layout_gravity="center"
                             android:layout_width="16dp"
                             android:layout_height="16dp"
-                            android:src="@drawable/list_plus"/>
+                            android:layout_gravity="center"
+                            android:layout_marginBottom="2dp"
+                            android:src="@drawable/list_plus" />
 
 
                     </FrameLayout>
@@ -454,7 +460,7 @@
             <FrameLayout
                 android:layout_width="178dp"
                 android:layout_height="148dp"
-                android:layout_marginRight="5dp"
+                android:layout_marginEnd="5dp"
                 android:layout_marginBottom="10dp"
                 >
 
@@ -512,7 +518,7 @@
                         android:layout_width="28dp"
                         android:layout_height="28dp"
                         android:layout_marginBottom="10dp"
-                        android:layout_marginLeft="10dp"
+                        android:layout_marginStart="10dp"
 
                         android:background="@drawable/list_btn">
 
@@ -531,7 +537,7 @@
             <FrameLayout
                 android:layout_width="178dp"
                 android:layout_height="148dp"
-                android:layout_marginRight="5dp"
+                android:layout_marginEnd="5dp"
                 android:layout_marginBottom="10dp"
                 >
 
@@ -589,7 +595,7 @@
                         android:layout_width="28dp"
                         android:layout_height="28dp"
                         android:layout_marginBottom="10dp"
-                        android:layout_marginLeft="10dp"
+                        android:layout_marginStart="10dp"
 
                         android:background="@drawable/list_btn">
 
@@ -641,6 +647,7 @@
         app:layout_constraintVertical_bias="0.7">
 
         <LinearLayout
+            android:id="@+id/btn_diary"
             android:layout_width="wrap_content"
 
             android:layout_height="wrap_content"
@@ -664,6 +671,7 @@
         </LinearLayout>
 
         <LinearLayout
+            android:id="@+id/btn_trvel_plan"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="20dp"
@@ -686,6 +694,7 @@
         </LinearLayout>
 
         <LinearLayout
+            android:id="@+id/btn_plan_list"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="20dp"

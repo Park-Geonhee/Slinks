@@ -10,13 +10,14 @@ import java.util.Optional;
 @Service
 public class DiaryServiceImpl implements DiaryService {
 
-    private final DiaryRepository diaryRepository;
+    @Autowired
+    private DiaryRepository diaryRepository;
 
     @Autowired
-    public DiaryServiceImpl(DiaryRepository diaryRepository) {
-        this.diaryRepository = diaryRepository;
-    }
+    private FileService fileService;
 
+    @Autowired
+    private PlaceService placeService;
     @Override
     public List<Diary> getAllDiaries() {
         return diaryRepository.findAll();
@@ -37,8 +38,10 @@ public class DiaryServiceImpl implements DiaryService {
 
     @Override
     public Diary createDiary(Diary diary) {
+        // Diary 객체를 저장하고 저장된 객체를 반환
         return diaryRepository.save(diary);
     }
+
 
     @Override
     public Diary updateDiary(Diary diary) {
@@ -51,6 +54,11 @@ public class DiaryServiceImpl implements DiaryService {
         }
 
         return null; // 존재하지 않는 일기라면 예외 처리 혹은 null 반환
+    }
+
+    @Override
+    public List<Diary> getDiaryByUserId(Long userId) {
+        return diaryRepository.findByUserId(userId);
     }
 
 

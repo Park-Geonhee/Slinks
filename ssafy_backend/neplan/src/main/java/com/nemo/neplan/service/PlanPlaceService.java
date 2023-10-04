@@ -1,5 +1,6 @@
 package com.nemo.neplan.service;
 
+import com.nemo.neplan.model.Place;
 import com.nemo.neplan.model.Plan;
 import com.nemo.neplan.model.PlanPlace;
 
@@ -11,6 +12,7 @@ public interface PlanPlaceService {
     List<PlanPlace> getPlanPlacesByPlaceId(Long placeId);
     PlanPlace createPlanPlace(PlanPlace planPlace);
     void deletePlanPlace(Long id);
+
 
 
 

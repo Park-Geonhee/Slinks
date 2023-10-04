@@ -4,6 +4,7 @@
 from Perception import *
 import cv2
 import rospy
+import sys
 
 from morai_msgs.msg import ObjectStatusList, GetTrafficLightStatus
 from sensor_msgs.msg import CompressedImage
@@ -13,7 +14,10 @@ class Main:
         rospy.Subscriber("/image_jpeg/compressed", CompressedImage, self.image_callback)
         self.radar_pub = rospy.Publisher('forward_object',ObjectStatusList, queue_size=1)
         self.traffic_light_pub = rospy.Publisher('traffic_data', GetTrafficLightStatus, queue_size=1)
-        self.yolo = YOLO()
+        try:
+            self.yolo = YOLO(sys.argv[1])
+        except:
+            self.yolo=YOLO("yolov5s_openvino_model/")
         self.radar = Radar()
         self.traffic_light = TrafficLight()
         
@@ -29,6 +33,11 @@ class Main:
 
 
 if __name__ == "__main__":
+    if(len(sys.argv)==1):
+        print("Don't Input YOLOv5 Model Name")
+        print("Default : yolov5s_openvino_model inference:150ms mAP@.5:0.712 mAP50-95:0.472")
+    else:
+        print(f"Model : {sys.argv[1]}")
     rospy.init_node("perception", anonymous=True)
     main = Main()
     

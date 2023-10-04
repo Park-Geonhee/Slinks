@@ -38,13 +38,7 @@ public class PlanPlace implements Serializable {
         return id;
     }
 
-//    public int getPlaceOrder() {
-//        return placeOrder;
-//    }
-//
-//    public void setPlaceOrder(int placeOrder) {
-//        this.placeOrder = placeOrder;
-//    }
+
 
     public void setId(long id) {
         this.id = id;
@@ -66,20 +60,6 @@ public class PlanPlace implements Serializable {
         this.place = place;
     }
 
-//    @PrePersist
-//    public void assignPlaceOrder() {
-//        if (plan != null) {
-//            // 플레이리스트에 속한 곡 중 가장 큰 placeOrder 값을 조회합니다.
-//            int maxPlaceOrder = plan.getMaxPlaceOrder();
-//
-//            // maxPlaceOrder 값이 없는 경우(플레이리스트가 비어있는 경우) 1을 할당합니다.
-//            if (maxPlaceOrder == 0) {
-//                this.placeOrder = 1;
-//            } else {
-//                // maxPlaceOrder 값에 1을 더한 값을 할당합니다.
-//                this.placeOrder = maxPlaceOrder + 1;
-//            }
-//        }
-//    }
+
 
 }
