@@ -17,7 +17,7 @@ class Main:
         try:
             self.yolo = YOLO(sys.argv[1])
         except:
-            self.yolo=YOLO("yolov5s_openvino_model/")
+            self.yolo=YOLO("yolov5s.onnx")
         self.radar = Radar()
         self.traffic_light = TrafficLight()
         
@@ -35,7 +35,7 @@ class Main:
 if __name__ == "__main__":
     if(len(sys.argv)==1):
         print("Don't Input YOLOv5 Model Name")
-        print("Default : yolov5s_openvino_model inference:150ms mAP@.5:0.712 mAP50-95:0.472")
+        print("Default : yyolov5s.onnx inference:150ms mAP@.5:0.712 mAP50-95:0.472")
     else:
         print(f"Model : {sys.argv[1]}")
     rospy.init_node("perception", anonymous=True)

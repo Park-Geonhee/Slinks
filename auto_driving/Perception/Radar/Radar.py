@@ -242,7 +242,6 @@ class Radar:
                     continue
                 if image_xy[1] < coordi[1] or image_xy[1] > coordi[3]:
                     continue
-<<<<<<< HEAD
 
                 if BBOX2RADAR[i] == -1: # first time
                     BBOX2RADAR[i] = cnt
@@ -278,45 +277,7 @@ class Radar:
         cv2.imshow("test",image)
         cv2.waitKey(1)
 
-        
-
         print(detection_list.obstacle_list)
-=======
-                # this BBOX include this point
-                name = object_list.iloc[i]["name"]
-                if name == "train":
-                    continue
-            
-                check_list[i] = True
-                is_first = True
-                detection_wrt_vehicle = self.get_detection_wrt_vehicle(detect)
-                detection_wrt_vehicle.name = name
-                break
-            if is_first == True :
-                detection_list.obstacle_list.append(detection_wrt_vehicle)
-<<<<<<< HEAD:auto_driving/Perception/Radar/Radar.py
-<<<<<<< HEAD
-            detection_wrt_vehicle = self.get_detection_wrt_vehicle(detect)
-            image = self.draw_point_to_image(image, image_xy[0], image_xy[1])
-            cv2.imshow("test",image)
-            cv2.waitKey(1)
-
-        
-
-        print(detection_list.obstacle_list)
-=======
-=======
->>>>>>> Perception/Optimize:auto_driving/Perception/Radar/Radar1.py
-                
-            projection_image = self.draw_point_to_image(image, image_xy[0], image_xy[1])
-            # cv2.imshow("test",projection_image)
-            # cv2.waitKey(1)
-        # self.object_pub.publish(self.origin_detection_list)
-<<<<<<< HEAD:auto_driving/Perception/Radar/Radar.py
->>>>>>> 904178e743e8231c3fbef61593af5ef66281bf5c
-=======
->>>>>>> a95aaf4a1ca06165539e7cf0e151b6c1b6db94a5
->>>>>>> Perception/Optimize:auto_driving/Perception/Radar/Radar1.py
         return detection_list
 
 if __name__ == '__main__':
