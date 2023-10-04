@@ -1,0 +1,3 @@
+app:
+  firebase-configuration-file: ./serviceAccountKey.json
+  firebase-bucket: slinks-56a79.appspot.com

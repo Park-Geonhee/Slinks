@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  neplan-backend:
+    build:
+      context: .
+      dockerfile: DockerfileFix
+    container_name: neplan-backend
+    networks:
+      - deploy
+    ports:
+      - "8080:8080"
+
+networks:
+  deploy:
+    external: true
+

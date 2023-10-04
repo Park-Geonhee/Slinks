@@ -31,16 +31,6 @@ parameters_lidar = {
 }
 
 def getRotMat(RPY):        
-    #TODO: (2.1.1) Rotation Matrix 계산 함수 구현
-    
-    # Rotation Matrix를 계산하는 영역입니다.
-    # 각 회전에 대한 Rotation Matrix를 계산하면 됩니다.
-    # Input
-        # RPY : sensor orientation w.r.t vehicle. (Roll, Pitch, Yaw)
-    # Output
-        # rotMat : 3x3 Rotation Matrix of sensor w.r.t vehicle.
-    # Tip : math, numpy
-    # reference : https://msl.cs.uiuc.edu/planning/node102.html   
     print('RPY',RPY) 
     cosR = math.cos(RPY[0])
     cosP = math.cos(RPY[1])
@@ -74,36 +64,14 @@ def getSensorToVehicleMat(sensorRPY, sensorPosition): # 4x4
     sensorTranslationMat[:3,3] = insert_col
     for i in range(4):
         sensorTranslationMat[i, i] = 1
-    # print("Rot",sensorRotationMat)
-    # print("Tr",sensorTranslationMat)
+
     Tr_sensor_to_vehicle = sensorTranslationMat.dot(sensorRotationMat)
-    # sensorRotationMat = getRotMat(sensorRPY)
-    # sensorTranslationMat = np.array([sensorPosition])
-    # Tr_sensor_to_vehicle = np.concatenate((sensorRotationMat,sensorTranslationMat.T),axis = 1)
-    # Tr_sensor_to_vehicle = np.insert(Tr_sensor_to_vehicle, 3, values=[0,0,0,1],axis = 0)
-    
-    # print("sensorToveh",Tr_sensor_to_vehicle)
     return Tr_sensor_to_vehicle
 
 def getLiDARTOCameraTransformMat(camRPY, camPosition, lidarRPY, lidarPosition):
     #TODO: (2.2) LiDAR to Camera Transformation Matrix 계산
     # LiDAR to Camera Transformation Matrix를 계산하는 영역입니다.
-    # 아래 순서대로 계산하면 됩니다.
-        # 1. LiDAR to Vehicle Transformation Matrix 계산        
-        # 2. Camera to Vehicle Transformation Matrix 계산
-        # 3. Vehicle to Camera Transformation Matrix 계산
-        # 3. LiDAR to Camera Transformation Matrix 계산
-    # Input
-        # camRPY : Orientation
-        # camPosition
-        # lidarRPY
-        # lidarPosition
-    # Output
-        # Tr_lidar_to_cam
-    # Tip : getSensorToVehicleMat, inv 사용 필요
-    # inv : matrix^-1
-
-    # lidar = np.array([1.58,-0.01,1.07,1])
+    # 아래  
     Tr_lidar_to_vehicle = getSensorToVehicleMat(lidarRPY, lidarPosition)
     # print("lidar X Tr_lidar_to_vehicle",lidar.dot(Tr_lidar_to_vehicle))
     Tr_cam_to_vehicle = getSensorToVehicleMat(camRPY, camPosition)
@@ -129,17 +97,6 @@ def getTransformMat(params_cam, params_lidar):
     return Tr_lidar_to_cam
 
 def getCameraMat(params_cam):
-    #TODO: (3) Intrinsic : Camera Matrix (Camera to Image Plane) 계산
-
-    # Camera의 Intrinsic parameter로 이루어진 Camera Matrix를 계산하는 영역입니다.
-    # Camera의 width, height, fov 값을 활용하여 focal length, principal point를 계산한 뒤,
-    # 이를 조합하여 Camera Matrix를 생성합니다.
-    # Camera Model은 Lens 왜곡이 없는 Pinhole Model임을 참고하시기 바랍니다.
-    # Input
-        # params_cam : camera parameters
-    # Output
-        # CameraMat : 3x3 Intrinsic Matrix(a.k.a. Camera Matrix)    
-
     camera_width = params_cam['WIDTH']
     camera_height = params_cam['HEIGHT']
     fov = params_cam['FOV']
@@ -289,8 +246,6 @@ if __name__ == '__main__':
         if Transformer.img_status == False :
             continue
         projectionImage = draw_pts_img(Transformer.img, lidar_xy[0,:], lidar_xy[1,:],(0,255,0))
-        projectionImage = draw_pts_img(projectionImage, radar_xy[0,:], radar_xy[1,:],(255,0,0))
+        # projectionImage = draw_pts_img(projectionImage, radar_xy[0,:], radar_xy[1,:],(255,0,0))
         cv2.imshow("LidartoCameraProjection", projectionImage)
         cv2.waitKey(1)
-
-

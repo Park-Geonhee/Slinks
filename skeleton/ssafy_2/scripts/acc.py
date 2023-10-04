@@ -10,7 +10,7 @@ from morai_msgs.msg import CtrlCmd,EgoVehicleStatus,ObjectStatusList
 import numpy as np
 import tf
 from tf.transformations import euler_from_quaternion,quaternion_from_euler
-
+import sys
 # acc 는 차량의 Adaptive Cruise Control 예제입니다.
 # 차량 경로상의 장애물을 탐색하여 탐색된 차량과의 속도 차이를 계산하여 Cruise Control 을 진행합니다.
 
@@ -40,6 +40,10 @@ from tf.transformations import euler_from_quaternion,quaternion_from_euler
 class pure_pursuit :
     def __init__(self):
         rospy.init_node('pure_pursuit', anonymous=True)
+        arg = rospy.myargv(argv=sys.argv)
+        local_path_name = arg[1]
+
+        rospy.Subscriber(local_path_name, Path, self.path_callback)
 
         #TODO: (1) subscriber, publisher 선언
         
@@ -49,7 +53,7 @@ class pure_pursuit :
         # Ego topic 데이터는 차량의 현재 속도를 알기 위해 사용한다.
         # Gloabl Path 데이터는 경로의 곡률을 이용한 속도 계획을 위해 사용한다.
         rospy.Subscriber("/global_path", Path, self.global_path_callback )
-        rospy.Subscriber("local_path", Path, self.path_callback )
+        # rospy.Subscriber("local_path", Path, self.path_callback )
         rospy.Subscriber("odom", Odometry, self.odom_callback )
         rospy.Subscriber("/Ego_topic", EgoVehicleStatus, self.status_callback )
         rospy.Subscriber("/radar_detection", ObjectStatusList, self.object_info_callback )
@@ -64,6 +68,7 @@ class pure_pursuit :
         self.is_odom = False
         self.is_status = False
         self.is_global_path = False
+        self.is_object_info = False
 
         self.is_look_forward_point = False
 
@@ -72,7 +77,7 @@ class pure_pursuit :
 
         self.vehicle_length = 2.6
         self.lfd = 8
-        self.min_lfd=5
+        self.min_lfd=3
         self.max_lfd=30
         self.lfd_gain = 0.78
         self.target_velocity = 60
@@ -83,18 +88,22 @@ class pure_pursuit :
 
         while True:
             if self.is_global_path == True:
+                rospy.loginfo('Auto-driving will be started')
                 self.velocity_list = self.vel_planning.curvedBaseVelocity(self.global_path, 50)
                 break
             else:
-                rospy.loginfo('Waiting global path data')
+                pass
+                # rospy.loginfo('Waiting global path data')
+        
+        self.frequency = 10
 
-        rate = rospy.Rate(30) # 30hz
+        rate = rospy.Rate(self.frequency) # 10hz
         while not rospy.is_shutdown():
 
-            if self.is_path == True and self.is_odom == True and self.is_status == True:
+            if self.is_path == True and self.is_odom == True and self.is_status == True and self.is_object_info == True:
 
                 # global_obj,local_obj
-                result = self.calc_vaild_obj([self.current_postion.x,self.current_postion.y,self.vehicle_yaw],self.object_data)
+                result = self.calc_vaild_obj([self.current_postion.x,self.current_postion.y,self.vehicle_yaw],self.radar_detection)
                 
                 global_npc_info = result[0] 
                 local_npc_info = result[1] 
@@ -132,8 +141,7 @@ class pure_pursuit :
                 
                 # 제어입력 메세지 를 전송하는 publisher 를 만든다.
                 self.ctrl_cmd_pub.publish(self.ctrl_cmd_msg)
-                
-                
+                rospy.loginfo(self.ctrl_cmd_msg)
 
             rate.sleep()
 
@@ -158,7 +166,7 @@ class pure_pursuit :
 
     def object_info_callback(self,data): ## Object information Subscriber
         self.is_object_info = True
-        self.object_data = data 
+        self.radar_detection = data 
 
     def get_current_waypoint(self,ego_status,global_path):
         min_dist = float('inf')        
@@ -177,9 +185,9 @@ class pure_pursuit :
                 currnet_waypoint = i
         return currnet_waypoint
 
-    def calc_vaild_obj(self,status_msg,object_data):
+    def calc_vaild_obj(self,status_msg,radar_detection):
         
-        self.all_object = object_data        
+        self.all_object = radar_detection        
         ego_pose_x = status_msg[0]
         ego_pose_y = status_msg[1]
         ego_heading = status_msg[2]
@@ -240,13 +248,13 @@ class pure_pursuit :
         # 최소 최대 전방주시거리(Look Forward Distance) 값과 속도에 비례한 lfd_gain 값을 직접 변경해 볼 수 있습니다.
         # 초기 정의한 변수 들의 값을 변경하며 속도에 비례해서 전방주시거리 가 변하는 advanced_purepursuit 예제를 완성하세요.
         # 
-        self.lfd = self.lfd_gain * self.status_msg.velocity.x * 3.6
+        self.lfd = self.lfd_gain * self.status_msg.velocity.x
         if self.lfd < self.min_lfd :
             self.lfd = self.min_lfd
         if self.lfd > self.max_lfd:
             self.lfd = self.max_lfd
 
-        rospy.loginfo(self.lfd)        
+        # rospy.loginfo(self.lfd)        
         
         vehicle_position=self.current_postion
         self.is_look_forward_point= False
@@ -287,7 +295,7 @@ class pure_pursuit :
 
         det_trans_matrix = np.linalg.inv(trans_matrix)
 
-        for num,i in enumerate(self.path.poses) :
+        for i in self.path.poses :
             path_point = i
 
             global_path_point = [ path_point.pose.position.x, path_point.pose.position.y, 1]
@@ -305,6 +313,7 @@ class pure_pursuit :
         # 제어 입력을 위한 Steering 각도를 계산 합니다.
         # theta 는 전방주시거리(Look Forward Distance) 와 가장 가까운 Path Point 좌표의 각도를 계산 합니다.
         # Steering 각도는 Pure Pursuit 알고리즘의 각도 계산 수식을 적용하여 조향 각도를 계산합니다.
+        
         sin_alpha = self.forward_point[1]/sqrt(self.forward_point[0]*self.forward_point[0] + self.forward_point[1]*self.forward_point[1])
         theta = atan2( 2 * self.vehicle_length*sin_alpha ,self.lfd)
         steering = theta
@@ -341,21 +350,24 @@ class pidControl:
 
 class velocityPlanning:
     def __init__ (self,car_max_speed, road_friciton):
-        self.car_max_speed = car_max_speed
+        #self.car_max_speed = car_max_speed
         self.road_friction = road_friciton
 
-    def curvedBaseVelocity(self, gloabl_path, point_num):
+    def curvedBaseVelocity(self, global_path, point_num):
         out_vel_plan = []
 
         for i in range(0,point_num):
-            out_vel_plan.append(self.car_max_speed)
+            car_max_speed = global_path.poses[i].pose.position.z / 3.6
+            out_vel_plan.append(car_max_speed)
 
-        for i in range(point_num, len(gloabl_path.poses) - point_num):
+        for i in range(point_num, len(global_path.poses) - point_num):
             x_list = []
             y_list = []
+            car_max_speed = global_path.poses[i].pose.position.z / 3.6
+            
             for box in range(-point_num, point_num):
-                x = gloabl_path.poses[i+box].pose.position.x
-                y = gloabl_path.poses[i+box].pose.position.y
+                x = global_path.poses[i+box].pose.position.x
+                y = global_path.poses[i+box].pose.position.y
                 x_list.append([-2*x, -2*y ,1])
                 y_list.append((-x*x) - (y*y))
 
@@ -369,12 +381,20 @@ class velocityPlanning:
             # 원의 좌표를 구하는 행렬 계산식, 최소 자승법을 이용하는 방식 등 곡률 반지름을 구하기 위한 식을 적용 합니다.
             
             aMatTrans = np.transpose(aMat)
-            resMat = np.linalg.inv(aMatTrans.dot(aMat)).dot(aMatTrans).dot(bMat)
-            #resMat = np.linalg.inv(((aMatTrans.dot(aMat)).dot(aMatTrans)).dot(bMat))
+
+            lsmMat = aMatTrans.dot(aMat)
+
+            # if Mat doesn't have Reverse, Do not calculate
+
+            if np.linalg.det(lsmMat) == 0 :
+                out_vel_plan.append(self.car_max_speed)
+                continue
+            
+            resMat = np.linalg.inv(lsmMat).dot(aMatTrans).dot(bMat)
+
 			# 적용한 수식을 통해 곡률 반지름 "r" 을 계산합니다.
 
             r = sqrt(resMat[0]*resMat[0] + resMat[1]*resMat[1] - resMat[2])
-
 
             #TODO: (7) 곡률 기반 속도 계획
             # 계산 한 곡률 반경을 이용하여 최고 속도를 계산합니다.
@@ -382,16 +402,18 @@ class velocityPlanning:
             # 곡률 반경 x 중력가속도 x 도로의 마찰 계수 계산 값의 제곱근이 됩니다.
             v_max =sqrt(r * 9.81 * self.road_friction )
 
-            if v_max > self.car_max_speed:
-                v_max = self.car_max_speed
+            if v_max > car_max_speed:
+                v_max = car_max_speed
+            
             out_vel_plan.append(v_max)
 
-        for i in range(len(gloabl_path.poses) - point_num, len(gloabl_path.poses)-10):
+        for i in range(len(global_path.poses) - point_num, len(global_path.poses)-10):
             out_vel_plan.append(30)
 
-        for i in range(len(gloabl_path.poses) - 10, len(gloabl_path.poses)):
+        for i in range(len(global_path.poses) - 10, len(global_path.poses)):
             out_vel_plan.append(0)
-
+        rospy.loginfo("Velocity Planning")
+        rospy.loginfo(out_vel_plan)
         return out_vel_plan
 
 class AdaptiveCruiseControl:
@@ -462,11 +484,12 @@ class AdaptiveCruiseControl:
                             rel_distance = sqrt(pow(local_obs_info[i][1], 2) + pow(local_obs_info[i][2], 2))               
                             if rel_distance < min_rel_distance:
                                 min_rel_distance = rel_distance
-                                self.object=[True,i] 
+                                # self.object=[True,i] 
 
         
     def get_target_velocity(self, local_npc_info, local_ped_info, local_obs_info, ego_vel, target_vel): 
         #TODO: (9) 장애물과의 속도와 거리 차이를 이용하여 ACC 를 진행 목표 속도를 설정
+        # print("before Target vel : ", target_vel)
         out_vel =  target_vel
         default_space = 8
         time_gap = self.time_gap
@@ -482,7 +505,7 @@ class AdaptiveCruiseControl:
             vel_rel=((front_vehicle[2] / 3.6) - ego_vel)                        
             acceleration = vel_rel * v_gain - x_errgain * (dis_safe - dis_rel)
 
-            out_vel = ego_vel + acceleration      
+            out_vel = min(out_vel, ego_vel + acceleration)      
 
         if self.Person[0] and len(local_ped_info) != 0: #ACC ON_Pedestrian
             print("ACC ON Pedestrian")
@@ -493,7 +516,7 @@ class AdaptiveCruiseControl:
             vel_rel = (Pedestrian[2] - ego_vel)              
             acceleration = vel_rel * v_gain - x_errgain * (dis_safe - dis_rel)    
 
-            out_vel = ego_vel + acceleration
+            out_vel = min(out_vel, ego_vel + acceleration)
    
         if self.object[0] and len(local_obs_info) != 0: #ACC ON_obstacle     
             print("ACC ON Obstacle")                    
@@ -504,12 +527,11 @@ class AdaptiveCruiseControl:
             vel_rel = (Obstacle[2] - ego_vel)
             acceleration = vel_rel * v_gain - x_errgain * (dis_safe - dis_rel)    
 
-            out_vel = ego_vel + acceleration           
+            out_vel = min(out_vel, ego_vel + acceleration)           
 
-        out_vel = min(out_vel, target_vel) * 3.6
-        print("now Target_vel = ", out_vel)
+        # print("now Target_vel = ", out_vel)
 
-        return out_vel
+        return out_vel * 3.6
 
 
 if __name__ == '__main__':

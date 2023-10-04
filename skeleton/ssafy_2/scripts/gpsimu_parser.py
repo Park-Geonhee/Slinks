@@ -28,8 +28,8 @@ class GPSIMUParser:
         # 웹에서 출발지, 경유지, 도착지 좌표(gps)를 받는 subscriber 필요
         rospy.Subscriber("/point", Float64MultiArray, self.poinpoint_list_callback)
 
-        self.odom_pub = rospy.Publisher('/odom',Odometry, queue_size=1)
-        self.pinpoint_utm_list_pub = rospy.Publisher('/pinpoint_utm_list',Float64MultiArray, queue_size=1)
+        self.odom_pub = rospy.Publisher('odom',Odometry, queue_size=1)
+        self.pinpoint_utm_list_pub = rospy.Publisher('pinpoint_utm_list',Float64MultiArray, queue_size=1)
     
         # 초기화
         self.input_len = 0
@@ -73,10 +73,10 @@ class GPSIMUParser:
         while not rospy.is_shutdown():
             if self.is_imu==True and self.is_gps == True:
                 self.convertLL2UTM()
-
+                print("odom")
                 #TODO: (5) Odometry 메세지 Publish
-
                 self.odom_pub.publish(self.odom_msg)
+                print("fin pub")
                 if self.is_pinpoint:
                     self.pinpoint_utm_list_pub.publish(self.pinpoint_utm_list)
                     self.is_pinpoint = False

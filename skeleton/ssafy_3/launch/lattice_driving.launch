@@ -1,16 +1,20 @@
 <launch>
     <node pkg="ssafy_ad" type="mgeo_pub.py" name="mgeo_pub"  />
     <node pkg="ssafy_ad" type="gpsimu_parser.py" name="gpsimu_parser" />
-    <node pkg="ssafy_ad" type="global_path_pub.py" name="global_path_pub"  />
-    <!-- <node pkg="ssafy_ad" type="mgeo_dijkstra_path_2.py" name="global_path_pub"  /> -->
+    <!-- <node pkg="ssafy_ad" type="global_path_pub.py" name="global_path_pub"  /> -->
+    <node pkg="ssafy_ad" type="mgeo_dijkstra_path_1.py" name="global_path_pub"  output="screen"/>
     <node pkg="ssafy_ad" type="local_path_pub.py" name="local_path_pub" />    
     <node pkg="ssafy_ad" type="tf_pub.py" name="tf"  />
 
-    <node pkg="ssafy_ad" type="lidar_cluster.py" name="lidar"  />
-    <node pkg="ssafy_ad" type="radar_data.py" name="radar"  />
-    <node pkg="ssafy_ad" type="set_object.py" name="set_object"  />
+    <!-- <node pkg="ssafy_ad" type="lidar_cluster.py" name="lidar"  /> -->
+    <!-- <node pkg="ssafy_ad" type="radar_data.py" name="radar"  /> -->
+    <!-- <node pkg="ssafy_ad" type="set_object.py" name="set_object"  /> -->
 
-    <node pkg="ssafy_ad" type="lattice_planner.py" name="lattice_planner" args="/radar_detection" />
+    <!-- if you want to get data by Object_topic in MORAI SIM -->
+    <!-- you have to change topic in MORAI SIM -->
+    <!-- Object_topic -> radar_detection -->
+
+    <node pkg="ssafy_ad" type="lattice_planner.py" name="lattice_planner" args="/radar_detection" output="screen"/>
     <node pkg="ssafy_ad" type="acc.py" name="acc"  args="/lattice_path" output="screen"/>
     <!-- <node pkg="ssafy_ad" type="acc_with_tl.py" name="acc_with_tl"  args="/lattice_path" output="screen"/> -->
     <!-- <node pkg="ssafy_ad" type="advanced_purepursuit.py" name="advanced_purepursuit"  args="/lattice_path"/> -->

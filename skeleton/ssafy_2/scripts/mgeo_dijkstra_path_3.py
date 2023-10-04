@@ -108,7 +108,6 @@ class dijkstra_path_pub :
             self.target_node_list.append(nearest_node)
             self.is_node_list = True
 
-
             #if self.is_node_list:
         self.global_path_msg.poses = []
         for i in range(len(self.target_node_list)-1):
