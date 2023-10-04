@@ -73,7 +73,7 @@ class Radar :
         float32 amplitude
         '''
         radar_data_list = RadarDetections()
-        print("Right Object!!")
+        # print("Right Object!!")
         for point in msg.detections :
             if point.position.x == 0 and point.position.y == 0 and point.position.z == 0 :
                 continue
@@ -82,7 +82,7 @@ class Radar :
             trans_data = self.RightTransmMat.dot(tmp_data.T)
             if trans_data[1]<-6 :
                 continue
-            print(trans_data, point.rangerate)
+            # print(trans_data, point.rangerate)
             # radar_data = RadarDetection()
             # radar_data.detection_id = point.detection_id
             # radar_data.position.x = trans_data[0]
@@ -99,7 +99,7 @@ class Radar :
         
     def left_callback(self, msg): #RaderDetection[] RadarDetections
         radar_data_list = RadarDetections()
-        print("Left Object!!")
+        # print("Left Object!!")
         for point in msg.detections :
             if point.position.x == 0 and point.position.y == 0 and point.position.z == 0 :
                 continue
@@ -108,7 +108,7 @@ class Radar :
             trans_data = self.RightTransmMat.dot(tmp_data.T)
             if trans_data[1]<-6 :
                 continue
-            print(trans_data, point.rangerate)
+            # print(trans_data, point.rangerate)
             # radar_data = RadarDetection()
             # radar_data.detection_id = point.detection_id
             # radar_data.position.x = trans_data[0]
