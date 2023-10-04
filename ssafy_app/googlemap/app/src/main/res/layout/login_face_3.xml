@@ -164,6 +164,7 @@
             >
 
             <LinearLayout
+                android:id="@+id/btn_kakao_login"
                 android:layout_marginTop="10dp"
                 android:gravity="center"
                 android:layout_width="match_parent"
