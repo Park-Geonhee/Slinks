@@ -198,7 +198,6 @@ class latticePlanner:
 
             # Add_point            
             # 3 차 곡선 경로가 모두 만들어 졌다면 이후 주행 경로를 추가 합니다.
-            out_path = out_path[::-1]
             add_point_size = min(int(vehicle_velocity * 2), len(ref_path.poses) )           
             
             for i in range(look_distance * 2, add_point_size):
@@ -234,6 +233,8 @@ class latticePlanner:
                 globals()['lattice_pub_{}'.format(i+1)].publish(out_path[i])
 
             '''
+            out_path = out_path[::-1]
+
             for i in range(len(out_path)):          
                 # 동적으로 Publisher 객체 생성
                 if self.link_info.possible_lattice_pathes[i] == False: continue
