@@ -75,5 +75,5 @@ $catkin_make
 self.link_info_pub = rospy.Publisher("link_info", custom_link_parser, queue_size=1)
 self.link_info_pub.publish(link_info_msg)
 # Subscribe
- rospy.Subscriber("/link_info", custom_link_parser, self.get_link_info_callback)
+rospy.Subscriber("/link_info", custom_link_parser, self.get_link_info_callback)
 ```
