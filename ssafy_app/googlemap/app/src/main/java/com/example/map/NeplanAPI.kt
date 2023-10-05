@@ -23,4 +23,11 @@ interface NeplanAPI {
     @GET("planplaces/getPlacesByPlanId/{planId}")
      fun GettingPlaces(@Path("planId") planId:Long):Call<List<Coordination>>
 
+     @GET("place/search")
+    fun searchPlaceByKeyword(@Body keyword:String):Call<List<Place>>
+
+
+    @GET("diary/user/{userId}/place/{placeId}")
+    fun getDiariesByUserAndPlace(@Path("userId") userId:Long,
+                                 @Path("placeId") placeId: Long):Call<List<Diary>>
 }

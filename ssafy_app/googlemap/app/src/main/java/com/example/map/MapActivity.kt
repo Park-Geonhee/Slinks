@@ -2,11 +2,16 @@ package com.example.map
 
 import File
 import android.content.Intent
+import android.content.res.Resources
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.bumptech.glide.Glide
+import com.bumptech.glide.request.RequestOptions
 import com.example.map.databinding.ActivityMapBinding
 
 
@@ -35,6 +40,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
     private lateinit var googleMap: GoogleMap
     private var currentMarker: Marker? = null
     lateinit var nowPlace: Place
+    lateinit var searchResult:List<Place>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -89,11 +95,10 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
 
 
             // 경유지 추가 post 요청
-            CoroutineScope(Dispatchers.IO).launch {
+            CoroutineScope(Dispatchers.Default).launch {
                 try {
                     // Retrofit을 사용하여 API 호출
-                    val response: PlanPlace =
-                        RetrofitClient.getRetrofitService.createPlanPlace(planplace)
+                    val response: PlanPlace = RetrofitClient.getRetrofitService.createPlanPlace(planplace)
                         Log.d("response값 확인 ",response.toString())
                     // 서버 응답을 처리할 수 있는 코드 작성
                     if (response.id != null) {
@@ -116,7 +121,73 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
 
         }
 
-        return Unit
+
+
+        //장소검색
+        binding.searchButton.setOnClickListener {
+            val searchText = binding.placeSearch.text.toString()
+
+            // TODO: searchText를 사용하여 장소를 검색하고 지도에 표시하는 작업 수행
+            // 이 부분에 실제로 지도에 장소를 표시하는 코드를 작성해야 합니다.
+//            val call=RetrofitClient.getRetrofitService.searchPlaceByKeyword(searchText)
+
+            CoroutineScope(Dispatchers.Default).launch {
+                val call=RetrofitClient.getRetrofitService.searchPlaceByKeyword(searchText)
+
+
+                call.enqueue(object: Callback<List<Place>> {
+                    override fun onResponse(call: Call<List<Place>>, response: Response<List<Place>>) {
+                        Toast.makeText(applicationContext, "장소검색 완료", Toast.LENGTH_SHORT).show()
+                        if(response.isSuccessful) {
+                            searchResult = response.body() ?: listOf()
+
+
+                            //검색결과를 지도화면에 나타내기
+                            for (p in searchResult) {
+                                val place =p
+                                if (place != null && place.x != null && place.y != null) {
+                                    val location = LatLng(place.x.toDouble(), place.y.toDouble())
+
+                                    val markerOptions = MarkerOptions().apply {
+                                        position(location)
+                                        title(place.name)
+                                        snippet(place.address)
+                                    }
+
+                                    // 마커 추가
+                                    val marker = googleMap.addMarker(markerOptions)
+                                    Log.d("지금 핀 꽃은 장소", marker.toString())
+                                    marker?.showInfoWindow()
+
+                                    // 마커와 장소 정보를 맵에 저장
+                                    if (marker != null) {
+                                        markerInfoMap[marker] = place
+                                    }
+
+
+                                }
+                            }
+
+
+
+
+
+                        }
+                    }
+
+                    override fun onFailure(call: Call<List<Place>>, t: Throwable) {
+                        Toast.makeText(applicationContext, "장소검생에 실패했습니다", Toast.LENGTH_SHORT).show()
+                    }
+                })
+
+            }
+
+
+
+            // 예시로 토스트 메시지를 표시하는 코드
+            // Toast.makeText(this, "검색어: $searchText", Toast.LENGTH_SHORT).show()
+        }
+
 
     }
 
@@ -146,60 +217,65 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
 
 
         // 일기가 등록되었던 장소들 추출
-        val call = RetrofitClient.getRetrofitService.getDiaryByuserId(1)
-        call.enqueue(object : Callback<List<Diary>> {
-            override fun onResponse(call: Call<List<Diary>>, response: Response<List<Diary>>) {
+
+        CoroutineScope(Dispatchers.Default).launch {
+            val call = RetrofitClient.getRetrofitService.getDiaryByuserId(1)
+            call.enqueue(object : Callback<List<Diary>> {
+                override fun onResponse(call: Call<List<Diary>>, response: Response<List<Diary>>) {
 //                Toast.makeText(applicationContext, "작성된 일기들을 모두 조회했습니다", Toast.LENGTH_SHORT).show()
 
-                Log.d("일기 조회결과", "작성된 일기들을 모두 조회했습니다")
+                    Log.d("일기 조회결과", "작성된 일기들을 모두 조회했습니다")
 
-                if (response.isSuccessful) {
-                    val diaryList = response.body() ?: listOf()
-                    Log.d("일기 먼저 조회", diaryList.toString())
+                    if (response.isSuccessful) {
+                        val diaryList = response.body() ?: listOf()
+                        Log.d("일기 먼저 조회", diaryList.toString())
 
-                    // 추출한 장소들 pin 등록
-                    var lastMarker: Marker? = null
-                    for (diary in diaryList) {
-                        val place = diary.place
-                        if (place != null && place.x != null && place.y != null) {
-                            val location = LatLng(place.x.toDouble(), place.y.toDouble())
+                        // 추출한 장소들 pin 등록
+                        var lastMarker: Marker? = null
+                        for (diary in diaryList) {
+                            val place = diary.place
+                            if (place != null && place.x != null && place.y != null) {
+                                val location = LatLng(place.x.toDouble(), place.y.toDouble())
 
-                            val markerOptions = MarkerOptions().apply {
-                                position(location)
-                                title(place.name)
-                                snippet(place.address)
+                                val markerOptions = MarkerOptions().apply {
+                                    position(location)
+                                    title(place.name)
+                                    snippet(place.address)
+                                }
+
+                                // 마커 추가
+                                val marker = googleMap.addMarker(markerOptions)
+                                Log.d("지금 핀 꽃은 장소", marker.toString())
+                                marker?.showInfoWindow()
+
+                                // 마커와 장소 정보를 맵에 저장
+                                if (marker != null) {
+                                    markerInfoMap[marker] = place
+                                }
+
+                                //마지막 장소 저장
+                                lastMarker = marker
                             }
-
-                            // 마커 추가
-                            val marker = googleMap.addMarker(markerOptions)
-                            Log.d("지금 핀 꽃은 장소", marker.toString())
-                            marker?.showInfoWindow()
-
-                            // 마커와 장소 정보를 맵에 저장
-                            if (marker != null) {
-                                markerInfoMap[marker] = place
-                            }
-
-                            //마지막 장소 저장
-                            lastMarker = marker
                         }
+
+                        // 마지막 장소로 초점
+                        lastMarker?.showInfoWindow()
+                        googleMap.setOnMarkerClickListener(this@MapActivity)
+
+                        Log.d("장소등록결과", "장소들을 모두 pin으로 등록했습니다")
                     }
 
-                    // 마지막 장소로 초점
-                    lastMarker?.showInfoWindow()
-                    googleMap.setOnMarkerClickListener(this@MapActivity)
-
-                    Log.d("장소등록결과", "장소들을 모두 pin으로 등록했습니다")
+                    Log.d("pin등록", "완료")
                 }
 
-                Log.d("pin등록", "완료")
-            }
+                override fun onFailure(call: Call<List<Diary>>, t: Throwable) {
+                    Toast.makeText(applicationContext, "조회에 실패했습니다", Toast.LENGTH_SHORT).show()
+                }
+            })
 
-            override fun onFailure(call: Call<List<Diary>>, t: Throwable) {
-                Toast.makeText(applicationContext, "조회에 실패했습니다", Toast.LENGTH_SHORT).show()
-            }
-        })
+        }
         googleMap.setOnMarkerClickListener(this)
+
     }
 
 
@@ -256,6 +332,48 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
         mapView.onDestroy()
         super.onDestroy()
     }
+    fun Resources.dpToPx(dp: Int): Int {
+        return (dp * this.displayMetrics.density).toInt()
+    }
+
+
+    fun loadDiaryImages(images: List<String>) {
+
+        Log.d("이미지 리스트",images.toString())
+
+        val linearLayout = findViewById<LinearLayout>(R.id.diaryImageContainer) // LinearLayout ID 변경 필요
+        if(images ==null){
+            //지우지 말고 가만히
+        }
+        else{
+            linearLayout.removeAllViews() // 기존 이미지뷰를 모두 제거합니다.
+
+            val requestOptions = RequestOptions().centerCrop() // 이미지를 센터 크롭하여 보여주도록 설정
+
+            for (imageUrl in images) {
+                val imageView = ImageView(this)
+                imageView.layoutParams = LinearLayout.LayoutParams(
+                    resources.dpToPx(100), // 이미지뷰의 크기를 dp로 설정하고자 하는 크기로 변경 (dpToPx는 dp를 픽셀로 변환하는 함수)
+                    resources.dpToPx(100)
+                )
+                Glide.with(this)
+                    .load(imageUrl) // 이미지의 URL을 로드합니다.
+                    .apply(requestOptions) // RequestOptions를 적용합니다.
+                    .into(imageView) // ImageView에 이미지를 표시합니다.
+
+
+                linearLayout.addView(imageView) // LinearLayout에 동적으로 생성한 ImageView를 추가합니다.
+
+        }
+
+        }
+
+
+
+
+
+    }
+
 
     /**
      * LatLngEntity data class
@@ -279,6 +397,50 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
                 nowPlace = placeInfo
 
             }
+
+            //마이다이어리 불러오기
+            CoroutineScope(Dispatchers.Default).launch {
+                val call=RetrofitClient.getRetrofitService.getDiariesByUserAndPlace(1,nowPlace.id)
+
+                call.enqueue(object : Callback<List<Diary>> {
+                    override fun onResponse(call: Call<List<Diary>>, response: Response<List<Diary>>) {
+//                Toast.makeText(applicationContext, "작성된 일기들을 모두 조회했습니다", Toast.LENGTH_SHORT).show()
+
+                        Log.d("일기 조회결과", "이 장소의 일기들을 조회했습니다")
+
+                        if (response.isSuccessful) {
+                            val diaryList = response.body() ?: listOf()
+
+                            val imageUrls = mutableListOf<String>()
+
+// 일기 이미지 URL 추출
+                            for (diary in diaryList) {
+                                val imgUrl = diary.file?.imgUrl
+                                if (imgUrl != null && imgUrl.isNotBlank()) {
+                                    imageUrls.add(imgUrl)
+                                }
+                            }
+
+// 추출한 이미지 URL 리스트를 사용하여 이미지 로드 및 표시
+                            loadDiaryImages(imageUrls)
+
+
+
+                            googleMap.setOnMarkerClickListener(this@MapActivity)
+
+                            Log.d("이 장소의 일기 조회 결과", "일기 이미지들을 모두 띄웠습니다")
+                        }
+
+
+                    }
+
+                    override fun onFailure(call: Call<List<Diary>>, t: Throwable) {
+                        Toast.makeText(applicationContext, "조회에 실패했습니다", Toast.LENGTH_SHORT).show()
+                    }
+                })
+            }
+
+
             return true
         }
         return false
