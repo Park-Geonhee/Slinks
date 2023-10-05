@@ -95,6 +95,8 @@ public class DiaryController {
 //            String keyword="서울특별시 강남구 테헤란로 212";
             Place place = placeService.searchAndSavePlace(keyword);
 
+            System.out.println("일기에 저장할 장소 정보 : "+place.toString());
+
             User user=new User();
             user.setId(userId);
 
@@ -118,7 +120,7 @@ public class DiaryController {
 
             try {
                 // OpenAI API에 보낼 요청 데이터 준비
-                String requestData = "{\"model\": \"gpt-3.5-turbo\", \"messages\": [{\"role\": \"user\", \"content\": \"주어진 시각과 검색 키워드를 활용해 100자 이내의 일기를 작성해줘. 시각: " + currentTime + ", 키워드: " + keyword + "\"}], \"temperature\": 0.7}";
+                String requestData = "{\"model\": \"gpt-3.5-turbo\", \"messages\": [{\"role\": \"user\", \"content\": \"주어진 시각과 장소 검색 키워드를 가지고 100자 이내의 일기를 작성해줘. 이때, 날짜와 시각은 직접적으로 언급하지 말아줘. :) 같은 귀여운 이모티콘도 넣어줘. 시각: " + currentTime + ", 키워드: " + keyword + "\"}], \"temperature\": 0.7}";
 
                 // API 요청을 위한 헤더 설정
                 HttpHeaders headers = new HttpHeaders();
