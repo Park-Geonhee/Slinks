@@ -165,6 +165,7 @@ public class PlaceServiceImpl implements PlaceService {
                     return existingPlace; // If the place already exists, return it
                 }
 
+                System.out.println("추출한 X,Y : "+x+", "+y);
                 // If the place doesn't exist in the DB, create a new Place object and save it to the DB
                 Place newPlace = new Place();
                 newPlace.setName(name);
@@ -173,6 +174,8 @@ public class PlaceServiceImpl implements PlaceService {
                 newPlace.setPlaceType(placeType);
                 newPlace.setX(x);
                 newPlace.setY(y);
+
+                System.out.println("저장할 장소 객체 : "+newPlace.toString());
 
                 return placeRepository.save(newPlace); // Save the new place to the database and return it
             }
