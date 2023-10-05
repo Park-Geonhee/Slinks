@@ -95,7 +95,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
 
 
             // 경유지 추가 post 요청
-            CoroutineScope(Dispatchers.Default).launch {
+            CoroutineScope(Dispatchers.IO).launch {
                 try {
                     // Retrofit을 사용하여 API 호출
                     val response: PlanPlace = RetrofitClient.getRetrofitService.createPlanPlace(planplace)
@@ -117,11 +117,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
                 }
             }
 
-
-
         }
-
-
 
         //장소검색
         binding.searchButton.setOnClickListener {
@@ -217,7 +213,6 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
 
 
         // 일기가 등록되었던 장소들 추출
-
         CoroutineScope(Dispatchers.Default).launch {
             val call = RetrofitClient.getRetrofitService.getDiaryByuserId(1)
             call.enqueue(object : Callback<List<Diary>> {
@@ -337,42 +332,35 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
     }
 
 
-    fun loadDiaryImages(images: List<String>) {
+    fun loadDiaryImages(images: List<String>?) {
+        val linearLayout = findViewById<LinearLayout>(R.id.diaryImageContainer)
+        linearLayout.removeAllViews()
 
-        Log.d("이미지 리스트",images.toString())
+        if (images.isNullOrEmpty()) {
+            // 이미지가 없는 경우 처리할 로직을 여기에 추가하세요.
+            // 예를 들어, 기본 이미지를 표시하거나 특정 메시지를 보여줄 수 있습니다.
+        } else {
+            val requestOptions = RequestOptions().centerCrop()
 
-        val linearLayout = findViewById<LinearLayout>(R.id.diaryImageContainer) // LinearLayout ID 변경 필요
-        if(images ==null){
-            //지우지 말고 가만히
-        }
-        else{
-            linearLayout.removeAllViews() // 기존 이미지뷰를 모두 제거합니다.
-
-            val requestOptions = RequestOptions().centerCrop() // 이미지를 센터 크롭하여 보여주도록 설정
-
+            Log.d("이미지 url들", images.toString())
             for (imageUrl in images) {
                 val imageView = ImageView(this)
                 imageView.layoutParams = LinearLayout.LayoutParams(
-                    resources.dpToPx(100), // 이미지뷰의 크기를 dp로 설정하고자 하는 크기로 변경 (dpToPx는 dp를 픽셀로 변환하는 함수)
+                    resources.dpToPx(100),
                     resources.dpToPx(100)
                 )
+
+
                 Glide.with(this)
-                    .load(imageUrl) // 이미지의 URL을 로드합니다.
-                    .apply(requestOptions) // RequestOptions를 적용합니다.
-                    .into(imageView) // ImageView에 이미지를 표시합니다.
+                    .load("http://j9a701.p.ssafy.io/uploads/"+imageUrl)
+                    .apply(requestOptions)
+                    .into(imageView)
 
-
-                linearLayout.addView(imageView) // LinearLayout에 동적으로 생성한 ImageView를 추가합니다.
-
+                linearLayout.addView(imageView)
+            }
         }
-
-        }
-
-
-
-
-
     }
+
 
 
     /**
@@ -415,7 +403,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
 
 // 일기 이미지 URL 추출
                             for (diary in diaryList) {
-                                val imgUrl = diary.file?.imgUrl
+                                val imgUrl = diary.file?.imgName
                                 if (imgUrl != null && imgUrl.isNotBlank()) {
                                     imageUrls.add(imgUrl)
                                 }
