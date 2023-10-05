@@ -9,6 +9,7 @@ from ssafy_ad.msg import custom_link_parser
 from geometry_msgs.msg import PoseStamped
 from nav_msgs.msg import Path
 import numpy as np
+import time
 
 class latticePlanner:
     def __init__(self):
@@ -21,7 +22,7 @@ class latticePlanner:
         rospy.Subscriber("/local_path", Path, self.path_callback)
         rospy.Subscriber("/Ego_topic", EgoVehicleStatus, self.status_callback)
         rospy.Subscriber("/link_info", custom_link_parser, self.get_link_info_callback)
-        self.lattice_path_pub = rospy.Publisher('/lattice_path', Path, queue_size=10)
+        self.lattice_path_pub = rospy.Publisher('/lattice_path', Path, queue_size=1)
 
         self.ref_path = Path()  # Reference path
         self.ego_status = EgoVehicleStatus()  # Ego vehicle's current status
@@ -31,7 +32,7 @@ class latticePlanner:
         self.is_status = False
         self.is_obj = False
         self.is_link_info = False
-
+        self.cur_time = time.time()
         rate = rospy.Rate(30) # 30hz
         while not rospy.is_shutdown():
 
@@ -43,10 +44,13 @@ class latticePlanner:
                     #TODO: (7) lattice 경로 메세지 Publish
                     if lattice_path_index != -1:
                         self.lattice_path_pub.publish(lattice_path[lattice_path_index])
+                        self.cur_time = time.time()
                     else:
-                        self.lattice_path_pub.publish(self.local_path)
+                        if time.time() - self.cur_time > 1:
+                            self.lattice_path_pub.publish(self.local_path)
                 else:
-                    self.lattice_path_pub.publish(self.local_path)
+                    if time.time() - self.cur_time > 1:
+                        self.lattice_path_pub.publish(self.local_path)
             rate.sleep()
 
     def checkObject(self, ref_path, object_data):
@@ -116,8 +120,8 @@ class latticePlanner:
         look_distance = int(vehicle_velocity * 0.2 * 2)
 
         
-        if look_distance < 20 : #min 10m   
-            look_distance = 20                    
+        if look_distance < 10 : #min 10m   
+            look_distance = 10                    
 
         if len(ref_path.poses) > look_distance :
             #TODO: (3) 좌표 변환 행렬 생성
@@ -148,7 +152,8 @@ class latticePlanner:
             local_end_point = det_trans_matrix.dot(world_end_point)
             world_ego_vehicle_position = np.array([[vehicle_pose_x], [vehicle_pose_y], [1]])
             local_ego_vehicle_position = det_trans_matrix.dot(world_ego_vehicle_position)
-            lane_off_set = [-10.5, -7.0, -3.5, 3.5, 7.0, 10.5]
+            off_val = 3.5
+            lane_off_set = [-3 * off_val, -2* off_val, -1* off_val, 1* off_val, 2* off_val, 3* off_val]
             local_lattice_points = []
             
             for i in range(len(lane_off_set)):
@@ -198,7 +203,7 @@ class latticePlanner:
 
             # Add_point            
             # 3 차 곡선 경로가 모두 만들어 졌다면 이후 주행 경로를 추가 합니다.
-            add_point_size = min(int(vehicle_velocity * 2), len(ref_path.poses) )           
+            add_point_size = min(int(vehicle_velocity * 2) + 20, len(ref_path.poses) )           
             
             for i in range(look_distance * 2, add_point_size):
                 if i+1 < len(ref_path.poses):

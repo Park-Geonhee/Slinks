@@ -382,7 +382,7 @@ class pure_pursuit :
 class pidControl:
     def __init__(self):
         self.p_gain = 0.3
-        self.i_gain = 0.00
+        self.i_gain = 0.01
         self.d_gain = 0.03
         self.prev_error = 0
         self.i_control = 0
@@ -398,7 +398,7 @@ class pidControl:
         # 각 PID Gain 값을 직접 튜닝하고 아래 수식을 채워 넣어 P I D 제어기를 완성하세요.
 
         p_control = self.p_gain * error
-        self.i_control += self.i_gain * error * self.controlTime
+        self.i_control = self.i_gain * error * self.controlTime
         d_control = self.d_gain * (error - self.prev_error) / self.controlTime
 
         pidValue = p_control + self.i_control + d_control
@@ -539,7 +539,7 @@ class AdaptiveCruiseControl:
                             rel_distance = sqrt(pow(local_obs_info[i][1], 2) + pow(local_obs_info[i][2], 2))               
                             if rel_distance < min_rel_distance:
                                 min_rel_distance = rel_distance
-                                #self.object=[True,i] 
+                                # self.object=[True,i] 
 
         # 주행 경로 상 Traffic Light 유무 파악
         if global_tl_info:
@@ -580,7 +580,7 @@ class AdaptiveCruiseControl:
             acceleration = vel_rel * v_gain - x_errgain * (dis_safe - dis_rel)    
 
             out_vel = ego_vel + acceleration
-   
+        '''
         if self.object[0] and len(local_obs_info) != 0: #ACC ON_obstacle     
             #print("ACC ON Obstacle")                    
             Obstacle = [local_obs_info[self.object[1]][1], local_obs_info[self.object[1]][2], local_obs_info[self.object[1]][3]]
@@ -591,21 +591,20 @@ class AdaptiveCruiseControl:
             acceleration = vel_rel * v_gain - x_errgain * (dis_safe - dis_rel)    
 
             out_vel = ego_vel + acceleration           
-
-            '''
-            # if you use this block for Obstacle,
-            # you have to use line 514  ~ self.object=[True,i]
-            # and also, you have to comment out right above block (line 557 ~ line 566)
-            if self.object[0] and len(local_obs_info) != 0:
-                for i in range(len(local_obs_info)):
-                    if abs(local_obs_info[i][2]) > 1.5 : continue
-                    # print("ACC ON Obstacle")
-                    dis_rel = sqrt(pow(local_obs_info[i][1], 2) + pow(local_obs_info[i][2], 2))
-                    vel_rel = local_obs_info[i][3] - ego_vel
-                    dis_safe = ego_vel* time_gap + default_space
-                    acceleration = vel_rel * v_gain - x_errgain * (dis_safe - dis_rel)
-                    out_vel = min(out_vel, ego_vel + acceleration)
-            '''
+        '''
+        # if you use this block for Obstacle,
+        # you have to use line 514  ~ self.object=[True,i]
+        # and also, you have to comment out right above block (line 557 ~ line 566)
+        if self.object[0] and len(local_obs_info) != 0:
+            for i in range(len(local_obs_info)):
+                if abs(local_obs_info[i][2]) > 1.5 : continue
+                # print("ACC ON Obstacle")
+                dis_rel = sqrt(pow(local_obs_info[i][1], 2) + pow(local_obs_info[i][2], 2))
+                vel_rel = local_obs_info[i][3] - ego_vel
+                dis_safe = ego_vel* time_gap + default_space
+                acceleration = vel_rel * v_gain - x_errgain * (dis_safe - dis_rel)
+                out_vel = min(out_vel, ego_vel + acceleration)
+        
 
         if self.tl[0]: #ACC ON_traffic_light
             # 정지선이 있으면
