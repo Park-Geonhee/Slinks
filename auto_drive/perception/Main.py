@@ -12,12 +12,13 @@ from sensor_msgs.msg import CompressedImage
 class Main:
     def __init__(self):
         rospy.Subscriber("/image_jpeg/compressed", CompressedImage, self.image_callback)
-        self.radar_pub = rospy.Publisher('forward_object',ObjectStatusList, queue_size=1)
+        # self.radar_pub = rospy.Publisher('forward_object',ObjectStatusList, queue_size=1)
+        self.radar_pub = rospy.Publisher('radar_detection',ObjectStatusList, queue_size=1)
         self.traffic_light_pub = rospy.Publisher('traffic_data', GetTrafficLightStatus, queue_size=1)
         try:
             self.yolo = YOLO(sys.argv[1])
         except:
-            self.yolo=YOLO("yolov5s.onnx")
+            self.yolo=YOLO("yolov5s.pt")
         self.radar = Radar()
         self.traffic_light = TrafficLight()
         
@@ -27,7 +28,7 @@ class Main:
         np_arr = np.frombuffer(msg.data, np.uint8)
         self.image = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
 
-    def publish(self):
+    def publish(self, radar_result, traffic_light_result):
         self.radar_pub.publish(radar_result)
         self.traffic_light_pub.publish(traffic_light_result)
 
@@ -35,7 +36,7 @@ class Main:
 if __name__ == "__main__":
     if(len(sys.argv)==1):
         print("Don't Input YOLOv5 Model Name")
-        print("Default : yyolov5s.onnx inference:150ms mAP@.5:0.712 mAP50-95:0.472")
+        print("Default : yolov5s.pt inference:7.7ms mAP@.5:0.713 mAP50-95:0.475")
     else:
         print(f"Model : {sys.argv[1]}")
     rospy.init_node("perception", anonymous=True)
@@ -59,4 +60,4 @@ if __name__ == "__main__":
         radar_result = main.radar.get_radar_object_status_list(main.image,result)
         traffic_light_result = main.traffic_light.get_traffic_light_status(main.image, result)
 
-        main.publish()
+        main.publish(radar_result, traffic_light_result)

@@ -237,7 +237,9 @@ class Radar:
             # it's valid, so needed to remove detections pointing same object 
             for i in range(object_cnt) :
                 coordi = object_list.iloc[i][0:4] #xmin, ymin, xmax, ymax
-
+                name = object_list.iloc[i]["name"]
+                if(name not in ["car","truck"]):
+                    continue
                 if image_xy[0] < coordi[0] or image_xy[0] > coordi[2]:
                     continue
                 if image_xy[1] < coordi[1] or image_xy[1] > coordi[3]:

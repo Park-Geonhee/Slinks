@@ -38,9 +38,12 @@ class TrafficLight:
         if(traffic_light_data is None):
             return 0
         
-        image = img[int(traffic_light_data["ymin"])+3:int(traffic_light_data["ymax"])-3,int(traffic_light_data["xmin"])+5:int(traffic_light_data["xmax"])-5]
-        hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-            
+        try:
+            image = img[int(traffic_light_data["ymin"])+3:int(traffic_light_data["ymax"])-3,int(traffic_light_data["xmin"])+5:int(traffic_light_data["xmax"])-5]
+            hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+        except:
+            return 0
+                
         red_mask = cv2.inRange(hsv, self.lower_red, self.upper_red)
         red_areas = cv2.bitwise_and(image, image, mask=red_mask)
 
