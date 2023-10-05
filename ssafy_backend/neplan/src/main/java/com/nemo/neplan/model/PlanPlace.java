@@ -23,16 +23,16 @@ public class PlanPlace implements Serializable {
     private Place place;
 
 
-    private int placeOrder=0;
+//    private int placeOrder=0;
 
 
-    public int getPlaceOrder() {
-        return placeOrder;
-    }
-
-    public void setPlaceOrder(int placeOrder) {
-        this.placeOrder = placeOrder;
-    }
+//    public int getPlaceOrder() {
+//        return placeOrder;
+//    }
+//
+//    public void setPlaceOrder(int placeOrder) {
+//        this.placeOrder = placeOrder;
+//    }
 
     public long getId() {
         return id;
