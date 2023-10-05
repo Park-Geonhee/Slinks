@@ -51,7 +51,9 @@ public class PlanPlaceController {
 
     @PostMapping("/add")
     public ResponseEntity<PlanPlace> createPlanPlace(@RequestBody PlanPlace planPlace) {
+        System.out.println("경유지 추가 요청이 들어왔어요");
         PlanPlace createdPlanPlace = planPlaceService.createPlanPlace(planPlace);
+        System.out.println("경유지 추가 완료");
         return ResponseEntity.ok(createdPlanPlace);
     }
 
