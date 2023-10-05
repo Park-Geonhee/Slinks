@@ -51,34 +51,38 @@
                 app:layout_constraintTop_toTopOf="parent" />
 
         </LinearLayout>
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/goMap"
-            android:text="goMAP"
-            android:textColor="@color/slinks_black"
-            />
-
-
 
 
     </LinearLayout>
 
 
-    <LinearLayout
+
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:layout_height="500dp">
+
+        <TextView
+            android:layout_gravity="center"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="일기가\n없어요!"
+            android:textSize="100sp"
+            android:fontFamily="@font/pretendard_extra_bold"/>
+
 
         <androidx.recyclerview.widget.RecyclerView
+            android:background="@color/bg_grey"
+            android:layout_gravity="center"
             android:id="@+id/recyclerViewDiary"
             android:layout_width="wrap_content"
             android:layout_height="500dp"
-            android:orientation="horizontal"
-            android:layout_marginStart="22dp"
+            android:orientation="vertical"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             tools:listitem="@layout/item_recycle_diary" />
-    </LinearLayout>
+
+    </FrameLayout>
+
+
 
 
 <!--    <HorizontalScrollView-->

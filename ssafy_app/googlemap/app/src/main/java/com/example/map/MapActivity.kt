@@ -6,10 +6,12 @@ import android.content.res.Resources
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.widget.Button
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.example.map.databinding.ActivityMapBinding
@@ -19,15 +21,42 @@ import com.google.android.gms.maps.*
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.PolylineOptions
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import org.java_websocket.client.WebSocketClient
+import org.java_websocket.handshake.ServerHandshake
+import org.json.JSONException
+import org.json.JSONObject
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import java.net.URI
+import java.net.URISyntaxException
+
+
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.OnMapReadyCallback
+
+
+import org.locationtech.proj4j.CRSFactory
+import org.locationtech.proj4j.CoordinateTransformFactory
+import org.locationtech.proj4j.ProjCoordinate
+
 
 class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerClickListener {
+    //private lateinit var googleMap: GoogleMap
+    private lateinit var webSocketClient: WebSocketClient
+    private lateinit var polylineOptions: PolylineOptions
+    private val crsFactory = CRSFactory()
+    private val ctFactory = CoordinateTransformFactory()
 
+    private val sourceCRS = crsFactory.createFromName("EPSG:326" + 52) // This assumes northern hemisphere. For southern hemisphere use "EPSG:327" + zone
+    private val targetCRS = crsFactory.createFromName("EPSG:4326") // WGS84
+    private val transform = ctFactory.createTransform(sourceCRS, targetCRS)
+    private val targetCoordinate = ProjCoordinate()
     companion object {
         const val TAG = "MapActivity"
     }
@@ -41,6 +70,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
     private var currentMarker: Marker? = null
     lateinit var nowPlace: Place
     lateinit var searchResult:List<Place>
+    private val pointList = ArrayList<LatLng>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -71,6 +101,18 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
             startActivity(intent)
         })
 
+        val detailViewButton: Button = findViewById(R.id.detailViewButton)
+        detailViewButton.setOnClickListener {
+            if (pointList.isEmpty()) {
+                // 경로가 없을 때 경고 메시지 띄우기
+                Toast.makeText(this@MapActivity, "경유지를 추가해서 계획을 만드세요.", Toast.LENGTH_SHORT).show()
+            } else {
+                // 경로가 있을 때 PlanDetailActivity로 이동
+                val intent = Intent(this@MapActivity, PlanDetailActivity::class.java)
+                intent.putParcelableArrayListExtra("pointsList", pointList)
+                startActivity(intent)
+            }
+        }
 
         // binding.registerButton에 planPlace정보 저장
         binding.registerButton.setOnClickListener {
@@ -97,9 +139,10 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
             // 경유지 추가 post 요청
             CoroutineScope(Dispatchers.IO).launch {
                 try {
-                    // Retrofit을 사용하여 API 호출
-                    val response: PlanPlace = RetrofitClient.getRetrofitService.createPlanPlace(planplace)
-                        Log.d("response값 확인 ",response.toString())
+                    // Retrofit을 사용하여 API 호출k
+                    val response: PlanPlace =
+                        RetrofitClient.getRetrofitService.createPlanPlace(planplace)
+                    Log.d("response값 확인 ",response.toString()?:"")
                     // 서버 응답을 처리할 수 있는 코드 작성
                     if (response.id != null) {
                         Log.d("PlanPlace 등록 성공", "PlanPlace를 성공적으로 등록했습니다.")
@@ -116,6 +159,14 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
                     Log.e("PlanPlace 등록 실패", "PlanPlace 등록 중 오류가 발생했습니다: ${e.message}")
                 }
             }
+
+        }
+
+        val shareButton: Button = findViewById(R.id.shareButton)    //경로 생성하기
+        shareButton.setOnClickListener {
+            val planId: Long = 1L // 여기서 'L' 접미사를 사용하여 Long 타입으로 변환
+            getPlanPlacesByPlanId(planId)
+            println("click")
 
         }
 
@@ -184,10 +235,140 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
             // Toast.makeText(this, "검색어: $searchText", Toast.LENGTH_SHORT).show()
         }
 
+    return Unit
+    }
+    fun getPlanPlacesByPlanId(planId: Long) {
+        val call = RetrofitClient.getRetrofitService.GettingPlaces(planId)
+        call.enqueue(object : Callback<Map<String, List<List<Double>>>> {
+            override fun onResponse(call: Call<Map<String, List<List<Double>>>>, response: Response<Map<String, List<List<Double>>>>) {
+                val rawCoordinationList = response.body()?.get("coordination")
+                val pointsList = ArrayList<LatLng>()
 
+                rawCoordinationList?.forEach { rawCoordination ->
+                    if (rawCoordination.size >= 2) {
+                        pointsList.add(LatLng(rawCoordination[0], rawCoordination[1]))
+                    }
+                }
+
+                println("Parsed Coordination List: $pointsList")
+                publishData(pointsList)
+            }
+
+            override fun onFailure(call: Call<Map<String, List<List<Double>>>>, t: Throwable) {
+                println("API Request failed: ${t.message}")
+            }
+        })
     }
 
+    /*websocket*/
+    private fun initWebSocket() {
+        val uri: URI
+        try {
+            uri = URI("ws://13.125.75.163:9090")
+        } catch (e: URISyntaxException) {
+            e.printStackTrace()
+            return
+        }
 
+        webSocketClient = object : WebSocketClient(uri) {
+            override fun onOpen(handshakeData: ServerHandshake?) {
+                println("Connected to the server.")
+
+                val subscribeMsg = JSONObject()
+                subscribeMsg.put("op", "subscribe")
+                subscribeMsg.put("topic", "/road_point")
+                //val subscribeGPS = JSONObject()
+                //subscribeGPS.put("op", "subscribe")
+                //subscribeGPS.put("topic", "/gps")
+                this@MapActivity.webSocketClient.send(subscribeMsg.toString())
+                //this@MainActivity.webSocketClient.send(subscribeGPS.toString())
+            }
+
+            override fun onMessage(message: String?) {
+                println("get message")
+                println("Received message: $message")
+
+                if (message != null && message.isNotBlank()) {
+                    try {
+                        val jsonObject = JSONObject(message)
+                        val topic = jsonObject.getString("topic")
+                        val msgObject = jsonObject.getJSONObject("msg")
+
+
+                        if (jsonObject.getString("topic") == "/road_point") {
+                            println("get road_point nono")
+                            val dataString = jsonObject.getJSONObject("msg").getString("data")
+
+                            val points = dataString.split(";")
+                            println("$points")
+                            // 경로를 그리기 위한 PolylineOptions 객체 생성
+                            val polylineOptions = PolylineOptions()
+
+                            val skippedPoints = 2
+                            var count = 0
+
+                            for (point in points) {
+                                val coordinates = point.trim().split(",")
+                                if (coordinates.size == 2) {
+                                    val easting = coordinates[0].trim().toDouble()
+                                    val northing = coordinates[1].trim().toDouble()
+                                    val latLng = convertUTMToLatLong(easting, northing, "52") // replace "33T" with your UTM zone if different
+
+
+                                    polylineOptions.add(latLng)
+                                    pointList.add(latLng)
+                                    // count += 1
+
+
+                                    //println("add latlong to polyline")
+                                }
+                            }
+                            println("Received latLngList: $pointList")
+                            println("$polylineOptions")
+                            polylineOptions.color(ContextCompat.getColor(this@MapActivity, android.R.color.holo_red_dark))
+                            polylineOptions.width(10f)
+                            runOnUiThread {
+                                println("line start")
+                                googleMap.addPolyline(polylineOptions)
+                                println("good")
+                            }
+                        }
+
+
+                    } catch (e: JSONException) {
+                        println("JSON parsing error: ${e.message}")
+                    }catch (e: Exception) {
+                        println("Error parsing message: ${e.message}")
+                    }
+                }
+            }
+
+            override fun onClose(code: Int, reason: String?, remote: Boolean) {
+                println("Connection closed.")
+            }
+
+            override fun onError(e: Exception?) {
+                println("An error occurred: ${e?.message}")
+            }
+        }
+
+        webSocketClient.connect()
+    }
+
+    private fun publishData(pointsList: List<LatLng>) {
+        val dataJson = JSONObject()
+        dataJson.put("op", "publish")
+        dataJson.put("topic", "/point")
+
+        val messageData = JSONObject()
+        val dataString = pointsList.joinToString(",") { "${it.latitude},${it.longitude}" }
+        messageData.put("data", dataString)
+
+        dataJson.put("msg", messageData)
+
+        webSocketClient.send(dataJson.toString())
+        println("success send massage")
+    }
 
 
     /**
@@ -271,8 +452,17 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
         }
         googleMap.setOnMarkerClickListener(this)
 
-    }
+        initWebSocket()
 
+    }
+    fun convertUTMToLatLong(easting: Double, northing: Double, zone: String): LatLng {
+
+        val sourceCoordinate = ProjCoordinate(easting, northing)
+
+        transform.transform(sourceCoordinate, targetCoordinate)
+
+        return LatLng(targetCoordinate.y, targetCoordinate.x)
+    }
 
     /**
      * setupMarker()

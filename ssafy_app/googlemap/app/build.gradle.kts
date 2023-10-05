@@ -48,7 +48,6 @@ android {
 
 dependencies {
 
-    //KAKAO SDK
 
 
     implementation("androidx.core:core-ktx:1.9.0")
@@ -80,6 +79,13 @@ dependencies {
     implementation ("com.github.bumptech.glide:glide:4.12.0")
     annotationProcessor ("com.github.bumptech.glide:compiler:4.12.0")
 
+
+    implementation ("androidx.lifecycle:lifecycle-runtime-ktx:2.4.0")
+
+    implementation("org.locationtech.proj4j:proj4j:1.1.3")
+    implementation("com.google.android.gms:play-services-maps:17.0.1")
+
+    implementation("org.java-websocket:Java-WebSocket:1.5.2")
 
 
 }

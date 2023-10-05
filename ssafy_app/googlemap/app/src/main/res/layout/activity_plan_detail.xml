@@ -78,85 +78,16 @@
 
         android:gravity="center">
 
-        <ImageView
+        <com.google.android.gms.maps.MapView
             android:id="@+id/map"
             android:layout_width="match_parent"
-            android:layout_height="256dp"
+            android:layout_height="300dp"
             android:layout_centerHorizontal="true"
-            android:layout_centerVertical="true"
-            android:src="@drawable/mapimg"
-            android:scaleType="fitXY" />
+            android:layout_centerVertical="true"/>
 
 
-        <LinearLayout
-            android:layout_width="228dp"
-            android:layout_height="52dp"
-
-            android:layout_gravity="top|center"
-            android:layout_marginTop="16dp"
-
-            android:background="@drawable/timebar"
-            android:gravity="center"
-            android:orientation="horizontal"
-            android:paddingHorizontal="23dp">
-
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:fontFamily="@font/pretendard_medium"
-                    android:text="예상시간"
-                    android:textSize="10dp" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:fontFamily="@font/pretendard_medium"
-                    android:text="1시간 45분"
-                    android:textSize="18dp" />
 
 
-            </LinearLayout>
-
-            <Space
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1" />
-
-            <TextView
-                android:layout_width="0.5dp"
-                android:layout_height="25dp"
-                android:background="@drawable/division_bar" />
-            <Space
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1" />
-
-
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:fontFamily="@font/pretendard_medium"
-                    android:text="거리"
-                    android:textSize="10sp" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:fontFamily="@font/pretendard_medium"
-                    android:text="23.5km"
-                    android:textSize="18dp" />
-            </LinearLayout>
-        </LinearLayout>
     </FrameLayout>
 
     <!--    지도 끝-->
@@ -218,37 +149,33 @@
         >
 
         <LinearLayout
+            android:visibility="invisible"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <TextView
-                android:layout_marginTop="40dp"
-                android:layout_width="match_parent"
-                android:layout_marginHorizontal="40dp"
-                android:layout_height="1dp"
-                android:background="@drawable/place_line"/>
-
-
 
 
             <TextView
-                android:layout_marginTop="72dp"
+                android:layout_marginTop="96dp"
                 android:layout_width="match_parent"
-                android:layout_marginHorizontal="40dp"
-                android:layout_height="1dp"
-                android:background="@drawable/place_line"/>
-
-            <TextView
-                android:layout_marginTop="72dp"
-                android:layout_width="match_parent"
-                android:layout_marginHorizontal="40dp"
-                android:layout_height="1dp"
+                android:layout_marginHorizontal="60dp"
+                android:layout_height="3dp"
                 android:background="@drawable/place_line"/>
 
 
         </LinearLayout>
 
+
+<!--        <GridView-->
+<!--            android:layout_marginTop="10dp"-->
+<!--            android:layout_marginHorizontal="22dp"-->
+<!--            android:id="@+id/gridView"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="280dp"-->
+<!--            android:numColumns="4"-->
+<!--            >-->
+<!--        </GridView>-->
 
 
         <LinearLayout
@@ -266,39 +193,33 @@
             <LinearLayout
                 android:layout_marginHorizontal="22dp"
 
-                android:layout_marginTop="20dp"
-                android:layout_marginBottom="12dp"
+                android:layout_marginTop="70dp"
+                android:layout_marginBottom="16dp"
                 android:layout_width="match_parent"
-                android:layout_height="62dp"
+                android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:paddingHorizontal="20dp"
                 >
 
                 <LinearLayout
-                    android:layout_width="44dp"
+                    android:layout_width="60dp"
                     android:layout_height="wrap_content"
                     android:orientation="vertical">
-                    <FrameLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="36dp"
 
-                        android:background="@drawable/placeicon">
-
-
-                        <ImageView
+                    <ImageView
                             android:layout_gravity="center"
-                            android:layout_width="18dp"
-                            android:layout_height="18dp"
-                            android:src="@drawable/coffee"/>
+                            android:layout_width="50dp"
+                            android:layout_height="50dp"
+                            android:src="@drawable/dot"/>
 
-                    </FrameLayout>
+
                     <TextView
                         android:layout_gravity="center"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="조양방직"
+                        android:text="행복커피"
                         android:fontFamily="@font/pretendard_medium"
-                        android:textSize="10dp"/>
+                        android:textSize="16sp"/>
 
 
                 </LinearLayout>
@@ -310,29 +231,26 @@
                 <!--        -->
 
                 <LinearLayout
-                    android:layout_width="36dp"
+                    android:layout_width="60dp"
                     android:layout_height="wrap_content"
                     android:orientation="vertical">
-                    <FrameLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="36dp"
 
-                        android:background="@drawable/placeicon">
+                    <ImageView
+                        android:layout_gravity="center"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:src="@drawable/dot"/>
 
 
-                        <ImageView
-                            android:layout_gravity="center"
-                            android:layout_width="16dp"
-                            android:layout_height="16dp"
-                            android:src="@drawable/coffee"/>
-
-                    </FrameLayout>
                     <TextView
+                        android:layout_gravity="center"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="조양방직"
+                        android:text="셰프\n차이나"
+                        android:gravity="center"
                         android:fontFamily="@font/pretendard_medium"
-                        android:textSize="10dp"/>
+                        android:textSize="16sp"/>
+
 
                 </LinearLayout>
                 <Space
@@ -342,29 +260,26 @@
 
                 <!--        -->
                 <LinearLayout
-                    android:layout_width="36dp"
+                    android:layout_width="60dp"
                     android:layout_height="wrap_content"
                     android:orientation="vertical">
-                    <FrameLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="36dp"
 
-                        android:background="@drawable/placeicon">
+                    <ImageView
+                        android:layout_gravity="center"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:src="@drawable/dot"/>
 
 
-                        <ImageView
-                            android:layout_gravity="center"
-                            android:layout_width="16dp"
-                            android:layout_height="16dp"
-                            android:src="@drawable/coffee"/>
-
-                    </FrameLayout>
                     <TextView
+                        android:layout_gravity="center"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="조양방직"
+                        android:text="삼성\n어린이집"
+                        android:gravity="center"
                         android:fontFamily="@font/pretendard_medium"
-                        android:textSize="10sp"/>
+                        android:textSize="16sp"/>
+
 
                 </LinearLayout>
                 <Space
@@ -375,42 +290,42 @@
                 <!---->
 
                 <LinearLayout
-                    android:layout_width="40dp"
+                    android:visibility="gone"
+                    android:layout_width="60dp"
                     android:layout_height="wrap_content"
                     android:orientation="vertical">
-                    <FrameLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="40dp"
 
-                        android:background="@drawable/placeicon">
+                    <ImageView
+                        android:layout_gravity="center"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:src="@drawable/dot"/>
 
 
-                        <ImageView
-                            android:layout_gravity="center"
-                            android:layout_width="18dp"
-                            android:layout_height="18dp"
-                            android:src="@drawable/coffee"/>
-
-                    </FrameLayout>
                     <TextView
+                        android:layout_gravity="center"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="조양방직"
+                        android:text="셰프\n차이나"
+                        android:gravity="center"
                         android:fontFamily="@font/pretendard_medium"
-                        android:textSize="10dp"/>
+                        android:textSize="16sp"/>
+
 
                 </LinearLayout>
 
 
             </LinearLayout>
             <LinearLayout
+                android:visibility="gone"
                 android:layout_marginHorizontal="22dp"
 
-                android:layout_marginBottom="12dp"
+
                 android:layout_width="match_parent"
                 android:layout_height="62dp"
                 android:orientation="vertical">
                 <LinearLayout
+android:visibility="gone"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
@@ -547,248 +462,83 @@
 
 
             </LinearLayout>
-            <LinearLayout
-                android:layout_marginHorizontal="22dp"
-
-                android:layout_height="62dp"
-                android:layout_width="match_parent"
-                android:orientation="horizontal"
-                android:paddingHorizontal="20dp"
-                >
-
-                <LinearLayout
-                    android:layout_width="36dp"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical">
-                    <FrameLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="36dp"
-
-                        android:background="@drawable/placeicon">
-
-
-                        <ImageView
-                            android:layout_gravity="center"
-                            android:layout_width="16dp"
-                            android:layout_height="16dp"
-                            android:src="@drawable/coffee"/>
-
-                    </FrameLayout>
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="조양방직"
-                        android:fontFamily="@font/pretendard_medium"
-                        android:textSize="10sp"/>
-
-                </LinearLayout>
-
-                <Space
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"/>
-                <!--        -->
-
-                <LinearLayout
-                    android:layout_width="36dp"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical">
-                    <FrameLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="36dp"
-
-                        android:background="@drawable/placeicon">
-
-
-                        <ImageView
-                            android:layout_gravity="center"
-                            android:layout_width="16dp"
-                            android:layout_height="16dp"
-                            android:src="@drawable/coffee"/>
-
-                    </FrameLayout>
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="조양방직"
-                        android:fontFamily="@font/pretendard_medium"
-                        android:textSize="10dp"/>
-
-                </LinearLayout>
-                <Space
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"/>
-
-                <!--        -->
-                <LinearLayout
-                    android:layout_width="36dp"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical">
-                    <FrameLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="36dp"
-
-                        android:background="@drawable/placeicon">
-
-
-                        <ImageView
-                            android:layout_gravity="center"
-                            android:layout_width="16dp"
-                            android:layout_height="16dp"
-                            android:src="@drawable/coffee"/>
-
-                    </FrameLayout>
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="조양방직"
-                        android:fontFamily="@font/pretendard_medium"
-                        android:textSize="10dp"/>
-
-                </LinearLayout>
-                <Space
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"/>
-
-                <!---->
-
-                <LinearLayout
-                    android:layout_width="40dp"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical">
-                    <FrameLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="40dp"
-
-                        android:background="@drawable/placeicon">
-
-
-                        <ImageView
-                            android:layout_gravity="center"
-                            android:layout_width="18dp"
-                            android:layout_height="18dp"
-                            android:src="@drawable/coffee"/>
-
-                    </FrameLayout>
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="조양방직"
-                        android:fontFamily="@font/pretendard_medium"
-                        android:textSize="10sp"/>
-
-                </LinearLayout>
-
-
-            </LinearLayout>
 
         </LinearLayout>
 
     </FrameLayout>
 
+
+
+
     <LinearLayout
         android:layout_marginHorizontal="22dp"
-
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
         android:orientation="horizontal">
 
         <FrameLayout
-
+            android:clickable="true"
+            android:id="@+id/btn_recreate_path"
             android:layout_width="180dp"
             android:layout_marginTop="20dp"
-            android:layout_height="40dp"
-            android:background="@drawable/outline1"
-            android:clickable="true"
-
-            >
+            android:layout_height="wrap_content"
+            android:background="@drawable/play_btn"> <!-- 적절한 배경 리소스를 지정하세요 -->
 
             <LinearLayout
-                android:id="@+id/btn_share"
-
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="60dp"
                 android:gravity="center"
-
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                android:background="?android:attr/selectableItemBackground">
 
                 <TextView
                     android:layout_width="wrap_content"
-                    android:layout_height="40dp"
+                    android:layout_height="60dp"
                     android:fontFamily="@font/pretendard_medium"
-
-
-                    android:text="공유하기"
+                    android:text="경로 재생성"
                     android:textColor="@color/grey60"
                     android:textSize="16dp"
-                    android:layout_marginRight="5dp"
-
-                    android:gravity="center|right"
-                    />
-
-
-
-
-
+                    android:gravity="center"/>
             </LinearLayout>
-
-
-
-
-
         </FrameLayout>
-        <Space
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"/>
+
+
         <FrameLayout
             android:clickable="true"
+            android:layout_marginLeft="10dp"
             android:id="@+id/btn_guide"
             android:layout_width="180dp"
             android:layout_marginTop="20dp"
-            android:layout_height="40dp"
-            android:background="@drawable/play_btn"
-            >
-
+            android:layout_height="60dp"
+            android:background="@drawable/play_btn">
 
             <LinearLayout
                 android:id="@+id/start_guide"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="60dp"
                 android:gravity="center"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                android:background="?android:attr/selectableItemBackground">
 
                 <TextView
                     android:layout_width="wrap_content"
-                    android:layout_height="40dp"
+                    android:layout_height="60dp"
                     android:fontFamily="@font/pretendard_medium"
-
-
                     android:text="안내 시작"
                     android:textColor="@color/grey60"
                     android:textSize="16dp"
                     android:layout_marginRight="5dp"
-                    android:gravity="center|right"
-                    />
-
+                    android:gravity="center|right" />
 
                 <ImageView
                     android:layout_width="16dp"
                     android:layout_height="16dp"
-                    android:src="@drawable/start"
-                    />
-
-
+                    android:src="@drawable/start" />
             </LinearLayout>
-
-
-
-
-
         </FrameLayout>
     </LinearLayout>
+
 
 
 

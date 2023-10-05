@@ -21,7 +21,7 @@ interface NeplanAPI {
     suspend fun createPlanPlace(@Body planPlace: PlanPlace): PlanPlace
 
     @GET("planplaces/getPlacesByPlanId/{planId}")
-     fun GettingPlaces(@Path("planId") planId:Long):Call<List<Coordination>>
+    fun GettingPlaces(@Path("planId") planId: Long): Call<Map<String, List<List<Double>>>>
 
      @GET("place/search")
     fun searchPlaceByKeyword(@Body keyword:String):Call<List<Place>>
@@ -30,4 +30,8 @@ interface NeplanAPI {
     @GET("diary/user/{userId}/place/{placeId}")
     fun getDiariesByUserAndPlace(@Path("userId") userId:Long,
                                  @Path("placeId") placeId: Long):Call<List<Diary>>
+
+
+    @GET("planplaces/search/by-plan/{planId}")
+    suspend fun getPlanPlacesByPlanId(@Path("planId") planId: Long): Call<List<PlanPlace>>
 }

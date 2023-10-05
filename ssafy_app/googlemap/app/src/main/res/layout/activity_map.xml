@@ -32,11 +32,26 @@
             android:text="검색" />
         </LinearLayout>
 
-        <com.google.android.gms.maps.MapView
-
-            android:id="@+id/mapView"
+        <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="400dp"/>
+            android:layout_height="400dp">
+
+                <com.google.android.gms.maps.MapView
+                    android:id="@+id/mapView"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+
+                <Button
+                    android:id="@+id/detailViewButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="end|top"
+                    android:layout_marginTop="16dp"
+                    android:layout_marginEnd="16dp"
+                    android:text="경로 상세보기"
+                    android:textColor="@color/slinks_black"/>
+
+        </FrameLayout>
 
 
         <LinearLayout
