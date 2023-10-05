@@ -69,14 +69,14 @@ public class DiaryController {
 
 
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<Place>> getDiaryPlacesByUserId(@PathVariable Long userId){
+    public ResponseEntity<List<Diary>> getDiaryPlacesByUserId(@PathVariable Long userId){
         List<Diary> diaries=diaryService.getDiaryByUserId(userId);
 
-        List<Place> places=new ArrayList<>();
-        for(Diary d: diaries){
-            places.add(d.getPlace());
-        }
-        return ResponseEntity.ok(places);
+//        List<Place> places=new ArrayList<>();
+//        for(Diary d: diaries){
+//            places.add(d.getPlace());
+//        }
+        return ResponseEntity.ok(diaries);
     }
 
     @PostMapping("/add/{keyword}")
