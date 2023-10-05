@@ -29,8 +29,8 @@ SLINKS 앱 서비스는 <strong>낯선 여행지</strong>에서도 <strong>다�
 ### 👨‍💻 [유지나]
 ### 자율 주행
 ### 👨‍💻 [김도훈](https://github.com/bmryu0501) : 지역 경로, Kotlin & ROS Socket 통신, 실시간 위치 표시, UCC 제작
-### 👩‍💻 [박건희](https://github.com/201611099) : Nothing
-### 👨‍💻 [서강운](https://github.com/Jongwon97) : Nothing
+### 👩‍💻 [박건희](https://github.com/201611099) : 차량 제어 및 경로 추종, 속도 계획, 전방 거리 유지, 전역 경로 생성(Astar)
+### 👨‍💻 [서강운](https://github.com/Jongwon97) : 전역 경로 생성(Dijkstra, Astar), 회피 경로 생성, V2X(신호등, 정지선) 기반 차량 주행
 ### 👨‍💻 [이승혁](https://github.com/hun23) : OpenCV, Image Pre-processing, Lane Detect, YOLOv5 Object Detect
 ### 👩‍💻 [홍의선](https://github.com/twoju) : Sensor Calibration, Sensor Fusion, Object Detect(Radar/Lidar)
 
@@ -66,10 +66,14 @@ SLINKS 앱 서비스는 <strong>낯선 여행지</strong>에서도 <strong>다�
 - HOG Discriptor
 
 ## 판단
+- Dijkstra
 - Astar
+- V2X
 
 ## 제어
+- PID Control
 - Pure Persuit
+- Adaptive Cruise Control
 
 ## 🔎 프로젝트 구성
 
