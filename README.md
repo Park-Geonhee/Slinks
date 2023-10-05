@@ -1,4 +1,4 @@
-# <img src="/home/leesh/catkin_ws/src/ssafy_ad/S09P22A701/ssafy_app/googlemap/app/src/main/res/drawable/logo_back.png" height=24"> 자율주행 SLINKS
+# <img src="/home/leesh/catkin_ws/src/ssafy_ad/S09P22A701/ssafy_app/googlemap/app/src/main/res/drawable/logo_back.png" height="24"> 자율주행 SLINKS
 
 ## 낯선 여행지를 자율 주행으로 편안하게
 ### 웹사이트 : [도깨비봇](https://i9a302.p.ssafy.io)
