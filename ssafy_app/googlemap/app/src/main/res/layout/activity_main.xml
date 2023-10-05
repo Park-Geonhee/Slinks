@@ -15,7 +15,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:fontFamily="@font/pretendard_bold"
-        android:text="AI 다이어리-메인"
+        android:text="AI 다이어리"
         android:textSize="20sp"
         android:layout_marginBottom="20dp"
         />
@@ -28,7 +28,7 @@
         android:orientation="horizontal">
 
         <LinearLayout
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="22dp"
 
@@ -50,408 +50,54 @@
 
                 app:layout_constraintTop_toTopOf="parent" />
 
-
-<!--            <androidx.appcompat.widget.AppCompatButton-->
-<!--                android:layout_width="126dp"-->
-<!--                android:layout_height="40dp"-->
-
-<!--                android:layout_marginLeft="10dp"-->
-<!--                android:background="@drawable/outline1"-->
-<!--                android:text="캘린더뷰"-->
-<!--                android:textColor="@color/grey60"-->
-<!--                android:textSize="14sp"-->
-<!--                app:layout_constraintBottom_toBottomOf="parent"-->
-<!--                app:layout_constraintEnd_toEndOf="parent"-->
-<!--                app:layout_constraintStart_toStartOf="parent"-->
-
-<!--                app:layout_constraintTop_toTopOf="parent" />-->
-
-
-
         </LinearLayout>
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/goMap"
+            android:text="goMAP"
+            android:textColor="@color/slinks_black"
+            />
+
+
 
 
     </LinearLayout>
 
-    <!--    일기 목록-->
-<!--    <androidx.recyclerview.widget.RecyclerView-->
-<!--        android:layout_gravity="center"-->
-<!--        android:id="@+id/diaryList"-->
-
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="500dp"-->
-<!--        android:layout_marginBottom="24dp"-->
-<!--        tools:listitem="@layout/item_recycle_diary"-->
-<!--        android:orientation="horizontal"/>-->
 
     <LinearLayout
-
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="24dp"
         android:orientation="horizontal">
-        <LinearLayout
-            android:layout_marginRight="20dp"
-            android:id="@+id/diary_card1"
-            android:layout_width="300dp"
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerViewDiary"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingBottom="20dp"
-
-            android:background="@drawable/diary_card"
-            android:orientation="vertical"
-
-
-            >
-
-            <!--        장소 정보-->
-
-
-            <LinearLayout
-                android:layout_marginHorizontal="20dp"
-                android:layout_marginTop="10dp"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-
-                android:orientation="horizontal"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="parent">
-
-
-                <ImageView
-                    android:layout_width="102dp"
-                    android:layout_height="82dp"
-                    android:src="@drawable/mash"
-
-                    app:srcCompat="@drawable/mash" />
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="50dp"
-                    android:orientation="vertical">
-
-                    <LinearLayout
-                        android:layout_width="200dp"
-                        android:layout_height="30dp"
-                        android:orientation="horizontal">
-
-                        <TextView
-                            android:layout_width="80dp"
-                            android:layout_height="30dp"
-                            android:fontFamily="@font/pretendard_semi_bold"
-
-                            android:text="삼진가구"
-                            android:textSize="16dp"
-
-                            android:textColor="@color/grey60" />
-
-                        <TextView
-                            android:fontFamily="@font/pretendard_medium"
-
-                            android:layout_width="80dp"
-                            android:layout_height="30dp"
-                            android:text="카페"
-                            android:textSize="14dp"
-                            android:textColor="@color/grey60" />
-
-
-                    </LinearLayout>
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="5dp"
-                        android:fontFamily="@font/pretendard_medium"
-                        android:textSize="14dp"
-
-                        android:text="인천 삼화군 강화읍 향나무 5번길" />
-                </LinearLayout>
-
-            </LinearLayout>
-
-            <ImageView
-                android:layout_marginHorizontal="20dp"
-                android:layout_width="match_parent"
-                android:layout_height="260dp"
-                android:layout_gravity="center"
-
-                android:layout_marginTop="10dp"
-
-
-                app:srcCompat="@drawable/cakepang" />
-
-            <TextView
-                android:layout_marginHorizontal="20dp"
-                android:layout_width="match_parent"
-                android:layout_height="76dp"
-                android:layout_gravity="center"
-                android:layout_marginTop="20dp"
-                android:maxLines="5"
-                android:fontFamily="@font/pretendard_medium"
-                android:textSize="16dp"
-                android:text="오후에 햇빛을 받으면서 맛잇는 에스프레소 한잔.. 커피는 코로 마시는거다. 레트로와 섞여서 한 층더 갬성과 풍미가 더해지는것 같다.. :D "
-
-                app:layout_constraintBottom_toBottomOf="parent"
-
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/imageView4"
-                app:layout_constraintTop_toTopOf="parent" />
-
-
-        </LinearLayout>
-        <LinearLayout
-            android:id="@+id/diary_card"
-            android:layout_width="300dp"
-            android:layout_height="wrap_content"
-            android:paddingBottom="20dp"
-
-            android:background="@drawable/diary_card"
-            android:orientation="vertical"
-
-
-            >
-
-            <!--        장소 정보-->
-
-
-            <LinearLayout
-                android:layout_marginHorizontal="20dp"
-                android:layout_marginTop="10dp"
-                android:id="@+id/place1"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-
-                android:orientation="horizontal"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="parent">
-
-
-                <ImageView
-                    android:id="@+id/imageView2"
-                    android:layout_width="102dp"
-                    android:layout_height="82dp"
-                    android:src="@drawable/mash"
-
-                    app:srcCompat="@drawable/mash" />
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="50dp"
-                    android:orientation="vertical">
-
-                    <LinearLayout
-                        android:layout_width="200dp"
-                        android:layout_height="30dp"
-                        android:orientation="horizontal">
-
-                        <TextView
-                            android:id="@+id/textView5"
-                            android:layout_width="80dp"
-                            android:layout_height="30dp"
-                            android:fontFamily="@font/pretendard_semi_bold"
-
-                            android:text="삼진가구"
-                            android:textSize="16dp"
-
-                            android:textColor="@color/grey60" />
-
-                        <TextView
-                            android:fontFamily="@font/pretendard_medium"
-
-                            android:layout_width="80dp"
-                            android:layout_height="30dp"
-                            android:text="카페"
-                            android:textSize="14dp"
-                            android:textColor="@color/grey60" />
-
-
-                    </LinearLayout>
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="5dp"
-                        android:fontFamily="@font/pretendard_medium"
-                        android:textSize="14dp"
-
-                        android:text="인천 삼화군 강화읍 향나무 5번길" />
-                </LinearLayout>
-
-            </LinearLayout>
-
-            <ImageView
-                android:layout_marginHorizontal="20dp"
-                android:layout_width="match_parent"
-                android:layout_height="260dp"
-                android:layout_gravity="center"
-
-                android:layout_marginTop="10dp"
-
-
-                app:srcCompat="@drawable/cakepang" />
-
-            <TextView
-                android:layout_marginHorizontal="20dp"
-                android:layout_width="match_parent"
-                android:layout_height="76dp"
-                android:layout_gravity="center"
-                android:layout_marginTop="20dp"
-                android:maxLines="5"
-                android:fontFamily="@font/pretendard_medium"
-                android:textSize="16dp"
-                android:text="오후에 햇빛을 받으면서 맛잇는 에스프레소 한잔.. 커피는 코로 마시는거다. 레트로와 섞여서 한 층더 갬성과 풍미가 더해지는것 같다.. :D "
-
-                app:layout_constraintBottom_toBottomOf="parent"
-
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/imageView4"
-                app:layout_constraintTop_toTopOf="parent" />
-
-
-        </LinearLayout>
-
+            android:orientation="horizontal"
+            android:layout_marginStart="22dp"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            tools:listitem="@layout/item_recycle_diary" />
     </LinearLayout>
 
+
+<!--    <HorizontalScrollView-->
+
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content">-->
 <!--        <LinearLayout-->
-<!--            android:layout_marginRight="20dp"-->
-<!--            android:id="@+id/diary_card"-->
-<!--            android:layout_width="320dp"-->
+<!--            android:id="@+id/diaries"-->
+<!--            android:layout_width="match_parent"-->
 <!--            android:layout_height="wrap_content"-->
-<!--            android:paddingBottom="20dp"-->
-<!--            android:background="@drawable/diary_card"-->
-<!--            android:orientation="vertical"-->
-<!--            >-->
-
-<!--            &lt;!&ndash;        장소 정보&ndash;&gt;-->
-<!--            <LinearLayout-->
-<!--                android:id="@+id/place_info"-->
-<!--                android:layout_marginHorizontal="20dp"-->
-<!--                android:layout_marginTop="10dp"-->
-<!--                android:layout_width="match_parent"-->
-<!--                android:layout_height="wrap_content"-->
-<!--                android:layout_gravity="center"-->
-
-<!--                android:orientation="horizontal"-->
-<!--             >-->
-
-
-<!--                <ImageView-->
-<!--                    android:id="@+id/place_img"-->
-<!--                    android:layout_width="82dp"-->
-<!--                    android:layout_height="82dp"-->
-<!--                    android:src="@drawable/mash"-->
-<!--                    app:srcCompat="@drawable/mash" />-->
-
-<!--                <LinearLayout-->
-<!--                    android:layout_width="match_parent"-->
-<!--                    android:layout_height="50dp"-->
-<!--                    android:layout_marginLeft="10dp"-->
-<!--                    android:orientation="vertical">-->
-
-<!--                    <LinearLayout-->
-<!--                        android:layout_width="200dp"-->
-<!--                        android:layout_height="30dp"-->
-<!--                        android:orientation="horizontal">-->
-
-<!--                        <TextView-->
-<!--                            android:id="@+id/place_name"-->
-<!--                            android:layout_width="80dp"-->
-<!--                            android:layout_height="30dp"-->
-<!--                            android:fontFamily="@font/pretendard_semi_bold"-->
-
-<!--                            android:text="삼진가구"-->
-<!--                            android:textSize="16dp"-->
-
-<!--                            android:textColor="@color/grey60" />-->
-
-<!--                        <TextView-->
-<!--                            android:id="@+id/place_type"-->
-<!--                            android:fontFamily="@font/pretendard_medium"-->
-
-<!--                            android:layout_width="80dp"-->
-<!--                            android:layout_height="30dp"-->
-<!--                            android:text="카페"-->
-<!--                            android:textSize="14dp"-->
-<!--                            android:textColor="@color/grey60" />-->
-
-
-<!--                    </LinearLayout>-->
-
-<!--                    <TextView-->
-<!--                        android:id="@+id/place_address"-->
-<!--                        android:layout_width="wrap_content"-->
-<!--                        android:layout_height="wrap_content"-->
-<!--                        android:layout_marginStart="5dp"-->
-<!--                        android:fontFamily="@font/pretendard_medium"-->
-<!--                        android:textSize="14dp"-->
-
-<!--                        android:text="인천 삼화군 강화읍 향나무 5번길" />-->
-<!--                </LinearLayout>-->
-
-<!--            </LinearLayout>-->
-
-<!--            <FrameLayout-->
-<!--                android:layout_width="280dp"-->
-<!--                android:layout_gravity="center"-->
-<!--                android:layout_height="wrap_content"-->
-<!--                android:layout_marginTop="10dp"-->
-<!--                >-->
-<!--                <ImageView-->
-<!--                    android:id="@+id/diary_img"-->
-<!--                    android:layout_marginHorizontal="20dp"-->
-<!--                    android:layout_width="280dp"-->
-<!--                    android:layout_height="280dp"-->
-<!--                    android:layout_gravity="center"-->
-<!--                    app:srcCompat="@drawable/cakepang" />-->
-
-<!--                <TextView-->
-
-<!--                    android:id="@+id/diary_reg_time"-->
-<!--                    android:layout_width="80dp"-->
-<!--                    android:layout_height="36dp"-->
-
-<!--                    android:layout_marginLeft="18dp"-->
-<!--                    android:layout_marginTop="18dp"-->
-<!--                    android:background="@drawable/black_background"-->
-<!--                    android:paddingHorizontal="15dp"-->
-<!--                    android:textSize="14sp"-->
-<!--                    android:text="14:38"-->
-
-
-<!--                    android:textAlignment="center"-->
-<!--                    android:textColor="@color/sliknks_white" />-->
-
-<!--            </FrameLayout>-->
-
-
-<!--            <TextView-->
-<!--                android:id="@+id/diary_content"-->
-<!--                android:layout_marginHorizontal="20dp"-->
-<!--                android:layout_width="match_parent"-->
-<!--                android:layout_height="76dp"-->
-<!--                android:layout_gravity="center"-->
-<!--                android:layout_marginTop="20dp"-->
-<!--                android:maxLines="5"-->
-<!--                android:fontFamily="@font/pretendard_medium"-->
-<!--                android:textSize="16dp"-->
-<!--                android:text="오후에 햇빛을 받으면서 맛잇는 에스프레소 한잔.. 커피는 코로 마시는거다. 레트로와 섞여서 한 층더 갬성과 풍미가 더해지는것 같다.. :D "-->
-
-
-<!--             />-->
+<!--            android:layout_marginBottom="24dp"-->
+<!--            android:orientation="horizontal">-->
 
 
 <!--        </LinearLayout>-->
+<!--    </HorizontalScrollView>-->
 
-
-
-
-
-
+<HorizontalScrollView
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
     <LinearLayout
         android:id="@+id/days"
         android:layout_width="437dp"
@@ -533,8 +179,35 @@
 
             tools:layout_editor_absoluteY="663dp" />
 
+        <androidx.appcompat.widget.AppCompatButton
+
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:layout_marginRight="15dp"
+            android:background="@drawable/outline_day"
+            android:text="13"
+            android:textColor="@color/slinks_black"
+            android:textSize="16dp"
+
+            tools:layout_editor_absoluteY="663dp" />
+
+        <androidx.appcompat.widget.AppCompatButton
+
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:layout_marginRight="15dp"
+            android:background="@drawable/outline_day"
+            android:text="14"
+            android:textColor="@color/slinks_black"
+            android:textSize="16dp"
+
+            tools:layout_editor_absoluteY="663dp" />
+
 
     </LinearLayout>
+
+</HorizontalScrollView>
+
 
     <LinearLayout
 android:layout_marginHorizontal="22dp"
@@ -634,27 +307,339 @@ android:layout_marginHorizontal="22dp"
 
 </LinearLayout>
 
-    <!--<?xml version="1.0" encoding="utf-8"?>-->
-    <!--<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"-->
-    <!--    xmlns:tools="http://schemas.android.com/tools"-->
-    <!--    android:layout_width="match_parent"-->
-    <!--    android:layout_height="match_parent"-->
-    <!--    android:orientation="vertical"-->
-    <!--    tools:context=".MainActivity">-->
 
-    <!--    <TextView-->
-    <!--        android:id="@+id/textViewUsername"-->
-    <!--        android:layout_width="wrap_content"-->
-    <!--        android:layout_height="wrap_content"-->
-    <!--        android:text="Username: "-->
-    <!--        android:textSize="18sp"-->
-    <!--        android:padding="8dp"/>-->
+<!--<LinearLayout-->
+<!--android:layout_marginStart="22dp"-->
+<!--android:layout_marginEnd="20dp"-->
+<!--android:id="@+id/diary_card1"-->
+<!--android:layout_width="300dp"-->
+<!--android:layout_height="wrap_content"-->
+<!--android:paddingBottom="20dp"-->
 
-    <!--    <TextView-->
-    <!--        android:id="@+id/textViewAddress"-->
-    <!--        android:layout_width="wrap_content"-->
-    <!--        android:layout_height="wrap_content"-->
-    <!--        android:text="Address: "-->
-    <!--        android:textSize="18sp"-->
-    <!--        android:padding="8dp"/>-->
-    <!--</LinearLayout>-->
+<!--android:background="@drawable/diary_card"-->
+<!--android:orientation="vertical"-->
+
+
+<!--    >-->
+
+<!--&lt;!&ndash;        장소 정보&ndash;&gt;-->
+
+
+<!--<LinearLayout-->
+<!--    android:layout_marginHorizontal="20dp"-->
+<!--    android:layout_marginTop="10dp"-->
+<!--    android:layout_width="match_parent"-->
+<!--    android:layout_height="wrap_content"-->
+<!--    android:layout_gravity="center"-->
+
+<!--    android:orientation="horizontal"-->
+<!--    app:layout_constraintEnd_toEndOf="parent"-->
+<!--    app:layout_constraintStart_toStartOf="parent"-->
+<!--    app:layout_constraintTop_toBottomOf="parent">-->
+
+
+<!--    <ImageView-->
+<!--        android:layout_width="102dp"-->
+<!--        android:layout_height="82dp"-->
+<!--        android:src="@drawable/mash"-->
+
+<!--        app:srcCompat="@drawable/mash" />-->
+
+<!--    <LinearLayout-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="50dp"-->
+<!--        android:orientation="vertical">-->
+
+<!--        <LinearLayout-->
+<!--            android:layout_width="200dp"-->
+<!--            android:layout_height="30dp"-->
+<!--            android:orientation="horizontal">-->
+
+<!--            <TextView-->
+<!--                android:layout_width="80dp"-->
+<!--                android:layout_height="30dp"-->
+<!--                android:fontFamily="@font/pretendard_semi_bold"-->
+
+<!--                android:text="삼진가구"-->
+<!--                android:textSize="16dp"-->
+
+<!--                android:textColor="@color/grey60" />-->
+
+<!--            <TextView-->
+<!--                android:fontFamily="@font/pretendard_medium"-->
+
+<!--                android:layout_width="80dp"-->
+<!--                android:layout_height="30dp"-->
+<!--                android:text="카페"-->
+<!--                android:textSize="14sp"-->
+<!--                android:textColor="@color/grey60" />-->
+
+
+<!--        </LinearLayout>-->
+
+<!--        <TextView-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_marginStart="5dp"-->
+<!--            android:fontFamily="@font/pretendard_medium"-->
+<!--            android:textSize="14sp"-->
+
+<!--            android:text="인천 삼화군 강화읍 향나무 5번길" />-->
+<!--    </LinearLayout>-->
+
+<!--</LinearLayout>-->
+
+<!--<ImageView-->
+<!--    android:layout_marginHorizontal="20dp"-->
+<!--    android:layout_width="match_parent"-->
+<!--    android:layout_height="260dp"-->
+<!--    android:layout_gravity="center"-->
+
+<!--    android:layout_marginTop="10dp"-->
+
+
+<!--    app:srcCompat="@drawable/cakepang" />-->
+
+<!--<TextView-->
+<!--    android:layout_marginHorizontal="20dp"-->
+<!--    android:layout_width="match_parent"-->
+<!--    android:layout_height="76dp"-->
+<!--    android:layout_gravity="center"-->
+<!--    android:layout_marginTop="20dp"-->
+<!--    android:maxLines="5"-->
+<!--    android:fontFamily="@font/pretendard_medium"-->
+<!--    android:textSize="16dp"-->
+<!--    android:text="오후에 햇빛을 받으면서 맛잇는 에스프레소 한잔.. 커피는 코로 마시는거다. 레트로와 섞여서 한 층더 갬성과 풍미가 더해지는것 같다.. :D "-->
+
+<!--    app:layout_constraintBottom_toBottomOf="parent"-->
+
+<!--    app:layout_constraintEnd_toEndOf="parent"-->
+<!--    app:layout_constraintStart_toStartOf="parent"-->
+<!--    app:layout_constraintTop_toBottomOf="@+id/imageView4"-->
+<!--    app:layout_constraintTop_toTopOf="parent" />-->
+
+
+<!--</LinearLayout>-->
+<!--<LinearLayout-->
+<!--android:layout_marginEnd="20dp"-->
+<!--android:id="@+id/diary_card"-->
+<!--android:layout_width="300dp"-->
+<!--android:layout_height="wrap_content"-->
+<!--android:paddingBottom="20dp"-->
+
+<!--android:background="@drawable/diary_card"-->
+<!--android:orientation="vertical"-->
+
+
+<!--    >-->
+
+<!--&lt;!&ndash;        장소 정보&ndash;&gt;-->
+
+
+<!--<LinearLayout-->
+<!--    android:layout_marginHorizontal="20dp"-->
+<!--    android:layout_marginTop="10dp"-->
+<!--    android:layout_width="match_parent"-->
+<!--    android:layout_height="wrap_content"-->
+<!--    android:layout_gravity="center"-->
+
+<!--    android:orientation="horizontal"-->
+<!--    app:layout_constraintEnd_toEndOf="parent"-->
+<!--    app:layout_constraintStart_toStartOf="parent"-->
+<!--    app:layout_constraintTop_toBottomOf="parent">-->
+
+
+<!--    <ImageView-->
+<!--        android:id="@+id/imageView2"-->
+<!--        android:layout_width="102dp"-->
+<!--        android:layout_height="82dp"-->
+<!--        android:src="@drawable/mash"-->
+
+<!--        app:srcCompat="@drawable/mash" />-->
+
+<!--    <LinearLayout-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="50dp"-->
+<!--        android:orientation="vertical">-->
+
+<!--        <LinearLayout-->
+<!--            android:layout_width="200dp"-->
+<!--            android:layout_height="30dp"-->
+<!--            android:orientation="horizontal">-->
+
+<!--            <TextView-->
+<!--                android:layout_width="80dp"-->
+<!--                android:layout_height="30dp"-->
+<!--                android:fontFamily="@font/pretendard_semi_bold"-->
+
+<!--                android:text="삼진가구"-->
+<!--                android:textSize="16dp"-->
+
+<!--                android:textColor="@color/grey60" />-->
+
+<!--            <TextView-->
+<!--                android:fontFamily="@font/pretendard_medium"-->
+
+<!--                android:layout_width="80dp"-->
+<!--                android:layout_height="30dp"-->
+<!--                android:text="카페"-->
+<!--                android:textSize="14dp"-->
+<!--                android:textColor="@color/grey60" />-->
+
+
+<!--        </LinearLayout>-->
+
+<!--        <TextView-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_marginStart="5dp"-->
+<!--            android:fontFamily="@font/pretendard_medium"-->
+<!--            android:textSize="14dp"-->
+
+<!--            android:text="인천 삼화군 강화읍 향나무 5번길" />-->
+<!--    </LinearLayout>-->
+
+<!--</LinearLayout>-->
+
+<!--<ImageView-->
+<!--    android:layout_marginHorizontal="20dp"-->
+<!--    android:layout_width="match_parent"-->
+<!--    android:layout_height="260dp"-->
+<!--    android:layout_gravity="center"-->
+
+<!--    android:layout_marginTop="10dp"-->
+
+
+<!--    app:srcCompat="@drawable/cakepang" />-->
+
+<!--<TextView-->
+<!--    android:layout_marginHorizontal="20dp"-->
+<!--    android:layout_width="match_parent"-->
+<!--    android:layout_height="76dp"-->
+<!--    android:layout_gravity="center"-->
+<!--    android:layout_marginTop="20dp"-->
+<!--    android:maxLines="5"-->
+<!--    android:fontFamily="@font/pretendard_medium"-->
+<!--    android:textSize="16dp"-->
+<!--    android:text="오후에 햇빛을 받으면서 맛잇는 에스프레소 한잔.. 커피는 코로 마시는거다. 레트로와 섞여서 한 층더 갬성과 풍미가 더해지는것 같다.. :D "-->
+
+<!--    app:layout_constraintBottom_toBottomOf="parent"-->
+
+<!--    app:layout_constraintEnd_toEndOf="parent"-->
+<!--    app:layout_constraintStart_toStartOf="parent"-->
+<!--    app:layout_constraintTop_toBottomOf="@+id/imageView4"-->
+<!--    app:layout_constraintTop_toTopOf="parent" />-->
+
+
+<!--</LinearLayout>-->
+<!--<LinearLayout-->
+<!--android:layout_marginEnd="20dp"-->
+<!--android:layout_width="300dp"-->
+<!--android:layout_height="wrap_content"-->
+<!--android:paddingBottom="20dp"-->
+
+<!--android:background="@drawable/diary_card"-->
+<!--android:orientation="vertical"-->
+
+
+<!--    >-->
+
+<!--&lt;!&ndash;        장소 정보&ndash;&gt;-->
+
+
+<!--<LinearLayout-->
+<!--    android:layout_marginHorizontal="20dp"-->
+<!--    android:layout_marginTop="10dp"-->
+<!--    android:layout_width="match_parent"-->
+<!--    android:layout_height="wrap_content"-->
+<!--    android:layout_gravity="center"-->
+
+<!--    android:orientation="horizontal"-->
+<!--    app:layout_constraintEnd_toEndOf="parent"-->
+<!--    app:layout_constraintStart_toStartOf="parent"-->
+<!--    app:layout_constraintTop_toBottomOf="parent">-->
+
+
+<!--    <ImageView-->
+<!--        android:layout_width="102dp"-->
+<!--        android:layout_height="82dp"-->
+<!--        android:src="@drawable/mash"-->
+
+<!--        app:srcCompat="@drawable/mash" />-->
+
+<!--    <LinearLayout-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="50dp"-->
+<!--        android:orientation="vertical">-->
+
+<!--        <LinearLayout-->
+<!--            android:layout_width="200dp"-->
+<!--            android:layout_height="30dp"-->
+<!--            android:orientation="horizontal">-->
+
+<!--            <TextView-->
+<!--                android:layout_width="80dp"-->
+<!--                android:layout_height="30dp"-->
+<!--                android:fontFamily="@font/pretendard_semi_bold"-->
+
+<!--                android:text="삼진가구"-->
+<!--                android:textSize="16dp"-->
+
+<!--                android:textColor="@color/grey60" />-->
+
+<!--            <TextView-->
+<!--                android:fontFamily="@font/pretendard_medium"-->
+
+<!--                android:layout_width="80dp"-->
+<!--                android:layout_height="30dp"-->
+<!--                android:text="카페"-->
+<!--                android:textSize="14dp"-->
+<!--                android:textColor="@color/grey60" />-->
+
+
+<!--        </LinearLayout>-->
+
+<!--        <TextView-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_marginStart="5dp"-->
+<!--            android:fontFamily="@font/pretendard_medium"-->
+<!--            android:textSize="14dp"-->
+
+<!--            android:text="인천 삼화군 강화읍 향나무 5번길" />-->
+<!--    </LinearLayout>-->
+
+<!--</LinearLayout>-->
+
+<!--<ImageView-->
+<!--    android:layout_marginHorizontal="20dp"-->
+<!--    android:layout_width="match_parent"-->
+<!--    android:layout_height="260dp"-->
+<!--    android:layout_gravity="center"-->
+
+<!--    android:layout_marginTop="10dp"-->
+
+
+<!--    app:srcCompat="@drawable/cakepang" />-->
+
+<!--<TextView-->
+<!--    android:layout_marginHorizontal="20dp"-->
+<!--    android:layout_width="match_parent"-->
+<!--    android:layout_height="76dp"-->
+<!--    android:layout_gravity="center"-->
+<!--    android:layout_marginTop="20dp"-->
+<!--    android:maxLines="5"-->
+<!--    android:fontFamily="@font/pretendard_medium"-->
+<!--    android:textSize="16dp"-->
+<!--    android:text="오후에 햇빛을 받으면서 맛잇는 에스프레소 한잔.. 커피는 코로 마시는거다. 레트로와 섞여서 한 층더 갬성과 풍미가 더해지는것 같다.. :D "-->
+
+<!--    app:layout_constraintBottom_toBottomOf="parent"-->
+
+<!--    app:layout_constraintEnd_toEndOf="parent"-->
+<!--    app:layout_constraintStart_toStartOf="parent"-->
+<!--    app:layout_constraintTop_toBottomOf="@+id/imageView4"-->
+<!--    app:layout_constraintTop_toTopOf="parent" />-->
+
+
+<!--</LinearLayout>-->
+

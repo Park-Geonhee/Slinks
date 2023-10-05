@@ -5,13 +5,19 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 object RetrofitClient {
 
-    private const val BASE_URL = "http://10.0.2.2:8080/"
-//    private const val BASE_URL = "http://j9a701.ssafy.io/api/"
+//    private const val BASE_URL = "http://10.0.2.2:8080/"
+    private const val BASE_URL = "http://j9a701.p.ssafy.io/"
 
-    private val retrofit: Retrofit = Retrofit.Builder()
-        .baseUrl(BASE_URL)
-        .addConverterFactory(GsonConverterFactory.create())
-        .build()
+    private val getRetrofit by lazy{
+        Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+    }
 
-    val apiService: ApiService = retrofit.create(ApiService::class.java)
+
+    val getRetrofitService:NeplanAPI by lazy{
+        getRetrofit.create(NeplanAPI::class.java)
+    }
+
 }

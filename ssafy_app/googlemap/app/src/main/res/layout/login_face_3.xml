@@ -87,16 +87,7 @@
         </LinearLayout>
         <!--        로고까지 끝-->
 
-        <ImageView
-            android:layout_gravity="center"
-            android:id="@+id/loginface_thumbnail"
-            android:layout_width="280dp"
-            android:layout_height="280dp"
-            android:layout_marginTop="42dp"
 
-
-            android:src="@drawable/thumbnail2"
-            />
 
 
         <LinearLayout
@@ -104,6 +95,17 @@
             android:layout_height="wrap_content"
             android:gravity="center"
             android:orientation="vertical">
+
+            <ImageView
+                android:layout_gravity="center"
+                android:id="@+id/loginface_thumbnail"
+                android:layout_width="280dp"
+                android:layout_height="280dp"
+                android:layout_marginTop="42dp"
+
+
+                android:src="@drawable/thumbnail3"
+                />
 
 
             <TextView

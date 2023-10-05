@@ -7,5 +7,7 @@ data class Diary(
     val content: String? = null,
     val user: User? = null,
     val place: Place? = null,
-    val file: File? = null
+    val file: File? = null,
+    val createdDate: String?=null,
+    val modifiedDate: String?=null
 )
