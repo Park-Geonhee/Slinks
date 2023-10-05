@@ -117,7 +117,7 @@ public class PlaceServiceImpl implements PlaceService {
             String latitude = placeNode.path("x").asText();
             String longitude = placeNode.path("y").asText();
 
-            place = new Place(name, address, longitude, latitude);
+            place = new Place(name, address, latitude, longitude);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -151,12 +151,12 @@ public class PlaceServiceImpl implements PlaceService {
                 String name = firstPlaceNode.get("place_name").asText();
                 String phone = firstPlaceNode.get("phone").asText();
                 String address = firstPlaceNode.get("address_name").asText();
-                String x = firstPlaceNode.get("x").asText();
-                String y = firstPlaceNode.get("y").asText();
+                String y = firstPlaceNode.get("x").asText();
+                String x = firstPlaceNode.get("y").asText();
                 String placeTypeString = firstPlaceNode.get("category_group_code").asText();
                 PlaceType placeType = PlaceType.fromString(placeTypeString);
 
-                System.out.println("카ㅏ테고리 코드 : "+placeTypeString);
+                System.out.println("카테고리 코드 : "+placeTypeString);
                 System.out.println("카체고리 타입 : "+placeType);
 
                 // Check if the place with the same name already exists in the database
