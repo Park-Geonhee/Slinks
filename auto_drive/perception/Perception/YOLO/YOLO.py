@@ -10,6 +10,5 @@ class YOLO:
 
     def get_result(self, image):
         result = self.model(image).pandas().xyxy[0]
-        
         return result
     

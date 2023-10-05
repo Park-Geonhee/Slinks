@@ -66,11 +66,10 @@ class pure_pursuit :
 
         while True:
             if self.is_link_path == True:
-                self.link_path = self.link_path.split(' ')
-                self.link_path.pop(0)
+                self.link_path_list = self.link_path.split(' ')
+                self.link_path_list.pop(0)
                 self.is_link_path_set = True
                 break
-
 
         self.pid = pidControl()
         self.adaptive_cruise_control = AdaptiveCruiseControl(velocity_gain = 0.5, distance_gain = 1, time_gap = 2, vehicle_length = 2.7, link_info = self.link_info)
@@ -101,8 +100,12 @@ class pure_pursuit :
             if self.is_traffic_light_info == True and self.is_link_path_set == True:
                 # 가져오는 신호등 데이터가 경로 상에 있는 신호등인지 확인하는 작업. 
                 tl_idx = self.traffic_light_info.trafficLightIndex
+                #print(f"tl_idx : {tl_idx}")
                 for tl_link in self.traffic_lights[tl_idx].link_id_list:
-                    if tl_link in self.link_path: 
+                    #print(f"tl_link : {tl_link}")
+                    #print(self.link_path_list)
+                    if tl_link in self.link_path_list: 
+                        #print("tl_info set")
                         self.tl_info = self.traffic_light_info
 
             if self.is_path == True and self.is_odom == True and self.is_status == True:
@@ -608,6 +611,7 @@ class AdaptiveCruiseControl:
             # 정지선이 있으면
             if self.link_info.is_on_stop_line:
                 
+                print(local_tl_info)
                 # 현재 링크에서의 신호등 정보가 없는 경우는 넘어감
                 if local_tl_info[0][0] == 0 : pass
 
