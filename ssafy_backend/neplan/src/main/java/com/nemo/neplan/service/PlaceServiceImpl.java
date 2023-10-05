@@ -117,7 +117,7 @@ public class PlaceServiceImpl implements PlaceService {
             String latitude = placeNode.path("x").asText();
             String longitude = placeNode.path("y").asText();
 
-            place = new Place(name, address, latitude, longitude);
+            place = new Place(name, address, longitude, latitude);
         } catch (Exception e) {
             e.printStackTrace();
         }
