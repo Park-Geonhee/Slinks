@@ -9,7 +9,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class WebMvcConfig implements WebMvcConfigurer {
 
     @Value("${upload.directory}")
-    private String uploadDirectory;
+    private String uploadDirectory="/usr/local/lib/upload-dir/";
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
