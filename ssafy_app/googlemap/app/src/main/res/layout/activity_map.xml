@@ -37,20 +37,6 @@
             android:layout_width="match_parent"
             android:layout_height="400dp"/>
 
-<!--                <fragment xmlns:android="http://schemas.android.com/apk/res/android"-->
-<!--                    xmlns:map="http://schemas.android.com/apk/res-auto"-->
-<!--                    android:id="@+id/map_page"-->
-<!--                    xmlns:tools="http://schemas.android.com/tools"-->
-<!--                    android:name="com.google.android.gms.maps.SupportMapFragment"-->
-<!--                    android:layout_width="match_parent"-->
-<!--                    android:layout_height="490dp"-->
-<!--                    tools:context=".MapActivity" />-->
-
-<!--        <fragment-->
-<!--            android:id="@+id/map"-->
-<!--            class="com.google.android.gms.maps.SupportMapFragment"-->
-<!--            android:layout_width="match_parent"-->
-<!--            android:layout_height="490dp" />-->
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -117,9 +103,9 @@
                             android:id="@+id/registerButton"
                             android:layout_width="180dp"
                             android:layout_height="wrap_content"
-                            android:textColor="@color/slinks_black"
                             android:text="경유지 등록"
-                         />
+
+                            android:textColor="@color/slinks_black" />
                 </LinearLayout>
 
 
@@ -132,46 +118,64 @@
                 />
 
         <!-- 일기 이미지 목록 -->
-        <LinearLayout
+        <HorizontalScrollView
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:padding="16dp">
+            android:layout_height="wrap_content">
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:padding="16dp">
 
-                <ImageView
-                    android:id="@+id/diaryImage1"
-                    android:layout_width="0dp"
-                    android:layout_height="100dp"
-                    android:layout_weight="1"
-                    android:scaleType="centerCrop"
-                    android:contentDescription="일기 이미지"
-                    android:src="@drawable/cakepang"/>
+                        <ImageView
+                            android:id="@+id/diaryImage1"
+                            android:layout_width="100dp"
+                            android:layout_height="100dp"
 
-                <ImageView
-                    android:id="@+id/diaryImage2"
-                    android:layout_width="0dp"
-                    android:layout_height="100dp"
-                    android:layout_weight="1"
-                    android:layout_marginStart="8dp"
-                    android:scaleType="centerCrop"
-                    android:src="@drawable/cakepang"/>
+                            android:scaleType="centerCrop"
+                            android:contentDescription="일기 이미지"
+                            android:src="@drawable/cakepang"/>
 
-                <ImageView
-                    android:id="@+id/diaryImage3"
-                    android:layout_width="0dp"
-                    android:layout_height="100dp"
-                    android:layout_weight="1"
-                    android:layout_marginStart="8dp"
-                    android:scaleType="centerCrop"
-                    android:src="@drawable/cakepang"/>
-        </LinearLayout>
+                        <ImageView
+                            android:id="@+id/diaryImage2"
+                            android:layout_width="100dp"
+                            android:layout_height="100dp"
+
+                            android:layout_marginStart="8dp"
+                            android:scaleType="centerCrop"
+                            android:src="@drawable/cakepang"/>
+
+                        <ImageView
+                            android:layout_width="100dp"
+                            android:layout_height="100dp"
+
+                            android:layout_marginStart="8dp"
+                            android:scaleType="centerCrop"
+                            android:src="@drawable/cakepang"/>
+                        <ImageView
+                            android:layout_width="100dp"
+                            android:layout_height="100dp"
+
+                            android:layout_marginStart="8dp"
+                            android:scaleType="centerCrop"
+                            android:src="@drawable/cakepang"/>
+                        <ImageView
+                            android:layout_width="100dp"
+                            android:layout_height="100dp"
+
+                            android:layout_marginStart="8dp"
+                            android:scaleType="centerCrop"
+                            android:src="@drawable/cakepang"/>
+                </LinearLayout>
+        </HorizontalScrollView>
+
 
         <LinearLayout
             android:layout_marginHorizontal="22dp"
             android:id="@+id/footbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="14dp"
+            android:layout_marginTop="6dp"
 
             android:background="@drawable/footbar"
 
@@ -258,14 +262,5 @@
 </LinearLayout>
 
 
-
-
-    <!--        <fragment xmlns:android="http://schemas.android.com/apk/res/android"-->
-    <!--            xmlns:map="http://schemas.android.com/apk/res-auto"-->
-    <!--            xmlns:tools="http://schemas.android.com/tools"-->
-    <!--            android:name="com.google.android.gms.maps.SupportMapFragment"-->
-    <!--            android:layout_width="match_parent"-->
-    <!--            android:layout_height="match_parent"-->
-    <!--            tools:context=".MainActivity" />-->
 
 

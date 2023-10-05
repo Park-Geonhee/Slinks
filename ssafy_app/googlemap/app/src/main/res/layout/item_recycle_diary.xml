@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
    android:layout_gravity="center"
+    android:orientation="vertical"
     android:layout_height="wrap_content">
 
 
@@ -32,16 +33,16 @@
             >
 
 
-            <ImageView
-                android:id="@+id/place_img"
-                android:layout_width="82dp"
-                android:layout_height="82dp"
-                android:src="@drawable/mash"
-                app:srcCompat="@drawable/mash" />
+<!--            <ImageView-->
+<!--                android:id="@+id/place_img"-->
+<!--                android:layout_width="82dp"-->
+<!--                android:layout_height="82dp"-->
+<!--                android:src="@drawable/mash"-->
+<!--                app:srcCompat="@drawable/mash" />-->
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="50dp"
+                android:layout_height="wrap_content"
                 android:layout_marginLeft="10dp"
                 android:orientation="vertical">
 
@@ -52,12 +53,13 @@
 
                     <TextView
                         android:id="@+id/place_name"
-                        android:layout_width="80dp"
+                        android:layout_width="wrap_content"
+                        android:layout_marginRight="10dp"
                         android:layout_height="30dp"
-                        android:fontFamily="@font/pretendard_semi_bold"
+                        android:fontFamily="@font/pretendard_extra_bold"
 
                         android:text="삼진가구"
-                        android:textSize="16dp"
+                        android:textSize="18sp"
 
                         android:textColor="@color/grey60" />
 
@@ -125,10 +127,10 @@
             android:id="@+id/diary_content"
             android:layout_marginHorizontal="20dp"
             android:layout_width="match_parent"
-            android:layout_height="76dp"
+            android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:layout_marginTop="20dp"
-            android:maxLines="5"
+            android:maxLines="6"
             android:fontFamily="@font/pretendard_medium"
             android:textSize="16dp"
             android:text="오후에 햇빛을 받으면서 맛잇는 에스프레소 한잔.. 커피는 코로 마시는거다. 레트로와 섞여서 한 층더 갬성과 풍미가 더해지는것 같다.. :D "
@@ -139,4 +141,4 @@
 
     </LinearLayout>
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+</LinearLayout>
