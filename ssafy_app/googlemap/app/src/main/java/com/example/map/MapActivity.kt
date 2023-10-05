@@ -95,7 +95,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
 
 
             // 경유지 추가 post 요청
-            CoroutineScope(Dispatchers.IO).launch {
+            CoroutineScope(Dispatchers.Default).launch {
                 try {
                     // Retrofit을 사용하여 API 호출
                     val response: PlanPlace = RetrofitClient.getRetrofitService.createPlanPlace(planplace)
