@@ -4,6 +4,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.example.map.databinding.ItemRecycleDiaryBinding
 
 class DiaryAdapter:RecyclerView.Adapter<DiaryAdapter.MyView>() {
@@ -26,6 +27,14 @@ class DiaryAdapter:RecyclerView.Adapter<DiaryAdapter.MyView>() {
                 binding.diaryRegTime.text=tt
 
                 binding.diaryContent.text = diaryList[pos].content
+
+                val imgNameee:String=diaryList[pos].file?.imgName?:""
+
+                Glide.with(binding.root)
+                    .load("http://j9a701.p.ssafy.io/uploads/" + imgNameee)
+                    .centerCrop() // 이미지를 중앙으로 잘라서 표시합니다.
+                    .into(binding.diaryImg) // ImageView에 이미지를 표시합니다.
+
 
 
                 Log.d("진행상황", "굿굿")

@@ -74,8 +74,6 @@ class MainActivity : AppCompatActivity(){
             // 이동하고자 하는 DiaryActivity를 시작하는 Intent를 생성
             val intent = Intent(this@MainActivity, PlanListActivity::class.java)
 
-            // 필요한 경우, Intent에 데이터를 추가할 수 있음
-            // intent.putExtra("key", value)
 
             // DiaryActivity로 이동
             startActivity(intent)
@@ -95,15 +93,6 @@ class MainActivity : AppCompatActivity(){
             //여행 플랜 만드는 페이지로 이동
             startActivity(intent)
         })
-
-        binding.goMap.setOnClickListener(View.OnClickListener {
-            var intent=Intent(this@MainActivity,MapActivity::class.java )
-
-            //여행 플랜 만드는 페이지로 이동
-            startActivity(intent)
-        })
-
-
 
 
         //sharedPreference를 이용한 기기에 선택한 날짜 데이터 저장
