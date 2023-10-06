@@ -36,7 +36,7 @@ SLINKS 앱 서비스는 <strong>낯선 여행지</strong>에서도 <strong>다�
 ### 👩‍💻 [박건희](https://github.com/201611099) : 차량 제어 및 경로 추종, 속도 계획, 전방 거리 유지, 전역 경로 생성(Astar)
 ### 👨‍💻 [서강운](https://github.com/Jongwon97) : 전역 경로 생성(Dijkstra, Astar), 회피 경로 생성, V2X(신호등, 정지선) 기반 차량 주행
 ### 👨‍💻 [이승혁](https://github.com/leeseunghyuk0228) : OpenCV, Image Pre-processing, Lane Detect, YOLOv5 Object Detect
-### 👩‍💻 [홍의선](https://github.com/hon3538) : Sensor Calibration, Sensor Fusion, Object Detect(Radar/Lidar)
+### 👨‍💻 [홍의선](https://github.com/hon3538) : Sensor Calibration, Sensor Fusion, Object Detect(Radar/Lidar)
 
 - - - 
 
