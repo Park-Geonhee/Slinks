@@ -1,4 +1,4 @@
-<img src="ssafy_app/googlemap/app/src/main/res/drawable/logo_yellow.png" height="24"> # 자율주행
+## <img src="ssafy_app/googlemap/app/src/main/res/drawable/logo_yellow.png" height="24"> 자율주행
 
 ## 낯선 여행지를 자율 주행으로 편안하게
 SLINKS 앱 서비스는 <strong>낯선 여행지</strong>에서도 <strong>다른 유저</strong>의 여행 기록을<br>
