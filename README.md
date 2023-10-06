@@ -70,5 +70,8 @@ SLINKS 앱 서비스는 <strong>낯선 여행지</strong>에서도 <strong>다�
 ## 🔎 프로젝트 구성
 
 ### ⚙ [포팅매뉴얼](./exec/Porting_Manual.pdf)
-### 🔗[시스템 모식도]
-### 🖼 [기능명세]
+### 🔗[시스템 모식도](./exec/기능명세서.pdf)
+### 🔗[시스템 구조](./exec/Directory_Tree.txt)
+### 🖼 [기능명세](./exec/기능명세서.pdf)
+
+
