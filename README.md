@@ -1,14 +1,8 @@
 ## <img src="ssafy_app/googlemap/app/src/main/res/drawable/logo_yellow.png" height="24"> 자율주행
-
-## 낯선 여행지를 자율 주행으로 편안하게
+### 낯선 여행지를 자율 주행으로 편안하게
 SLINKS 앱 서비스는 <strong>낯선 여행지</strong>에서도 <strong>다른 유저</strong>의 여행 기록을<br>
 참고, <strong>자율 주행</strong>이 가능하게 해주는 <strong>쉽고 간편</strong>한 서비스입니다.
 
-- - -
-
-## 🎬 시연 영상 및 UCC
-[UCC](https://drive.google.com/file/d/1JkjbP2QPGlyhCTZMykJQ7qb9ioyMHimS/view?usp=sharing)
-[시연영상](https://drive.google.com/file/d/1ykUax0QnmBkUvWOW1vizO9ojfq1g2f5N/view?usp=sharing)
 
 ## 🔑 핵심 기능
 
@@ -23,6 +17,9 @@ SLINKS 앱 서비스는 <strong>낯선 여행지</strong>에서도 <strong>다�
 - Yolov5 모델을 통한 실시간 신호, 차선 인식<b>안전한 주행</b>
 - Astar 알고리즘 기반 경로 추종 <b>신속한 경로 생성</b>
 
+## 🎬 시연 영상 및 UCC
+[UCC](https://drive.google.com/file/d/1JkjbP2QPGlyhCTZMykJQ7qb9ioyMHimS/view?usp=sharing)
+[시연영상](https://drive.google.com/file/d/1ykUax0QnmBkUvWOW1vizO9ojfq1g2f5N/view?usp=sharing)
 
 ## 📆 제작 기간 및 인원
 제작 기간 : 2023. 08.21 ~ 2023. 10. 06 (7주) <br/>
@@ -39,7 +36,7 @@ SLINKS 앱 서비스는 <strong>낯선 여행지</strong>에서도 <strong>다�
 
 - - - 
 
-## 📚 시스템 구성성
+## 📚 시스템 구성
 
 
 ### Backend
