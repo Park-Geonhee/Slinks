@@ -7,7 +7,6 @@ SLINKS 앱 서비스는 <strong>낯선 여행지</strong>에서도 <strong>다�
 ### 메인 기능
 - Yolov5 모델을 통한 실시간 신호, 차선 인식<b>안전한 주행</b>
 - Astar 알고리즘 기반 경로 추종 <b>신속한 경로 생성</b>
-
 - - -
 
 ## 🎬 시연 영상 및 UCC
@@ -45,13 +44,6 @@ SLINKS 앱 서비스는 <strong>낯선 여행지</strong>에서도 <strong>다�
 - webSocket
 
 ### Frontend
-- Node.js
-- typescript 4.9.5
-- React 18.2.0
-- React-redux 8.1.1
-- Sass(Scss) 8.0.0
-- chart.js 4.3.3
-- Stomp 7.0.0
 
 ### ROS 환경
 - docker
