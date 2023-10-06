@@ -30,11 +30,11 @@ SLINKS 앱 서비스는 <strong>낯선 여행지</strong>에서도 <strong>다�
 참여 인원 : 6인
 
 ### Moblie
-### 👨‍💻 [유지나](https://drive.google.com/file/d/1hf82ZdC2nCo4nmhPW9ZvxIYHzHIsTWA9/view?usp=sharing) : 기획, 디자인, 서버개발, 모바일개발, 발표
+### 👩‍💻 [유지나](https://github.com/wlskb) : 기획, 디자인, 서버개발, 모바일개발, 발표
 ### 자율 주행
-### 👨‍💻 [김도훈](https://github.com/bmryu0501) : 지역 경로, Kotlin & ROS Socket 통신, 실시간 위치 표시, UCC 제작
-### 👩‍💻 [박건희](https://github.com/201611099) : 차량 제어 및 경로 추종, 속도 계획, 전방 거리 유지, 전역 경로 생성(Astar)
-### 👨‍💻 [서강운](https://github.com/Jongwon97) : 전역 경로 생성(Dijkstra, Astar), 회피 경로 생성, V2X(신호등, 정지선) 기반 차량 주행
+### 👨‍💻 [김도훈](https://github.com/donny0331) : 지역 경로, Kotlin & ROS Socket 통신, 실시간 위치 표시, UCC 제작
+### 👨‍💻 [박건희](https://github.com/geon4415) : 차량 제어 및 경로 추종, 속도 계획, 전방 거리 유지, 전역 경로 생성(Astar)
+### 👨‍💻 [서강운](https://github.com/sku379829) : 전역 경로 생성(Dijkstra, Astar), 회피 경로 생성, V2X(신호등, 정지선) 기반 차량 주행
 ### 👨‍💻 [이승혁](https://github.com/leeseunghyuk0228) : OpenCV, Image Pre-processing, Lane Detect, YOLOv5 Object Detect
 ### 👨‍💻 [홍의선](https://github.com/hon3538) : Sensor Calibration, Sensor Fusion, Object Detect(Radar/Lidar)
 
