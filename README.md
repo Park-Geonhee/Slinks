@@ -13,8 +13,7 @@ SLINKS 앱 서비스는 <strong>낯선 여행지</strong>에서도 <strong>다�
 
 
 ### 자율 주행
-- - - 
-- Yolov5 모델을 통한 실시간 신호, 차선 인식<b>안전한 주행</b>
+- Yolov5 모델을 통한 실시간 신호, 차선 인식 <b>안전한 주행</b>
 - Astar 알고리즘 기반 경로 추종 <b>신속한 경로 생성</b>
 
 ## 🎬 시연 영상 및 UCC
@@ -33,8 +32,8 @@ SLINKS 앱 서비스는 <strong>낯선 여행지</strong>에서도 <strong>다�
 ### 👨‍💻 [서강운](https://github.com/sku379829) : 전역 경로 생성(Dijkstra, Astar), 회피 경로 생성, V2X(신호등, 정지선) 기반 차량 주행
 ### 👨‍💻 [이승혁](https://github.com/leeseunghyuk0228) : OpenCV, Image Pre-processing, Lane Detect, YOLOv5 Object Detect
 ### 👨‍💻 [홍의선](https://github.com/hon3538) : Sensor Calibration, Sensor Fusion, Object Detect(Radar/Lidar)
+<br>
 
-- - - 
 
 ## 📚 시스템 구성
 
@@ -60,12 +59,12 @@ SLINKS 앱 서비스는 <strong>낯선 여행지</strong>에서도 <strong>다�
 - DBSCAN 
 - HOG Discriptor
 
-## 판단
+### 판단
 - Dijkstra
 - Astar
 - V2X
 
-## 제어
+### 제어
 - PID Control
 - Pure Persuit
 - Adaptive Cruise Control
