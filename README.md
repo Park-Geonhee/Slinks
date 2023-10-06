@@ -17,8 +17,8 @@ SLINKS 앱 서비스는 <strong>낯선 여행지</strong>에서도 <strong>다�
 - Astar 알고리즘 기반 경로 추종 <b>신속한 경로 생성</b>
 
 ## 🎬 시연 영상 및 UCC
-[UCC](https://drive.google.com/file/d/1JkjbP2QPGlyhCTZMykJQ7qb9ioyMHimS/view?usp=sharing)
-[시연영상](https://drive.google.com/file/d/1ykUax0QnmBkUvWOW1vizO9ojfq1g2f5N/view?usp=sharing)
+### [UCC](https://drive.google.com/file/d/1JkjbP2QPGlyhCTZMykJQ7qb9ioyMHimS/view?usp=sharing)<br>
+### [시연영상](https://drive.google.com/file/d/1ykUax0QnmBkUvWOW1vizO9ojfq1g2f5N/view?usp=sharing)<br>
 
 ## 📆 제작 기간 및 인원
 제작 기간 : 2023. 08.21 ~ 2023. 10. 06 (7주) <br/>
