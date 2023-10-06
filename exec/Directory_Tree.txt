@@ -1,0 +1,402 @@
+.
+├── README.md
+├── WEB
+│   ├── firebase_get_Ego_status.py
+│   ├── firebase_key.json
+│   ├── firebase_realtime_listener.py
+│   └── map
+│       ├── map.html
+│       ├── package-lock.json
+│       ├── package.json
+│       └── test.html
+├── auto_drive
+│   ├── connection
+│   │   ├── App
+│   │   │   └── googlemap
+│   │   │       ├── app
+│   │   │       │   ├── build.gradle.kts
+│   │   │       │   ├── proguard-rules.pro
+│   │   │       │   └── src
+│   │   │       │       ├── androidTest
+│   │   │       │       │   └── java
+│   │   │       │       │       └── com
+│   │   │       │       │           └── example
+│   │   │       │       │               └── map
+│   │   │       │       │                   └── ExampleInstrumentedTest.kt
+│   │   │       │       ├── main
+│   │   │       │       │   ├── AndroidManifest.xml
+│   │   │       │       │   ├── java
+│   │   │       │       │   │   └── com
+│   │   │       │       │   │       └── example
+│   │   │       │       │   │           └── map
+│   │   │       │       │   │               ├── DiaryActivity.kt
+│   │   │       │       │   │               ├── LoginActivity.kt
+│   │   │       │       │   │               ├── MainActivity.kt
+│   │   │       │       │   │               ├── MapActivity.kt
+│   │   │       │       │   │               ├── NaviActivity.kt
+│   │   │       │       │   │               ├── PlaceShoppingActivity.kt
+│   │   │       │       │   │               ├── PlanDetailActivity.kt
+│   │   │       │       │   │               ├── PlanListActivity.kt
+│   │   │       │       │   │               └── SlashActivity.kt
+│   │   │       │       │   └── res
+│   │   │       │       │       ├── drawable
+│   │   │       │       │       │   ├── black_line.xml
+│   │   │       │       │       │   ├── default_dot.xml
+│   │   │       │       │       │   ├── diary_card.xml
+│   │   │       │       │       │   ├── division_bar.xml
+│   │   │       │       │       │   ├── footbar.xml
+│   │   │       │       │       │   ├── full_btn.xml
+│   │   │       │       │       │   ├── ic_launcher_background.xml
+│   │   │       │       │       │   ├── ic_launcher_foreground.xml
+│   │   │       │       │       │   ├── kakologin.xml
+│   │   │       │       │       │   ├── langs
+│   │   │       │       │       │   ├── list_btn.xml
+│   │   │       │       │       │   ├── outline1.xml
+│   │   │       │       │       │   ├── outline_day.xml
+│   │   │       │       │       │   ├── outline_day_selected.xml
+│   │   │       │       │       │   ├── place_line.xml
+│   │   │       │       │       │   ├── placeicon.xml
+│   │   │       │       │       │   ├── play_btn.xml
+│   │   │       │       │       │   ├── rectangle_4.xml
+│   │   │       │       │       │   ├── roots
+│   │   │       │       │       │   ├── selected_dot.xml
+│   │   │       │       │       │   ├── settingdate.xml
+│   │   │       │       │       │   ├── settingoutline.xml
+│   │   │       │       │       │   ├── tab_dot.xml
+│   │   │       │       │       │   ├── timebar.xml
+│   │   │       │       │       │   ├── timesetting.xml
+│   │   │       │       │       │   └── yellow_line.xml
+│   │   │       │       │       ├── font
+│   │   │       │       │       │   └── font.xml
+│   │   │       │       │       ├── layout
+│   │   │       │       │       │   ├── activity_diary.xml
+│   │   │       │       │       │   ├── activity_login.xml
+│   │   │       │       │       │   ├── activity_main.xml
+│   │   │       │       │       │   ├── activity_map.xml
+│   │   │       │       │       │   ├── activity_navi.xml
+│   │   │       │       │       │   ├── activity_place_shopping.xml
+│   │   │       │       │       │   ├── activity_plan_detail.xml
+│   │   │       │       │       │   ├── activity_plan_list.xml
+│   │   │       │       │       │   ├── activity_slash.xml
+│   │   │       │       │       │   ├── cart_is_full.xml
+│   │   │       │       │       │   ├── clicked_place_info.xml
+│   │   │       │       │       │   ├── login_face_2.xml
+│   │   │       │       │       │   └── login_face_3.xml
+│   │   │       │       │       ├── mipmap-anydpi-v26
+│   │   │       │       │       │   ├── ic_launcher.xml
+│   │   │       │       │       │   └── ic_launcher_round.xml
+│   │   │       │       │       ├── mipmap-hdpi
+│   │   │       │       │       │   ├── ic_launcher.webp
+│   │   │       │       │       │   └── ic_launcher_round.webp
+│   │   │       │       │       ├── mipmap-mdpi
+│   │   │       │       │       │   ├── ic_launcher.webp
+│   │   │       │       │       │   └── ic_launcher_round.webp
+│   │   │       │       │       ├── mipmap-xhdpi
+│   │   │       │       │       │   ├── ic_launcher.webp
+│   │   │       │       │       │   └── ic_launcher_round.webp
+│   │   │       │       │       ├── mipmap-xxhdpi
+│   │   │       │       │       │   ├── ic_launcher.webp
+│   │   │       │       │       │   └── ic_launcher_round.webp
+│   │   │       │       │       ├── mipmap-xxxhdpi
+│   │   │       │       │       │   ├── ic_launcher.webp
+│   │   │       │       │       │   └── ic_launcher_round.webp
+│   │   │       │       │       ├── values
+│   │   │       │       │       │   ├── colors.xml
+│   │   │       │       │       │   ├── strings.xml
+│   │   │       │       │       │   ├── styles.xml
+│   │   │       │       │       │   └── themes.xml
+│   │   │       │       │       ├── values-night
+│   │   │       │       │       │   └── themes.xml
+│   │   │       │       │       └── xml
+│   │   │       │       │           ├── backup_rules.xml
+│   │   │       │       │           └── data_extraction_rules.xml
+│   │   │       │       └── test
+│   │   │       │           └── java
+│   │   │       │               └── com
+│   │   │       │                   └── example
+│   │   │       │                       └── map
+│   │   │       │                           └── ExampleUnitTest.kt
+│   │   │       ├── build.gradle.kts
+│   │   │       ├── gradle
+│   │   │       │   └── wrapper
+│   │   │       │       └── gradle-wrapper.properties
+│   │   │       ├── gradle.properties
+│   │   │       ├── gradlew
+│   │   │       ├── gradlew.bat
+│   │   │       └── settings.gradle.kts
+│   │   ├── Local
+│   │   │   ├── pointMap.html
+│   │   │   └── roslib.min.js
+│   │   └── Ubuntu
+│   │       └── getPoint.py
+│   ├── custom_msg_make
+│   │   ├── CMakeLists.txt
+│   │   ├── README.md
+│   │   ├── msg
+│   │   │   └── custom_link_parser.msg
+│   │   └── package.xml
+│   ├── decision
+│   │   ├── README.md
+│   │   ├── sangam_acc_with_tl.py
+│   │   ├── sangam_get_point.py
+│   │   ├── sangam_gpsimu_parser.py
+│   │   ├── sangam_lattice_planner.py
+│   │   ├── sangam_link_parser.py
+│   │   ├── sangam_local_path_pub.py
+│   │   ├── sangam_mgeo_global_astar_rviz.py
+│   │   ├── sangam_mgeo_global_astar_web.py
+│   │   ├── sangam_mgeo_global_dijkstra_rviz.py
+│   │   ├── sangam_mgeo_global_dijkstra_web.py
+│   │   └── sangam_mgeo_pub.py
+│   ├── launch
+│   │   ├── README.md
+│   │   ├── sangam_astar.launch
+│   │   ├── sangam_dijkstra.launch
+│   │   ├── sangam_final.launch
+│   │   └── sangam_web.launch
+│   ├── perception
+│   │   ├── Main.py
+│   │   ├── Perception
+│   │   │   ├── Lane
+│   │   │   │   ├── lane_detect.py
+│   │   │   │   └── stop_line.py
+│   │   │   ├── Lidar
+│   │   │   │   ├── Lidar.py
+│   │   │   │   ├── Lidar2Image.py
+│   │   │   │   └── cluster2Image.py
+│   │   │   ├── Radar
+│   │   │   │   ├── Back_radar.py
+│   │   │   │   ├── Backup.py
+│   │   │   │   ├── Radar.py
+│   │   │   │   └── yolov5s.onnx
+│   │   │   ├── TrafficLight
+│   │   │   │   ├── TrafficLight.py
+│   │   │   ├── YOLO
+│   │   │   │   ├── YOLO.py
+│   │   │   │   ├── YOLOv5
+│   │   │   │   └── datasets
+│   │   │   ├── __init__.py
+│   │   │   └── yolov5s.onnx
+│   │   └── tree.txt
+│   └── tree.txt
+├── exec
+│   ├── Middle_Presentation.pptx
+│   ├── ERD.png
+│   ├── Directory_Tree.txt
+│   ├── Porting_Manual.pdf
+│   └── 기획안.pdf
+├── ssafy_app
+│   └── googlemap
+│       ├── app
+│       │   ├── build.gradle.kts
+│       │   ├── proguard-rules.pro
+│       │   ├── release
+│       │   │   ├── app-release.apk
+│       │   │   └── output-metadata.json
+│       │   └── src
+│       │       └── main
+│       │           ├── AndroidManifest.xml
+│       │           ├── java
+│       │           │   └── com
+│       │           │       └── example
+│       │           │           └── map
+│       │           │               ├── ApiRepository.kt
+│       │           │               ├── ApiService.kt
+│       │           │               ├── Coordination.kt
+│       │           │               ├── Diary.kt
+│       │           │               ├── DiaryActivity.kt
+│       │           │               ├── DiaryAdapter.kt
+│       │           │               ├── File.kt
+│       │           │               ├── GridviewAdapter.kt
+│       │           │               ├── LoginActivity.kt
+│       │           │               ├── MainActivity.kt
+│       │           │               ├── MapActivity.kt
+│       │           │               ├── NaviActivity.kt
+│       │           │               ├── NeplanAPI.kt
+│       │           │               ├── Place.kt
+│       │           │               ├── PlaceAutoCompleteFragment.kt
+│       │           │               ├── PlaceShoppingActivity.kt
+│       │           │               ├── PlaceType.kt
+│       │           │               ├── Plan.kt
+│       │           │               ├── PlanDetailActivity.kt
+│       │           │               ├── PlanItem.kt
+│       │           │               ├── PlanListActivity.kt
+│       │           │               ├── PlanPlace.kt
+│       │           │               ├── RetrofitClient.kt
+│       │           │               ├── SlashActivity.kt
+│       │           │               └── User.kt
+│       │           └── res
+│       │               ├── drawable
+│       │               │   ├── black_background.xml
+│       │               │   ├── black_line.xml
+│       │               │   ├── default_dot.xml
+│       │               │   ├── diary_card.xml
+│       │               │   ├── division_bar.xml
+│       │               │   ├── footbar.xml
+│       │               │   ├── full_btn.xml
+│       │               │   ├── ic_launcher_background.xml
+│       │               │   ├── ic_launcher_foreground.xml
+│       │               │   ├── kakologin.xml
+│       │               │   ├── langs
+│       │               │   ├── list_btn.xml
+│       │               │   ├── outline1.xml
+│       │               │   ├── outline_day.xml
+│       │               │   ├── outline_day_selected.xml
+│       │               │   ├── place_line.xml
+│       │               │   ├── placeicon.xml
+│       │               │   ├── play_btn.xml
+│       │               │   ├── rectangle_4.xml
+│       │               │   ├── roots
+│       │               │   ├── selected_dot.xml
+│       │               │   ├── settingdate.xml
+│       │               │   ├── settingoutline.xml
+│       │               │   ├── tab_dot.xml
+│       │               │   ├── timebar.xml
+│       │               │   ├── timesetting.xml
+│       │               │   └── yellow_line.xml
+│       │               ├── font
+│       │               │   └── font.xml
+│       │               ├── layout
+│       │               │   ├── activity_diary.xml
+│       │               │   ├── activity_login.xml
+│       │               │   ├── activity_main.xml
+│       │               │   ├── activity_map.xml
+│       │               │   ├── activity_navi.xml
+│       │               │   ├── activity_place_shopping.xml
+│       │               │   ├── activity_plan_detail.xml
+│       │               │   ├── activity_plan_list.xml
+│       │               │   ├── activity_slash.xml
+│       │               │   ├── cart_is_full.xml
+│       │               │   ├── clicked_place_info.xml
+│       │               │   ├── fragment_place_auto_complete.xml
+│       │               │   ├── gridview_item.xml
+│       │               │   ├── gridview_list_item.xml
+│       │               │   ├── item_recycle_diary.xml
+│       │               │   ├── login_face_2.xml
+│       │               │   └── login_face_3.xml
+│       │               ├── mipmap-anydpi-v26
+│       │               │   ├── ic_launcher.xml
+│       │               │   └── ic_launcher_round.xml
+│       │               ├── mipmap-hdpi
+│       │               │   ├── ic_launcher.webp
+│       │               │   └── ic_launcher_round.webp
+│       │               ├── mipmap-mdpi
+│       │               │   ├── ic_launcher.webp
+│       │               │   └── ic_launcher_round.webp
+│       │               ├── mipmap-xhdpi
+│       │               │   ├── ic_launcher.webp
+│       │               │   └── ic_launcher_round.webp
+│       │               ├── mipmap-xxhdpi
+│       │               │   ├── ic_launcher.webp
+│       │               │   └── ic_launcher_round.webp
+│       │               ├── mipmap-xxxhdpi
+│       │               │   ├── ic_launcher.webp
+│       │               │   └── ic_launcher_round.webp
+│       │               ├── values
+│       │               │   ├── colors.xml
+│       │               │   ├── strings.xml
+│       │               │   ├── styles.xml
+│       │               │   └── themes.xml
+│       │               ├── values-night
+│       │               │   └── themes.xml
+│       │               └── xml
+│       │                   ├── backup_rules.xml
+│       │                   ├── data_extraction_rules.xml
+│       │                   └── network_security_config.xml
+│       ├── build.gradle.kts
+│       ├── gradle
+│       │   └── wrapper
+│       │       ├── gradle-wrapper.jar
+│       │       └── gradle-wrapper.properties
+│       ├── gradle.properties
+│       ├── gradlew
+│       ├── gradlew.bat
+│       └── settings.gradle.kts
+├── ssafy_backend
+│   ├── README.md
+│   ├── neplan
+│   │   ├── Dockerfile
+│   │   ├── DockerfileFix
+│   │   ├── docker-compose.yml
+│   │   ├── mvnw
+│   │   ├── mvnw.cmd
+│   │   ├── pom.xml
+│   │   └── src
+│   │       ├── main
+│   │       │   ├── java
+│   │       │   │   └── com
+│   │       │   │       └── nemo
+│   │       │   │           └── neplan
+│   │       │   │               ├── NeplanApplication.java
+│   │       │   │               ├── config
+│   │       │   │               │   ├── ChatGptconfig.java
+│   │       │   │               │   ├── FirebaseConfig.java
+│   │       │   │               │   ├── SwaggerConfig.java
+│   │       │   │               │   └── WebMvcConfig.java
+│   │       │   │               ├── controller
+│   │       │   │               │   ├── DiaryController.java
+│   │       │   │               │   ├── FileController.java
+│   │       │   │               │   ├── PlaceController.java
+│   │       │   │               │   ├── PlanController.java
+│   │       │   │               │   ├── PlanPlaceController.java
+│   │       │   │               │   ├── RestTestController.java
+│   │       │   │               │   └── UserController.java
+│   │       │   │               ├── dto
+│   │       │   │               │   ├── ChatGptMessage.java
+│   │       │   │               │   ├── ChatGptRequest.java
+│   │       │   │               │   ├── ChatGptResponse.java
+│   │       │   │               │   ├── DiaryDto.java
+│   │       │   │               │   └── QuestionRequest.java
+│   │       │   │               ├── exception
+│   │       │   │               │   └── UserNotFoundException.java
+│   │       │   │               ├── model
+│   │       │   │               │   ├── BaseTimeEntity.java
+│   │       │   │               │   ├── Diary.java
+│   │       │   │               │   ├── File.java
+│   │       │   │               │   ├── KakaoApiResponse.java
+│   │       │   │               │   ├── Place.java
+│   │       │   │               │   ├── PlaceType.java
+│   │       │   │               │   ├── Plan.java
+│   │       │   │               │   ├── PlanPlace.java
+│   │       │   │               │   └── User.java
+│   │       │   │               ├── repository
+│   │       │   │               │   ├── DiaryRepository.java
+│   │       │   │               │   ├── FileRepository.java
+│   │       │   │               │   ├── PlaceRepository.java
+│   │       │   │               │   ├── PlanPlaceRepository.java
+│   │       │   │               │   ├── PlanRepository.java
+│   │       │   │               │   └── UserRepository.java
+│   │       │   │               └── service
+│   │       │   │                   ├── ChatGptService.java
+│   │       │   │                   ├── DiaryService.java
+│   │       │   │                   ├── DiaryServiceImpl.java
+│   │       │   │                   ├── FileService.java
+│   │       │   │                   ├── FileServiceImpl.java
+│   │       │   │                   ├── PlaceService.java
+│   │       │   │                   ├── PlaceServiceImpl.java
+│   │       │   │                   ├── PlanPlaceService.java
+│   │       │   │                   ├── PlanPlaceServiceImpl.java
+│   │       │   │                   ├── PlanService.java
+│   │       │   │                   ├── PlanServiceImpl.java
+│   │       │   │                   ├── UserService.java
+│   │       │   │                   └── UserServiceImpl.java
+│   │       │   └── resources
+│   │       │       ├── META-INF
+│   │       │       │   └── MANIFEST.MF
+│   │       │       ├── application.properties
+│   │       │       ├── application.yml
+│   │       │       └── serviceAccountKey.json
+│   │       └── test
+│   │           └── java
+│   │               └── com
+│   │                   └── nemo
+│   │                       └── neplan
+│   │                           └── NeplanApplicationTests.java
+│   ├── package-lock.json
+│   └── upload-dir
+│       ├── 4f5a3513-0902-4c63-982a-d4e83159bf06.jfif
+│       ├── 851f539e-cf44-449f-aac9-0b769240949d.webp
+│       └── package-lock.json
+└── tree.txt
+
+146 directories, 584 files
