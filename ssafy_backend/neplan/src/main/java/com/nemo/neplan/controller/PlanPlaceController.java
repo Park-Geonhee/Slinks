@@ -41,6 +41,7 @@ public class PlanPlaceController {
     public ResponseEntity<List<PlanPlace>> getPlanPlacesByPlanId(@PathVariable Long planId) {
         List<PlanPlace> planPlaces = planPlaceService.getPlanPlacesByPlanId(planId);
         return ResponseEntity.ok(planPlaces);
+
     }
 
     @GetMapping("/search/by-place/{placeId}")

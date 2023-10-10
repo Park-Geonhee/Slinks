@@ -50,6 +50,8 @@ class MainActivity : AppCompatActivity(){
         diaryAdapter = DiaryAdapter()
         setContentView(binding.root)
 
+
+
         print("AI다이어리 탭을 실행합니다")
 
         print("일기 데이터 적용을 시작합니다")
@@ -67,7 +69,13 @@ class MainActivity : AppCompatActivity(){
         print("정상 갱신 완료")
 
 
+        binding.writeDiary.setOnClickListener(View.OnClickListener {
+            // 이동하고자 하는 DiaryActivity를 시작하는 Intent를 생성
+            val intent = Intent(this@MainActivity, DiaryActivity::class.java)
+            // DiaryActivity로 이동
+            startActivity(intent)
 
+        })
 
 
         binding.planList.setOnClickListener(View.OnClickListener {
