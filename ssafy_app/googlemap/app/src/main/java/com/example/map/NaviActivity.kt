@@ -99,7 +99,7 @@ class NaviActivity : AppCompatActivity(), OnMapReadyCallback {
     private fun initWebSocket() {
         val uri: URI
         try {
-            uri = URI("ws://13.125.75.163:9090")
+            uri = URI("ws://172.20.10.2:9090")
         } catch (e: URISyntaxException) {
             e.printStackTrace()
             return
