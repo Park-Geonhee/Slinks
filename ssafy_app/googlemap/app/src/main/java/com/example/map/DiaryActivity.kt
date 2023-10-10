@@ -53,11 +53,10 @@ class DiaryActivity : AppCompatActivity() {
             }
 
 
-
         }
 
 
-       makeDiary=findViewById(R.id.buttonCamera)
+       makeDiary=findViewById(R.id.buttonMakediary)
       makeDiary.setOnClickListener{
           // 이동하고자 하는 DiaryActivity를 시작하는 Intent를 생성
           val intent = Intent(this@DiaryActivity, MainActivity::class.java)
