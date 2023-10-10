@@ -264,7 +264,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerC
     private fun initWebSocket() {
         val uri: URI
         try {
-            uri = URI("ws://172.20.10.2:9090")
+            uri = URI("ws://70.12.50.146:9090")
         } catch (e: URISyntaxException) {
             e.printStackTrace()
             return

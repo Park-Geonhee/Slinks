@@ -69,7 +69,6 @@ public class PlanPlaceController {
     public ResponseEntity<Map<String, double[][]>> GettingPlaces(
             @PathVariable Long planId) {
 
-        //,
         //            @RequestParam int who,
         //            @RequestParam int where
 
@@ -92,21 +91,6 @@ public class PlanPlaceController {
         return ResponseEntity.ok(response);
 
 
-//        if (who >= 0 && who < planPlaces.size() && where >= 0 && where < planPlaces.size()) {
-//            PlanPlace planPlaceToMove = planPlaces.get(who);
-//            planPlaces.remove(who); // Remove from original position
-//            planPlaces.add(where, planPlaceToMove); // Add to new position
-
-//            // Update placeOrder values
-//            for (int i = 0; i < planPlaces.size(); i++) {
-////                planPlaces.get(i).setPlaceOrder(i);
-//                planPlaceService.createPlanPlace(planPlaces.get(i));
-//            }
-//
-//            return ResponseEntity.ok(planPlaces);
-//        } else {
-//            return ResponseEntity.badRequest().build();
-//        }
     }
 
 

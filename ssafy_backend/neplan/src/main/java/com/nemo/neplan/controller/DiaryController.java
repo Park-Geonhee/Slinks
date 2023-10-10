@@ -79,15 +79,16 @@ public class DiaryController {
         return ResponseEntity.ok(diaries);
     }
 
-    @PostMapping("/add/{keyword}")
+    @PostMapping("/add")
     public ResponseEntity<Diary> createDiary(
             @RequestParam("file") MultipartFile file,
             @RequestParam("keyword") String keyword,
-            @RequestParam("userId") Long userId
+            @RequestParam("userId") String userId
          ) {
 
 
         try {
+            Long userIdl = Long.parseLong(userId);
             // 이미지 파일 업로드
             long fileId = storeFile(file);
 
@@ -98,7 +99,7 @@ public class DiaryController {
             System.out.println("일기에 저장할 장소 정보 : "+place.toString());
 
             User user=new User();
-            user.setId(userId);
+            user.setId(userIdl);
 
             // 일기 데이터 생성 및 저장
             Diary diary = new Diary();

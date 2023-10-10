@@ -11,15 +11,14 @@
     <!--    위치정보 접근-->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-feature android:name="android.hardware.camera" android:required="false" />
-    <uses-permission android:name="android.permission.CAMERA" />
-<!--    <uses-feature android:name="android.hardware.camera"-->
-<!--        android:required="true" />-->
 
 
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
+    <!--카메라 갤러리 관련 권한 -->
+    <uses-permission android:name="android.permission.CAMERA" />
 
 
     <application
