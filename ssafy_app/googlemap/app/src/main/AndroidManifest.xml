@@ -63,7 +63,8 @@
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyCRLe6LwbxRodeFJxUhZGRdWlRGC0Fo5wM" />
+            android:value="" />
+            <!--  -->
 
         <activity
             android:name=".SlashActivity"
